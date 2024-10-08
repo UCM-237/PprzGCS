@@ -40,12 +40,13 @@ protected slots:
 
 private slots:
     void changeCurrentAC(QString id);
+    void VentanaPlanificacion();
 
 private:
     void setEditorMode();
     Ui::PprzMap *ui;
     QMap<Waypoint*, int> combo_indexes;
-
+    QProcess *process;
     QString current_ac;
 
     //CoordinatesTransform ct_wgs84_utm;

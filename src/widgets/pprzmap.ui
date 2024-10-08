@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>548</width>
-    <height>351</height>
+    <width>544</width>
+    <height>328</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -78,6 +78,13 @@
    </item>
    <item>
     <widget class="MapWidget" name="map"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="config_button">
+     <property name="text">
+      <string>Planificacion</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

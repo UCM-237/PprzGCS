@@ -1,6 +1,7 @@
 #include "pprzmap.h"
 #include "ui_pprzmap.h"
 #include "pprz_dispatcher.h"
+#include"mainwindow.h""
 #include "dispatcher_ui.h"
 #include <iostream>
 #include "maputils.h"
@@ -51,6 +52,7 @@ PprzMap::PprzMap(QWidget *parent) :
 
     };
 
+    connect(ui->config_button, &QPushButton::clicked, this, &PprzMap::VentanaPlanificacion);
     connect(ui->srtm_button, &QPushButton::clicked, [=]() {dl_strm(false);});
 #if GRPC_ENABLED
     connect(GRPCConnector::get(), &GRPCConnector::dl_srtm, [=]() {dl_strm(true);});
@@ -134,11 +136,14 @@ void PprzMap::handleMouseMove(QPointF scenePos) {
     }
 
     auto ele = SRTMManager::get()->get_elevation(pt.lat(), pt.lon());
-    if(ele) {
-        QString txt = QString("%1").arg(ele.value(), 4, 10, QChar(' ')) + "m";
-        ui->srtm_label->setText(txt);
-    } else {
-        ui->srtm_label->setText("No SRTM");
+
     }
+void PprzMap::VentanaPlanificacion()
+{
+    // Crear una instancia de VentanaPlanificacion
+    MainWindow *ventana = new MainWindow(this); // 'this' establece la ventana principal como padre
+    ventana->show(); // Mostrar la ventana
 }
+
+
 

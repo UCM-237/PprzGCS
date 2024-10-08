@@ -1,0 +1,3 @@
+Estrategia seleccionada: Con Mapa
+NÃºmero de segmentos: 3
+NÃºmero de puntos de control: 4
