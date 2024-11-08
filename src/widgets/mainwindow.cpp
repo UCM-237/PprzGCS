@@ -69,7 +69,7 @@ void MainWindow::on_button_optimizacion_clicked()
 {
     disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
 
-    QFile file("/home/dacya-iagesbloom/Documents/PprzGCS/datos.txt");
+    QFile file("~/PprzGCS/datos.txt");
 
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
@@ -86,7 +86,7 @@ void MainWindow::on_button_optimizacion_clicked()
         QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
 
         QProcess *process = new QProcess(this);
-        QString scriptPath = "/home/dacya-iagesbloom/Desktop/Python/GCS_python/Codigos_Python_QT/Código_QT_PYTHON_V1_2.py";
+        QString scriptPath = "~/PprzGCS/Python_sw/Código_QT_PYTHON_V1_2.py";
         process->start("python", QStringList() << scriptPath);
 
         if (!process->waitForStarted()) {
@@ -126,7 +126,7 @@ void MainWindow::on_button_compilacion_clicked()
 
     // Crear un proceso para ejecutar el script Python
     QProcess *process_compilacion = new QProcess(this);
-    QString scriptPath_compilacion = "/home/dacya-iagesbloom/Desktop/Python/GCS_python/Codigos_Python_QT/compilacion_paparazzi.py";
+    QString scriptPath_compilacion = "~/PprzGCS/Python_sw/compilacion_paparazzi.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_compilacion->start("python", QStringList() << scriptPath_compilacion);
@@ -164,7 +164,7 @@ void MainWindow::on_button_editor_clicked()
 
     // Crear un proceso para ejecutar el script Python
     QProcess *process_editor = new QProcess(this);
-    QString scriptPath_editor= "/home/dacya-iagesbloom/Desktop/Python/GCS_python/Codigos_Python_QT/open_flight_plan_editor.py";
+    QString scriptPath_editor= "~/PprzGCS/Python_sw/open_flight_plan_editor.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_editor->start("python", QStringList() << scriptPath_editor);
