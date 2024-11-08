@@ -1,3 +1,4 @@
 Estrategia seleccionada: Sin Mapa
-NÃºmero de segmentos: 6
-NÃºmero de puntos de control: 2
+Ruta mapa:flight_plan_pruebaQT
+Ruta controlador:rover2f405WSE
+Numero de puntos de paso:1

@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "coordenadaswindow.h"
 
 #include <QPushButton>
 #include <QMenu>
@@ -11,6 +10,11 @@
 #include <QTextStream>
 #include <QMessageBox>
 #include <QDebug>
+#include <QProcess>  // Para ejecutar el script Python
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,8 +23,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     // Conectar botones a sus respectivos slots
-    connect(ui->button1, &QPushButton::clicked, this, &MainWindow::on_button1_clicked);
-    connect(ui->button2, &QPushButton::clicked, this, &MainWindow::on_pushButton_2_clicked);
+    connect(ui->button_estrategia, &QPushButton::clicked, this, &MainWindow::on_button_estrategia_clicked);
+    connect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
+    connect(ui->button_compilacion, &QPushButton::clicked, this, &MainWindow::on_button_compilacion_clicked);
+    connect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
 }
 
 MainWindow::~MainWindow()
@@ -28,25 +34,25 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_button1_clicked()
+void MainWindow::on_button_estrategia_clicked()
 {
     // Crear el menú contextual
     QMenu contextMenu(tr("Menú contextual"), this);
 
     // Crear las acciones para el menú
-    QAction action1("Con mapa", this);
+    QAction action1("Con Mapa", this);
     QAction action2("Sin mapa", this);
 
     // Conectar las acciones a los slots si es necesario
     connect(&action1, &QAction::triggered, this, [this]() {
         EstrategiaSeleccionada = "Con Mapa";
-        ui->button1->setText(EstrategiaSeleccionada);
+        ui->button_estrategia->setText(EstrategiaSeleccionada);
         qDebug() << "Estrategia seleccionada: " << EstrategiaSeleccionada;
     });
 
     connect(&action2, &QAction::triggered, this, [this]() {
         EstrategiaSeleccionada = "Sin Mapa";
-        ui->button1->setText(EstrategiaSeleccionada);
+        ui->button_estrategia->setText(EstrategiaSeleccionada);
         qDebug() << "Estrategia seleccionada: " << EstrategiaSeleccionada;
     });
 
@@ -55,67 +61,155 @@ void MainWindow::on_button1_clicked()
     contextMenu.addAction(&action2);
 
     // Mostrar el menú en la posición del botón
-    QPoint pos = ui->button1->mapToGlobal(QPoint(ui->button1->width()/2, ui->button1->height()/2));  // Centrar el menú en el botón
+    QPoint pos = ui->button_estrategia->mapToGlobal(QPoint(ui->button_estrategia->width()/2, ui->button_estrategia->height()/2));  // Centrar el menú en el botón
     contextMenu.exec(pos);
 }
 
-void MainWindow::on_pushButton_2_clicked()
+void MainWindow::on_button_optimizacion_clicked()
 {
-    // Abrir el archivo en modo escritura
-    QFile file("datos.txt");
+    disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
 
-    // Leer el texto ingresado en los QLineEdit
-    NumeroSegmentos = ui->label1->text();
-    NumeroPuntosControl = ui->label2->text();
+    QFile file("/home/dacya-iagesbloom/Documents/PprzGCS/datos.txt");
+
+    Ruta_mapa = ui->label_mapa->text();
+    Ruta_controlador = ui->label_controlador->text();
+    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&file);  // Crear flujo de texto para escribir en el archivo
-
-        //out <<"Estrategia seleccionada, Número de segmentos, Número de puntos de control\n";
-
-        // Escribir los datos en el archivo
+        QTextStream out(&file);
         out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
-        out << "Número de segmentos: " << NumeroSegmentos << "\n";
-        out << "Número de puntos de control: " << NumeroPuntosControl << "\n";
+        out << "Ruta mapa:" << Ruta_mapa << "\n";
+        out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+        file.close();
 
-        file.close();  // Cerrar el archivo
-        close();
-        // Mostrar mensaje de confirmación
         QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
 
-        // Obtener el número de coordenadas de label2
-        bool ok;
-        int numCoordenadas = NumeroPuntosControl.toInt(&ok);
+        QProcess *process = new QProcess(this);
+        QString scriptPath = "/home/dacya-iagesbloom/Desktop/Python/GCS_python/Codigos_Python_QT/Código_QT_PYTHON_V1_2.py";
+        process->start("python", QStringList() << scriptPath);
 
-        if (ok && numCoordenadas > 0) {
-            qDebug() << "Abriendo la ventana de coordenadas";
-
-            // Crear y mostrar la nueva ventana
-            CoordenadasWindow *coordenadawindow = new CoordenadasWindow(numCoordenadas, nullptr);
-            coordenadawindow->setWindowFlags(Qt::Window);
-            coordenadawindow->move(100, 100);  // Mueve la ventana a la posición (100, 100)
-            coordenadawindow->setWindowTitle("Ingresar Coordenadas");
-            coordenadawindow->show();
-        } else {
-            // Mostrar un mensaje de error si el número no es válido
-            QMessageBox::warning(this, "Error", "Por favor, ingrese un número válido en label2.");
+        if (!process->waitForStarted()) {
+            qDebug() << "Error al iniciar el script Python:" << process->errorString();
         }
-    } else {
-        // Mostrar mensaje de error si el archivo no se puede abrir
-        QMessageBox::warning(this, "Error", "No se pudo abrir el archivo para guardar los datos.");
+
+        process->waitForFinished();
+        QString output = process->readAllStandardOutput();
+        QString errorOutput = process->readAllStandardError();
+
+        // Analizar la salida JSON del script Python
+        QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
+        if (!jsonResponse.isNull() && jsonResponse.isObject()) {
+            QJsonObject jsonObj = jsonResponse.object();
+            QString status = jsonObj.value("status").toString();
+            QString message = jsonObj.value("message").toString();
+
+            if (status == "success") {
+                QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
+            } else {
+                QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores:\n" + message);
+                qDebug() << "Error en la ejecución del script Python. Mensaje:" << message;
+            }
+        } else {
+            QMessageBox::warning(this, "Error de salida", "La salida del script de Python no es válida:\n" + output);
+            qDebug() << "Salida no válida del script Python:" << output;
+        }
+
+        process->deleteLater();
     }
 }
 
-void MainWindow::on_NSeg_editingFinished()
+
+void MainWindow::on_button_compilacion_clicked()
 {
-    // Leer los valores ingresados en los QLineEdit
-    NumeroSegmentos = ui->label1->text();
-    qDebug() << "Valor en label1:" << NumeroSegmentos;
+    disconnect(ui->button_compilacion, &QPushButton::clicked, this, &MainWindow::on_button_compilacion_clicked);
+
+    // Crear un proceso para ejecutar el script Python
+    QProcess *process_compilacion = new QProcess(this);
+    QString scriptPath_compilacion = "/home/dacya-iagesbloom/Desktop/Python/GCS_python/Codigos_Python_QT/compilacion_paparazzi.py";
+
+    // Usa la ruta completa al ejecutable de Python
+    process_compilacion->start("python", QStringList() << scriptPath_compilacion);
+
+    if (!process_compilacion->waitForStarted()) {
+        qDebug() << "Error al iniciar el script Python:" << process_compilacion->errorString();
+        return;
+    }
+
+    // Esperar a que el proceso termine
+    process_compilacion->waitForFinished();
+    int exitCode = process_compilacion ->exitCode();
+    QString output = process_compilacion ->readAllStandardOutput();
+    QString errorOutput = process_compilacion ->readAllStandardError();  // Capturar errores
+
+    // Mostrar la salida y los errores en la consola de depuración
+    qDebug() << "Salida del script Python:" << output;
+    qDebug() << "Error del script Python:" << errorOutput;
+
+    // Mostrar mensaje de confirmación según el resultado del script Python
+    if (exitCode == 0) {
+        QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
+    } else {
+        QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores.");
+        qDebug() << "Error en la ejecución del script Python. Código de salida:" << exitCode;
+    }
+
+    process_compilacion ->deleteLater(); // Eliminar el proceso después de ejecutarse
+    this->close();
 }
 
-void MainWindow::on_NPntsContrl_editingFinished()
+void MainWindow::on_button_editor_clicked()
+{
+    disconnect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
+
+    // Crear un proceso para ejecutar el script Python
+    QProcess *process_editor = new QProcess(this);
+    QString scriptPath_editor= "/home/dacya-iagesbloom/Desktop/Python/GCS_python/Codigos_Python_QT/open_flight_plan_editor.py";
+
+    // Usa la ruta completa al ejecutable de Python
+    process_editor->start("python", QStringList() << scriptPath_editor);
+
+    if (!process_editor->waitForStarted()) {
+        qDebug() << "Error al iniciar el script Python:" << process_editor->errorString();
+        return;
+    }
+
+    // Esperar a que el proceso termine
+    process_editor->waitForFinished();
+    int exitCode = process_editor->exitCode();
+    QString output = process_editor->readAllStandardOutput();
+    QString errorOutput = process_editor->readAllStandardError();  // Capturar errores
+
+    // Mostrar la salida y los errores en la consola de depuración
+    qDebug() << "Salida del script Python:" << output;
+    qDebug() << "Error del script Python:" << errorOutput;
+    process_editor ->deleteLater(); // Eliminar el proceso después de ejecutarse
+    this->close();
+}
+
+
+
+
+
+/*
+void MainWindow::on_ruta_mapa_editingFinished()
 {
     // Leer los valores ingresados en los QLineEdit
-    NumeroPuntosControl = ui->label2->text();
-    qDebug() << "Valor en label2:" << NumeroPuntosControl;
+    Ruta_mapa = ui->label_mapa->text();
+    qDebug() << "Valor en label1:" << Ruta_mapa;
 }
+
+void MainWindow::on_ruta_controlador_editingFinished()
+{
+    // Leer los valores ingresados en los QLineEdit
+    Ruta_controlador = ui->label_controlador->text();
+    qDebug() << "Valor en label2:" << Ruta_controlador;
+}
+
+void MainWindow::on_Puntos_paso_editingFinished()
+{
+    // Leer los valores ingresados en los QLineEdit
+    Puntos_paso = ui->label_Puntos_paso->text();
+    qDebug() << "Valor en label3:" << Puntos_paso;
+}
+*/

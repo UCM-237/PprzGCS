@@ -2,8 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include<QPushButton>
-#include<QMenu>
+#include <QPushButton>
+#include <QMenu>
+#include <QProcess>  // Para ejecutar scripts de Python
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,19 +19,25 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_button1_clicked();
-
-    void on_pushButton_2_clicked();
-
-    void on_NSeg_editingFinished();
-
-    void on_NPntsContrl_editingFinished();
-
-
+    void on_button_estrategia_clicked();
+    void on_button_optimizacion_clicked();   
+    void on_button_compilacion_clicked(); 
+    void on_button_editor_clicked();   
+    /*
+    void on_ruta_mapa_editingFinished();
+    void on_ruta_controlador_editingFinished();
+    void on_Puntos_paso_editingFinished();
+    */
 private:
     Ui::MainWindow *ui;
     QString EstrategiaSeleccionada;
-    QString NumeroSegmentos;
-    QString NumeroPuntosControl;
+    QString Ruta_mapa;
+    QString Ruta_controlador;
+    QString Puntos_paso;
+    QProcess *process;  // Para manejar el proceso del script Python
+
+    void ejecutarScriptPython();  // Método para ejecutar el script y manejar su salida
 };
+
 #endif // MAINWINDOW_H
+
