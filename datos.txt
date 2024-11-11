@@ -1,4 +1,4 @@
-Estrategia seleccionada: Sin Mapa
-Ruta mapa:flight_plan_pruebaQT
+Estrategia seleccionada:  Sin Mapa
+Ruta mapa:flight_plan_prueba_Guajaraz
 Ruta controlador:rover2f405WSE
-Numero de puntos de paso:1
+Numero de puntos de paso:12

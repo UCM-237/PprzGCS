@@ -43,11 +43,10 @@ from pymoo.operators.mutation.bitflip import BitflipMutation
 import logging
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-#print("Antes del try")
 import os
-from pathlib import Path
-home_dir = Path.home()
-#home_dir = os.path.expanduser("~")
+
+home_dir = os.path.expanduser("~")
+#print("Antes del try")
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -65,7 +64,8 @@ try:
     result = "Compilación exitosa"  # Valor predeterminado en caso de éxito
     
     #Leemos los archivos sacados del boton de planificación
-    Estrategia = pd.read_csv(home_dir/'PprzGCS/datos.txt', delimiter=':', header = None) #Datos.txt
+    datos=os.path.join(home_dir, "PprzGCS", "datos.txt")
+    Estrategia = pd.read_csv(datos, delimiter=': ', header = None, engine='python') #Datos.txt
     Estrategia=pd.DataFrame(Estrategia)
     
     #Carga de archivo XML
@@ -74,11 +74,43 @@ try:
     Archivo = Estrategia.iloc[1,1]
     Controlador = Estrategia.iloc[2,1]
 
-    if Mapa == "  Sin Mapa":
+    if Mapa == "Sin Mapa":
 
-      #  print("SIN MAPAA")
+                
+        from lxml import etree
         
-        tree = ET.parse(home_dir/f'paparazzi/conf/flight_plans/UCM/{Archivo}.xml')
+        # Ruta a tu archivo XML y DTD
+        xml_file=os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM",f"{Archivo}.xml")
+        dtd_file=os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM",f" {Archivo}.xml")
+        
+        #xml_file = f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}.xml'
+        #dtd_file = '/home/dacya-iagesbloom/paparazzi/conf/flight_plans/flight_plan.dtd'
+        
+        # Cargar el DTD
+        with open(dtd_file, 'r') as dtd_f:
+            dtd = etree.DTD(dtd_f)
+        
+        # Cargar el archivo XML
+        with open(xml_file, 'r') as xml_f:
+            xml_content = xml_f.read()
+        
+        # Validar el XML contra el DTD
+        try:
+            xml_doc = etree.fromstring(xml_content)
+            if dtd.validate(xml_doc):
+                print("El archivo XML es válido.")
+            else:
+                print("El archivo XML no es válido.")
+                #print("Errores:")
+                for error in dtd.error_log:
+                    print(f"Línea {error.line}: {error.message}")
+        except etree.XMLSyntaxError as e:
+            print("Error de sintaxis XML:")
+            
+      #  print("SIN MAPAA")
+        #ruta_mapa=os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}.xml")
+        tree = ET.parse(f'home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}.xml')
+        #tree = ET.parse(ruta_mapa)
         root = tree.getroot()
         
         # Encontrar todos los waypoints
@@ -128,33 +160,6 @@ try:
         #print(paradas)
         #Definimos parámetros del barco
         velocidad_media = 40
-        
-        from lxml import etree
-        
-        # Ruta a tu archivo XML y DTD
-        xml_file = home_dir/f'paparazzi/conf/flight_plans/UCM/{Archivo}.xml'
-        dtd_file = home_dir/'paparazzi/conf/flight_plans/flight_plan.dtd'
-        
-        # Cargar el DTD
-        with open(dtd_file, 'r') as dtd_f:
-            dtd = etree.DTD(dtd_f)
-        
-        # Cargar el archivo XML
-        with open(xml_file, 'r') as xml_f:
-            xml_content = xml_f.read()
-        
-        # Validar el XML contra el DTD
-        try:
-            xml_doc = etree.fromstring(xml_content)
-            if dtd.validate(xml_doc):
-                print("El archivo XML es válido.")
-            else:
-                print("El archivo XML no es válido.")
-                #print("Errores:")
-                for error in dtd.error_log:
-                    print(f"Línea {error.line}: {error.message}")
-        except etree.XMLSyntaxError as e:
-            print("Error de sintaxis XML:")
             
         
         def closest_point_and_reorder(home, points):
@@ -566,16 +571,21 @@ try:
             return reparsed.toprettyxml(indent="  ")
         
         # Guardar los cambios en el archivo XML
-        with open(home_dir/f'paparazzi/conf/flight_plans/UCM/{Archivo}_opt.xml', 'w', encoding='utf-8') as f:
+        mapa_opt=os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}_opt.xml")
+        print(mapa_opt)
+        print("Hola")
+        with open(mapa_opt, 'w', encoding='utf-8') as f:
             f.write('<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">\n')
             f.write(prettify(root))
-        print("FLIGHT PLAN GUARDADO")
+        #print("FLIGHT PLAN GUARDADO")
        # print("Waypoints reescritos y guardados")
             
         import xml.etree.ElementTree as ET
         
         # Abrimos el archivo XML
-        tree = ET.parse(home_dir/f'paparazzi/conf/airframes/UCM/{Controlador}.xml')
+        controlador=os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", f"{Controlador}.xml")
+        
+        tree = ET.parse(controlador)
         root = tree.getroot()
         
         n_segmentos = str(len(paradas) - 1)  # Asegúrate de que `paradas` esté definida en el código
@@ -598,7 +608,8 @@ try:
         #Ahora vamos a modificar el archivo conf.xml que se encuentra en la ruta paparazzi/conf/airframes/UCM para que cuando se abra paparazzi de nuevo el flight plan y el airframe sean los que pongamos aqui
         
         # Ruta del archivo XML que deseas modificar
-        tree = ET.parse(home_dir/'paparazzi/conf/airframes/UCM/conf.xml')
+        conf_path=os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", "conf.xml")
+        tree = ET.parse(conf_path)
         root = tree.getroot()
         
         new_flight_plan = f'flight_plans/UCM/{Archivo}_opt.xml'
@@ -613,9 +624,8 @@ try:
                 aircraft.set('airframe', new_airframe)
                 aircraft.set('flight_plan', new_flight_plan)
         # Guardar los cambios en el archivo XML
-        output_path_comp = home_dir/'paparazzi/conf/airframes/UCM/conf.xml'
-        tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
-        #f.write(prettify(root))
+        tree.write(conf_path, encoding='utf-8', xml_declaration=True)
+        f.write(prettify(root))
 
         pass
 except Exception as e:

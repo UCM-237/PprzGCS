@@ -70,14 +70,14 @@
     <item>
      <widget class="QPushButton" name="button_optimizacion">
       <property name="text">
-       <string>Calcular ruta</string>
+       <string>Optimizador</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="button_compilacion">
       <property name="text">
-       <string>Compilar</string>
+       <string>Descargar ruta optimizada</string>
       </property>
      </widget>
     </item>

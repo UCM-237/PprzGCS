@@ -14,6 +14,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDir>
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -22,11 +23,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+
     // Conectar botones a sus respectivos slots
     connect(ui->button_estrategia, &QPushButton::clicked, this, &MainWindow::on_button_estrategia_clicked);
     connect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
     connect(ui->button_compilacion, &QPushButton::clicked, this, &MainWindow::on_button_compilacion_clicked);
     connect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
+
 }
 
 MainWindow::~MainWindow()
@@ -45,15 +48,15 @@ void MainWindow::on_button_estrategia_clicked()
 
     // Conectar las acciones a los slots si es necesario
     connect(&action1, &QAction::triggered, this, [this]() {
-        EstrategiaSeleccionada = "Con Mapa";
+        EstrategiaSeleccionada = " Con Mapa";
         ui->button_estrategia->setText(EstrategiaSeleccionada);
-        qDebug() << "Estrategia seleccionada: " << EstrategiaSeleccionada;
+        qDebug() << "Estrategia seleccionada:" << EstrategiaSeleccionada;
     });
 
     connect(&action2, &QAction::triggered, this, [this]() {
-        EstrategiaSeleccionada = "Sin Mapa";
+        EstrategiaSeleccionada = " Sin Mapa";
         ui->button_estrategia->setText(EstrategiaSeleccionada);
-        qDebug() << "Estrategia seleccionada: " << EstrategiaSeleccionada;
+        qDebug() << "Estrategia seleccionada:" << EstrategiaSeleccionada;
     });
 
     // Añadir las acciones al menú
@@ -69,7 +72,10 @@ void MainWindow::on_button_optimizacion_clicked()
 {
     disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
 
-    QFile file("~/PprzGCS/datos.txt");
+    // Obtener la ruta del directorio home del usuario
+    QString homeDir = QDir::homePath();
+
+    QFile file( homeDir + "/PprzGCS/datos.txt");
 
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
@@ -86,8 +92,9 @@ void MainWindow::on_button_optimizacion_clicked()
         QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
 
         QProcess *process = new QProcess(this);
-        QString scriptPath = "~/PprzGCS/Python_sw/Código_QT_PYTHON_V1_2.py";
-        process->start("python", QStringList() << scriptPath);
+        QString homeDir = QDir::homePath();
+        QString scriptPath = homeDir + "/PprzGCS/Python_sw/Código_QT_PYTHON_V1_2.py";
+                             process->start("python", QStringList() << scriptPath);
 
         if (!process->waitForStarted()) {
             qDebug() << "Error al iniciar el script Python:" << process->errorString();
@@ -126,7 +133,11 @@ void MainWindow::on_button_compilacion_clicked()
 
     // Crear un proceso para ejecutar el script Python
     QProcess *process_compilacion = new QProcess(this);
-    QString scriptPath_compilacion = "~/PprzGCS/Python_sw/compilacion_paparazzi.py";
+
+    // Obtener la ruta del directorio home del usuario
+    QString homeDir = QDir::homePath();
+
+    QString scriptPath_compilacion = homeDir + "/PprzGCS/Python_sw/compilacion_paparazzi.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_compilacion->start("python", QStringList() << scriptPath_compilacion);
@@ -164,7 +175,11 @@ void MainWindow::on_button_editor_clicked()
 
     // Crear un proceso para ejecutar el script Python
     QProcess *process_editor = new QProcess(this);
-    QString scriptPath_editor= "~/PprzGCS/Python_sw/open_flight_plan_editor.py";
+
+    // Obtener la ruta del directorio home del usuario
+    QString homeDir = QDir::homePath();
+
+    QString scriptPath_editor= homeDir + "/PprzGCS/Python_sw/open_flight_plan_editor.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_editor->start("python", QStringList() << scriptPath_editor);
