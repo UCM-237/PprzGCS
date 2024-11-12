@@ -33,6 +33,7 @@ private:
     QString EstrategiaSeleccionada;
     QString Ruta_mapa;
     QString Ruta_controlador;
+    QString Ruta_aircraft;
     QString Puntos_paso;
     QProcess *process;  // Para manejar el proceso del script Python
 

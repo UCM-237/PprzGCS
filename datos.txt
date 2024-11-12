@@ -1,4 +1,5 @@
-Estrategia seleccionada:  Sin Mapa
-Ruta mapa:flight_plan_prueba_Guajaraz
+Estrategia seleccionada: 
+Ruta mapa:flight_plan_pruebaQT
 Ruta controlador:rover2f405WSE
+Ruta aircraft:Rover_Avelino
 Numero de puntos de paso:12

@@ -79,6 +79,7 @@ void MainWindow::on_button_optimizacion_clicked()
 
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
+    Ruta_aircraft = ui->label_aircraft->text();
     Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -86,6 +87,7 @@ void MainWindow::on_button_optimizacion_clicked()
         out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
         out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
 

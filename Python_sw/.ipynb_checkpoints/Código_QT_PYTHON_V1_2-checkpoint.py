@@ -30,7 +30,7 @@ from matplotlib import style
 from pymoo.core.repair import Repair 
 from pymoo.config import Config
 Config.warnings['not_compiled'] = False #Esto es para que no salgan warnings de pymoo
-
+#####
 #Diferentes funciones de la biblioteca para optimizar (pymoo)
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
@@ -43,11 +43,7 @@ from pymoo.operators.mutation.bitflip import BitflipMutation
 import logging
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-#print("Antes del try")
-import os
-from pathlib import Path
-home_dir = Path.home()
-#home_dir = os.path.expanduser("~")
+print("Antes del try")
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -65,7 +61,7 @@ try:
     result = "Compilación exitosa"  # Valor predeterminado en caso de éxito
     
     #Leemos los archivos sacados del boton de planificación
-    Estrategia = pd.read_csv(home_dir/'PprzGCS/datos.txt', delimiter=':', header = None) #Datos.txt
+    Estrategia = pd.read_csv('/home/dacya-iagesbloom/PprzGCS/datos.txt', delimiter=':', header = None) #Datos.txt
     Estrategia=pd.DataFrame(Estrategia)
     
     #Carga de archivo XML
@@ -73,12 +69,13 @@ try:
     Mapa = Estrategia.iloc[0,1]
     Archivo = Estrategia.iloc[1,1]
     Controlador = Estrategia.iloc[2,1]
+    Aircraft = Estrategia.iloc[3,1]
 
     if Mapa == "  Sin Mapa":
 
-      #  print("SIN MAPAA")
+        print("SIN MAPAA")
         
-        tree = ET.parse(home_dir/f'paparazzi/conf/flight_plans/UCM/{Archivo}.xml')
+        tree = ET.parse(f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}.xml')
         root = tree.getroot()
         
         # Encontrar todos los waypoints
@@ -132,8 +129,8 @@ try:
         from lxml import etree
         
         # Ruta a tu archivo XML y DTD
-        xml_file = home_dir/f'paparazzi/conf/flight_plans/UCM/{Archivo}.xml'
-        dtd_file = home_dir/'paparazzi/conf/flight_plans/flight_plan.dtd'
+        xml_file = f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}.xml'
+        dtd_file = '/home/dacya-iagesbloom/paparazzi/conf/flight_plans/flight_plan.dtd'
         
         # Cargar el DTD
         with open(dtd_file, 'r') as dtd_f:
@@ -566,16 +563,17 @@ try:
             return reparsed.toprettyxml(indent="  ")
         
         # Guardar los cambios en el archivo XML
-        with open(home_dir/f'paparazzi/conf/flight_plans/UCM/{Archivo}_opt.xml', 'w', encoding='utf-8') as f:
+        with open(f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}_opt.xml', 'w', encoding='utf-8') as f:
+            print("Archivo actualizado")
             f.write('<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">\n')
             f.write(prettify(root))
-        print("FLIGHT PLAN GUARDADO")
+        #print("FLIGHT PLAN GUARDADO")
        # print("Waypoints reescritos y guardados")
             
         import xml.etree.ElementTree as ET
         
         # Abrimos el archivo XML
-        tree = ET.parse(home_dir/f'paparazzi/conf/airframes/UCM/{Controlador}.xml')
+        tree = ET.parse(f'/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/{Controlador}.xml')
         root = tree.getroot()
         
         n_segmentos = str(len(paradas) - 1)  # Asegúrate de que `paradas` esté definida en el código
@@ -598,12 +596,12 @@ try:
         #Ahora vamos a modificar el archivo conf.xml que se encuentra en la ruta paparazzi/conf/airframes/UCM para que cuando se abra paparazzi de nuevo el flight plan y el airframe sean los que pongamos aqui
         
         # Ruta del archivo XML que deseas modificar
-        tree = ET.parse(home_dir/'paparazzi/conf/airframes/UCM/conf.xml')
+        tree = ET.parse('/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/conf.xml')
         root = tree.getroot()
         
         new_flight_plan = f'flight_plans/UCM/{Archivo}_opt.xml'
         new_airframe = f'airframes/UCM/{Controlador}.xml'
-        aircraft_name = 'Rover_Avelino'
+        aircraft_name = Aircraft
         # Parsear el archivo XML
         
         #Buscar el nodo correspondiente al aircraft
@@ -613,10 +611,9 @@ try:
                 aircraft.set('airframe', new_airframe)
                 aircraft.set('flight_plan', new_flight_plan)
         # Guardar los cambios en el archivo XML
-        output_path_comp = home_dir/'paparazzi/conf/airframes/UCM/conf.xml'
+        f.write(prettify(root))
+        output_path_comp = '/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/conf.xml'
         tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
-        #f.write(prettify(root))
-
         pass
 except Exception as e:
     logging.error(f"Error: {e}", exc_info=True)
