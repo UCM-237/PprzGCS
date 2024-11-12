@@ -47,7 +47,11 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QLineEdit" name="label_mapa"/>
+        <widget class="QLineEdit" name="label_mapa">
+         <property name="text">
+          <string>flight_plan_pruebaQT</string>
+         </property>
+        </widget>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label">
@@ -57,7 +61,11 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLineEdit" name="label_controlador"/>
+        <widget class="QLineEdit" name="label_controlador">
+         <property name="text">
+          <string>rover2f405WSE</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_3">
@@ -67,7 +75,11 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="label_aircraft"/>
+        <widget class="QLineEdit" name="label_aircraft">
+         <property name="text">
+          <string>Rover_Avelino</string>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_4">
@@ -77,7 +89,11 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="label_Puntos_paso"/>
+        <widget class="QLineEdit" name="label_Puntos_paso">
+         <property name="text">
+          <string>12</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
