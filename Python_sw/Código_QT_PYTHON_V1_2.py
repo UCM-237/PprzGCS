@@ -611,9 +611,9 @@ try:
                 aircraft.set('airframe', new_airframe)
                 aircraft.set('flight_plan', new_flight_plan)
         # Guardar los cambios en el archivo XML
-        f.write(prettify(root))
         output_path_comp = '/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/conf.xml'
         tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
+        f.write(prettify(root))
         pass
 except Exception as e:
     logging.error(f"Error: {e}", exc_info=True)

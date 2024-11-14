@@ -22,7 +22,9 @@ private slots:
     void on_button_estrategia_clicked();
     void on_button_optimizacion_clicked();   
     void on_button_compilacion_clicked(); 
-    void on_button_editor_clicked();   
+    void on_button_editor_clicked();  
+    void on_button_datos_clicked(); 
+    void VentanaSector();
     /*
     void on_ruta_mapa_editingFinished();
     void on_ruta_controlador_editingFinished();

@@ -25,6 +25,8 @@ set(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/chat.ui
     ${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.ui
     ${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sectors_window.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sectors_window.ui
 )
 
 set(INC_DIRS ${INC_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})

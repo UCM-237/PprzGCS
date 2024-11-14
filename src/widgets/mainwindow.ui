@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="button_estrategia">
     <property name="geometry">
      <rect>
-      <x>11</x>
-      <y>11</y>
+      <x>10</x>
+      <y>10</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -27,13 +27,13 @@
      <string>Estrategia</string>
     </property>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>9</x>
       <y>42</y>
       <width>561</width>
-      <height>221</height>
+      <height>246</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
@@ -104,21 +104,41 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QPushButton" name="button_optimizacion">
        <property name="text">
         <string>Optimizador</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="4" column="0">
       <widget class="QPushButton" name="button_compilacion">
        <property name="text">
         <string>Descargar ruta optimizada</string>
        </property>
       </widget>
      </item>
+     <item row="2" column="0">
+      <widget class="QPushButton" name="button_sectores">
+       <property name="text">
+        <string>Selección de sectores</string>
+       </property>
+      </widget>
+     </item>
     </layout>
+   </widget>
+   <widget class="QPushButton" name="button_datos">
+    <property name="geometry">
+     <rect>
+      <x>399</x>
+      <y>10</y>
+      <width>171</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Guardar datos</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

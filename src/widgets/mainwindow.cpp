@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "sectors_window.h"
+#include "ui_sectors_window.h"
 
 #include <QPushButton>
 #include <QMenu>
@@ -29,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
     connect(ui->button_compilacion, &QPushButton::clicked, this, &MainWindow::on_button_compilacion_clicked);
     connect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
+    connect(ui->button_sectores, &QPushButton::clicked, this, &MainWindow::VentanaSector);
+    connect(ui->button_datos, &QPushButton::clicked, this, &MainWindow::on_button_datos_clicked);
 
 }
 
@@ -36,6 +40,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
 
 void MainWindow::on_button_estrategia_clicked()
 {
@@ -72,27 +77,6 @@ void MainWindow::on_button_optimizacion_clicked()
 {
     disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
 
-    // Obtener la ruta del directorio home del usuario
-    QString homeDir = QDir::homePath();
-
-    QFile file( homeDir + "/PprzGCS/datos.txt");
-
-    Ruta_mapa = ui->label_mapa->text();
-    Ruta_controlador = ui->label_controlador->text();
-    Ruta_aircraft = ui->label_aircraft->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
-
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&file);
-        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
-        out << "Ruta mapa:" << Ruta_mapa << "\n";
-        out << "Ruta controlador:" << Ruta_controlador << "\n";
-        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
-        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
-        file.close();
-
-        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
-
         QProcess *process = new QProcess(this);
         QString homeDir = QDir::homePath();
         QString scriptPath = homeDir + "/PprzGCS/Python_sw/Código_QT_PYTHON_V1_2.py";
@@ -125,7 +109,6 @@ void MainWindow::on_button_optimizacion_clicked()
         }
 
         process->deleteLater();
-    }
 }
 
 
@@ -171,6 +154,32 @@ void MainWindow::on_button_compilacion_clicked()
     this->close();
 }
 
+
+void MainWindow::on_button_datos_clicked()
+{
+    // Obtener la ruta del directorio home del usuario
+    QString homeDir = QDir::homePath();
+
+    QFile file( homeDir + "/PprzGCS/datos.txt");
+
+    Ruta_mapa = ui->label_mapa->text();
+    Ruta_controlador = ui->label_controlador->text();
+    Ruta_aircraft = ui->label_aircraft->text();
+    Puntos_paso = ui->label_Puntos_paso->text();
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+        out << "Ruta mapa:" << Ruta_mapa << "\n";
+        out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
+        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+        file.close();
+
+        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
+    }
+}
+
 void MainWindow::on_button_editor_clicked()
 {
     disconnect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
@@ -204,6 +213,17 @@ void MainWindow::on_button_editor_clicked()
     this->close();
 }
 
+
+
+void MainWindow::VentanaSector()
+{
+    // Obtener la ruta del XML directamente del label_mapa
+    QString xmlFilePath = ui->label_mapa->text();  // Este es el contenido del label_mapa
+
+    // Abre la ventana de sectores y pasa la ruta del archivo XML
+    sectors_window *ventana = new sectors_window(this);  // Pasa el xmlFilePath al constructor de sectors_window
+    ventana->show();
+}
 
 
 
