@@ -43,6 +43,8 @@ from pymoo.operators.mutation.bitflip import BitflipMutation
 import logging
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+import os
+home_dir = os.path.expanduser("~")
 print("Antes del try")
 
 logging.basicConfig(level=logging.DEBUG)
@@ -61,7 +63,9 @@ try:
     result = "Compilación exitosa"  # Valor predeterminado en caso de éxito
     
     #Leemos los archivos sacados del boton de planificación
-    Estrategia = pd.read_csv('/home/dacya-iagesbloom/PprzGCS/datos.txt', delimiter=':', header = None) #Datos.txt
+    ruta_datos = os.path.join(home_dir, "PprzGCS", "datos.txt")
+    Estrategia = pd.read_csv(ruta_datos, delimiter=':', header = None) #Datos.txt
+    
     Estrategia=pd.DataFrame(Estrategia)
     
     #Carga de archivo XML
@@ -74,8 +78,8 @@ try:
     if Mapa == "  Sin Mapa":
 
         print("SIN MAPAA")
-        
-        tree = ET.parse(f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}.xml')
+        ruta_archivo = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}.xml")
+        tree = ET.parse(ruta_archivo)
         root = tree.getroot()
         
         # Encontrar todos los waypoints
@@ -129,8 +133,9 @@ try:
         from lxml import etree
         
         # Ruta a tu archivo XML y DTD
-        xml_file = f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}.xml'
-        dtd_file = '/home/dacya-iagesbloom/paparazzi/conf/flight_plans/flight_plan.dtd'
+        xml_file = ruta_archivo
+        ruta_dtd = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "flight_plan.dtd")
+        dtd_file = ruta_dtd
         
         # Cargar el DTD
         with open(dtd_file, 'r') as dtd_f:
@@ -563,7 +568,8 @@ try:
             return reparsed.toprettyxml(indent="  ")
         
         # Guardar los cambios en el archivo XML
-        with open(f'/home/dacya-iagesbloom/paparazzi/conf/flight_plans/UCM/{Archivo}_opt.xml', 'w', encoding='utf-8') as f:
+        ruta_archivo_opt = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}_opt.xml")
+        with open(ruta_archivo_opt, 'w', encoding='utf-8') as f:
             print("Archivo actualizado")
             f.write('<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">\n')
             f.write(prettify(root))
@@ -573,7 +579,8 @@ try:
         import xml.etree.ElementTree as ET
         
         # Abrimos el archivo XML
-        tree = ET.parse(f'/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/{Controlador}.xml')
+        ruta_controlador = os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", f"{Controlador}.xml")
+        tree = ET.parse(ruta_controlador)
         root = tree.getroot()
         
         n_segmentos = str(len(paradas) - 1)  # Asegúrate de que `paradas` esté definida en el código
@@ -596,7 +603,8 @@ try:
         #Ahora vamos a modificar el archivo conf.xml que se encuentra en la ruta paparazzi/conf/airframes/UCM para que cuando se abra paparazzi de nuevo el flight plan y el airframe sean los que pongamos aqui
         
         # Ruta del archivo XML que deseas modificar
-        tree = ET.parse('/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/conf.xml')
+        ruta_conf = os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", "conf.xml")
+        tree = ET.parse(ruta_conf)
         root = tree.getroot()
         
         new_flight_plan = f'flight_plans/UCM/{Archivo}_opt.xml'
@@ -611,7 +619,7 @@ try:
                 aircraft.set('airframe', new_airframe)
                 aircraft.set('flight_plan', new_flight_plan)
         # Guardar los cambios en el archivo XML
-        output_path_comp = '/home/dacya-iagesbloom/paparazzi/conf/airframes/UCM/conf.xml'
+        output_path_comp = ruta_conf
         tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
         f.write(prettify(root))
         pass

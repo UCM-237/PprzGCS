@@ -1,6 +1,7 @@
 import subprocess
 import os
 home_dir = os.path.expanduser("~")
+
 # Definir la ruta del ejecutable
 GCS_EXECUTABLE = os.path.join(home_dir,"paparazzi", "sw", "ground_segment", "cockpit", "gcs")  # Asegúrate de tener la ruta correcta
 
