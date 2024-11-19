@@ -2,6 +2,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDomDocument>
+#include <QInputDialog>
 #include <QMessageBox>
 #include <QBoxLayout>
 #include <QRegularExpression>
@@ -136,12 +137,23 @@ void sectors_window::addSelectedWaypointsToTable() {
         return;
     }
 
+    // Crear un cuadro de diálogo para seleccionar la estrategia
+    QStringList estrategias = {"ZigZag", "Espiral", "Red"};  // Ejemplo de estrategias
+    bool ok;
+    QString estrategiaSeleccionada = QInputDialog::getItem(this, "Seleccionar Estrategia", "Seleccione la estrategia:",
+        estrategias, 0, false, &ok);
+
+    if (!ok) {
+        QMessageBox::information(this, "Información", "No se seleccionó ninguna estrategia.");
+        return;
+    }
+
     // Añadir una nueva columna para los puntos seleccionados
     columnCount++;
     tableWidget->insertColumn(columnCount);  // Insertar una nueva columna
 
     // Establecer el encabezado de la columna (nombre del sector)
-    tableWidget->setHorizontalHeaderItem(columnCount, new QTableWidgetItem("Sector " + QString::number(columnCount)));
+    tableWidget->setHorizontalHeaderItem(columnCount, new QTableWidgetItem(estrategiaSeleccionada + QString::number(columnCount)));
 
     // Añadir los puntos seleccionados a la nueva columna
     for (int i = 0; i < selectedItems.size(); ++i) {
@@ -199,8 +211,13 @@ void sectors_window::saveSectorsToXml() {
     for (int col = 1; col <= columnCount; ++col) {
         QString sectorName = "Sector" + QString::number(col);
         QDomElement sectorElement = doc.createElement("sector");
+
+        QTableWidgetItem* headerItem = tableWidget->horizontalHeaderItem(col);
+        QString columnHeader = headerItem ? headerItem->text() : "Unknown";
+
         sectorElement.setAttribute("color", "red");
-        sectorElement.setAttribute("name", sectorName);
+        sectorElement.setAttribute("name", columnHeader);
+        sectorElement.setAttribute("type", columnHeader);
         sectors.appendChild(sectorElement);  // Añadir el sector al bloque <sectors>
 
         for (int row = 0; row < tableWidget->rowCount(); ++row) {

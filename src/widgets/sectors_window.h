@@ -33,6 +33,7 @@ private:
     QPushButton *button_add_sector;  // Botón para añadir un sector
     QPushButton *button_remove_sector;  // Botón para eliminar un sector
     QPushButton *button_save;  // Botón para guardar los sectores
+    QString estrategiaSeleccionada;
     int columnCount;  // Número de columnas en la tabla
     QString xmlFileName;
 };

@@ -1,5 +1,5 @@
-Estrategia seleccionada:  Sin Mapa
-Ruta mapa:Prueba_paparazzi_sectores
+Estrategia seleccionada: 
+Ruta mapa:flight_plan_181124
 Ruta controlador:rover2f405WSE
 Ruta aircraft:Rover_Avelino
 Numero de puntos de paso:12
