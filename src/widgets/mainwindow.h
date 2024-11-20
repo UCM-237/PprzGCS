@@ -33,6 +33,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     QString EstrategiaSeleccionada;
+    QString homeDir;
     QString Ruta_mapa;
     QString Ruta_controlador;
     QString Ruta_aircraft;

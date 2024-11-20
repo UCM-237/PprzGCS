@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-
+    homeDir = QDir::homePath(); // Obtener la ruta del directorio home del usuario
     // Conectar botones a sus respectivos slots
     connect(ui->button_estrategia, &QPushButton::clicked, this, &MainWindow::on_button_estrategia_clicked);
     connect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
@@ -77,9 +77,27 @@ void MainWindow::on_button_optimizacion_clicked()
 {
     disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
 
+    QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
+
+    Ruta_mapa = ui->label_mapa->text();
+    Ruta_controlador = ui->label_controlador->text();
+    Ruta_aircraft = ui->label_aircraft->text();
+    Puntos_paso = ui->label_Puntos_paso->text();
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+        out << "Ruta mapa:" << Ruta_mapa << "\n";
+        out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
+        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+        file.close();
+
+        //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
+    }
         QProcess *process = new QProcess(this);
         QString homeDir = QDir::homePath();
-        QString scriptPath = homeDir + "/PprzGCS/Python_sw/Código_QT_PYTHON_V1_2.py";
+        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Código_QT_PYTHON_V1_2.py";
                              process->start("python", QStringList() << scriptPath);
 
         if (!process->waitForStarted()) {
@@ -104,7 +122,7 @@ void MainWindow::on_button_optimizacion_clicked()
                 qDebug() << "Error en la ejecución del script Python. Mensaje:" << message;
             }
         } else {
-            QMessageBox::warning(this, "Error de salida", "La salida del script de Python no es válida:\n" + output);
+            QMessageBox::information(this, "Resultado de la optimización", output);
             qDebug() << "Salida no válida del script Python:" << output;
         }
 
@@ -119,10 +137,7 @@ void MainWindow::on_button_compilacion_clicked()
     // Crear un proceso para ejecutar el script Python
     QProcess *process_compilacion = new QProcess(this);
 
-    // Obtener la ruta del directorio home del usuario
-    QString homeDir = QDir::homePath();
-
-    QString scriptPath_compilacion = homeDir + "/PprzGCS/Python_sw/compilacion_paparazzi.py";
+    QString scriptPath_compilacion = homeDir + "/PprzGCS/Planificacion/Python_sw/compilacion_paparazzi.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_compilacion->start("python", QStringList() << scriptPath_compilacion);
@@ -157,10 +172,9 @@ void MainWindow::on_button_compilacion_clicked()
 
 void MainWindow::on_button_datos_clicked()
 {
-    // Obtener la ruta del directorio home del usuario
-    QString homeDir = QDir::homePath();
+    disconnect(ui->button_datos, &QPushButton::clicked, this, &MainWindow::on_button_datos_clicked);
 
-    QFile file( homeDir + "/PprzGCS/datos.txt");
+    QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
 
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
@@ -184,13 +198,32 @@ void MainWindow::on_button_editor_clicked()
 {
     disconnect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
 
+    QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
+
+    Ruta_mapa = ui->label_mapa->text();
+    Ruta_controlador = ui->label_controlador->text();
+    Ruta_aircraft = ui->label_aircraft->text();
+    Puntos_paso = ui->label_Puntos_paso->text();
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+        out << "Ruta mapa:" << Ruta_mapa << "\n";
+        out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
+        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+        file.close();
+
+        //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
+    }
+
     // Crear un proceso para ejecutar el script Python
     QProcess *process_editor = new QProcess(this);
 
     // Obtener la ruta del directorio home del usuario
     QString homeDir = QDir::homePath();
 
-    QString scriptPath_editor= homeDir + "/PprzGCS/Python_sw/open_flight_plan_editor.py";
+    QString scriptPath_editor= homeDir + "/PprzGCS/Planificacion/Python_sw/open_flight_plan_editor.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_editor->start("python", QStringList() << scriptPath_editor);
@@ -210,13 +243,30 @@ void MainWindow::on_button_editor_clicked()
     qDebug() << "Salida del script Python:" << output;
     qDebug() << "Error del script Python:" << errorOutput;
     process_editor ->deleteLater(); // Eliminar el proceso después de ejecutarse
-    this->close();
 }
 
 
 
 void MainWindow::VentanaSector()
 {
+    QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
+
+    Ruta_mapa = ui->label_mapa->text();
+    Ruta_controlador = ui->label_controlador->text();
+    Ruta_aircraft = ui->label_aircraft->text();
+    Puntos_paso = ui->label_Puntos_paso->text();
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QTextStream out(&file);
+        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+        out << "Ruta mapa:" << Ruta_mapa << "\n";
+        out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
+        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+        file.close();
+
+        //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
+    }
     // Obtener la ruta del XML directamente del label_mapa
     QString xmlFilePath = ui->label_mapa->text();  // Este es el contenido del label_mapa
 
@@ -224,29 +274,3 @@ void MainWindow::VentanaSector()
     sectors_window *ventana = new sectors_window(this);  // Pasa el xmlFilePath al constructor de sectors_window
     ventana->show();
 }
-
-
-
-
-/*
-void MainWindow::on_ruta_mapa_editingFinished()
-{
-    // Leer los valores ingresados en los QLineEdit
-    Ruta_mapa = ui->label_mapa->text();
-    qDebug() << "Valor en label1:" << Ruta_mapa;
-}
-
-void MainWindow::on_ruta_controlador_editingFinished()
-{
-    // Leer los valores ingresados en los QLineEdit
-    Ruta_controlador = ui->label_controlador->text();
-    qDebug() << "Valor en label2:" << Ruta_controlador;
-}
-
-void MainWindow::on_Puntos_paso_editingFinished()
-{
-    // Leer los valores ingresados en los QLineEdit
-    Puntos_paso = ui->label_Puntos_paso->text();
-    qDebug() << "Valor en label3:" << Puntos_paso;
-}
-*/

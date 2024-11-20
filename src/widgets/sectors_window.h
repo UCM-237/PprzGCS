@@ -35,6 +35,7 @@ private:
     QPushButton *button_save;  // Botón para guardar los sectores
     QString estrategiaSeleccionada;
     int columnCount;  // Número de columnas en la tabla
+    int numPuntos; //Número de puntos del sector
     QString xmlFileName;
 };
 

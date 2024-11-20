@@ -43,11 +43,15 @@ from pymoo.operators.mutation.bitflip import BitflipMutation
 import logging
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+
+from PyQt5.QtWidgets import QApplication, QMessageBox
+
 import os
 home_dir = os.path.expanduser("~")
-print("Antes del try")
+#print("Antes del try")
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 try:
     #print("Después del try")
@@ -60,10 +64,10 @@ try:
     #flightplan_salida = input("Introduce como quiere llamar archivo de salida con .xml: ")
 
     #Para que QT muestre por defecto el estado de éxito
-    result = "Compilación exitosa"  # Valor predeterminado en caso de éxito
+    result = "Optimización exitosa"  # Valor predeterminado en caso de éxito
     
     #Leemos los archivos sacados del boton de planificación
-    ruta_datos = os.path.join(home_dir, "PprzGCS", "datos.txt")
+    ruta_datos = os.path.join(home_dir, "PprzGCS", "Planificacion", "datos.txt")
     Estrategia = pd.read_csv(ruta_datos, delimiter=':', header = None) #Datos.txt
     
     Estrategia=pd.DataFrame(Estrategia)
@@ -622,6 +626,9 @@ try:
         output_path_comp = ruta_conf
         tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
         f.write(prettify(root))
+        
+        # Si no hay errores
+        self.label_error.setText("No hay errores.")  # Actualiza el QLabel en Qt
         pass
 except Exception as e:
     logging.error(f"Error: {e}", exc_info=True)

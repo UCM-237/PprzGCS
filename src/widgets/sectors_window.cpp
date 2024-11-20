@@ -43,7 +43,7 @@ sectors_window::sectors_window(QWidget *parent)
 sectors_window::~sectors_window() {}
 
 void sectors_window::loadXmlFileNameFromTxt() {
-    QString filePath = QDir::homePath() + "/PprzGCS/datos.txt";
+    QString filePath = QDir::homePath() + "/PprzGCS/Planificacion/datos.txt";
     QFile file(filePath);
 
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -140,8 +140,13 @@ void sectors_window::addSelectedWaypointsToTable() {
     // Crear un cuadro de diálogo para seleccionar la estrategia
     QStringList estrategias = {"ZigZag", "Espiral", "Red"};  // Ejemplo de estrategias
     bool ok;
-    QString estrategiaSeleccionada = QInputDialog::getItem(this, "Seleccionar Estrategia", "Seleccione la estrategia:",
+    estrategiaSeleccionada = QInputDialog::getItem(this, "Seleccionar Estrategia", "Seleccione la estrategia:",
         estrategias, 0, false, &ok);
+
+    // Crear un cuadro de diálogo para seleccionar el número de puntos por sector
+    numPuntos = QInputDialog::getInt(this, "Número de Puntos",
+        "Seleccione el número de puntos por sector:", 1, 1, 100, 1, &ok);
+
 
     if (!ok) {
         QMessageBox::information(this, "Información", "No se seleccionó ninguna estrategia.");
@@ -153,7 +158,7 @@ void sectors_window::addSelectedWaypointsToTable() {
     tableWidget->insertColumn(columnCount);  // Insertar una nueva columna
 
     // Establecer el encabezado de la columna (nombre del sector)
-    tableWidget->setHorizontalHeaderItem(columnCount, new QTableWidgetItem(estrategiaSeleccionada + QString::number(columnCount)));
+    tableWidget->setHorizontalHeaderItem(columnCount, new QTableWidgetItem("estrategiaSeleccionada" + QString::number(columnCount)));
 
     // Añadir los puntos seleccionados a la nueva columna
     for (int i = 0; i < selectedItems.size(); ++i) {
@@ -216,8 +221,8 @@ void sectors_window::saveSectorsToXml() {
         QString columnHeader = headerItem ? headerItem->text() : "Unknown";
 
         sectorElement.setAttribute("color", "red");
-        sectorElement.setAttribute("name", columnHeader);
-        sectorElement.setAttribute("type", columnHeader);
+        sectorElement.setAttribute("name", estrategiaSeleccionada);
+        sectorElement.setAttribute("type", QString::number(numPuntos));
         sectors.appendChild(sectorElement);  // Añadir el sector al bloque <sectors>
 
         for (int row = 0; row < tableWidget->rowCount(); ++row) {
