@@ -23,8 +23,8 @@ set(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/gvf_viewer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/chat.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/chat.ui
-    ${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.ui
-    ${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/planificacionwindow.ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/planificacionwindow.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sectors_window.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sectors_window.ui
 )

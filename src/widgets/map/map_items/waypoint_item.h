@@ -8,6 +8,7 @@
 #include "waypoint.h"
 #include <memory>
 
+
 class WaypointItem : public MapItem
 {
     Q_OBJECT

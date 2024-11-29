@@ -43,6 +43,8 @@ class MapWidget : public Map2D, public Configurable
     Q_PROPERTY(int ac_arrow_size MEMBER _ac_arrow_size WRITE setAcArrowSize)
     Q_PROPERTY(bool show_hidden_waypoints WRITE showHiddenWaypoints)
 public:
+    void onWaypointChanged(Waypoint* wp, QString ac_id);
+     
     explicit MapWidget(QWidget *parent = nullptr);
 
     void addItem(MapItem* map_item);
@@ -81,7 +83,6 @@ protected:
 private slots:
     void changeCurrentAC(QString id);
     void updateAircraftItem(pprzlink::Message msg);
-    void onWaypointChanged(Waypoint* wp, QString ac_id);
     void onWaypointAdded(Waypoint* wp, QString ac_id);
     void updateTarget(pprzlink::Message msg);
     void updateNavShape(pprzlink::Message msg);

@@ -1,8 +1,11 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "planificacionwindow.h"
+#include "ui_planificacionwindow.h"
 #include "sectors_window.h"
+#include "AircraftManager.h"
 #include "ui_sectors_window.h"
-
+//#include "movewpopt.h"
+#include "AircraftManager.h"
+#include <QFileDialog>  // Incluir QFileDialog para explorar archivos
 #include <QPushButton>
 #include <QMenu>
 #include <QAction>
@@ -17,32 +20,47 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDir>
+#include <stdint.h>
+#include "gcs_utils.h"
+#include <cstdint>
+#include <QColor>
+#include "waypointeditor.h"
+#include "waypoint.h"
+#include "waypoint_item.h"
+#include "flightplan.h"
+
+Q_DECLARE_METATYPE(pprzlink::Message)
 
 
-MainWindow::MainWindow(QWidget *parent)
+PlanificacionWindow::PlanificacionWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::PlanificacionWindow)
 {
-    ui->setupUi(this);
 
+    ui->setupUi(this);
     homeDir = QDir::homePath(); // Obtener la ruta del directorio home del usuario
     // Conectar botones a sus respectivos slots
-    connect(ui->button_estrategia, &QPushButton::clicked, this, &MainWindow::on_button_estrategia_clicked);
-    connect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
-    connect(ui->button_compilacion, &QPushButton::clicked, this, &MainWindow::on_button_compilacion_clicked);
-    connect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
-    connect(ui->button_sectores, &QPushButton::clicked, this, &MainWindow::VentanaSector);
-    connect(ui->button_datos, &QPushButton::clicked, this, &MainWindow::on_button_datos_clicked);
+    connect(ui->button_estrategia, &QPushButton::clicked, this, &PlanificacionWindow::on_button_estrategia_clicked);
+    connect(ui->button_optimizacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_optimizacion_clicked);
+    connect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
+    connect(ui->button_editor, &QPushButton::clicked, this, &PlanificacionWindow::on_button_editor_clicked);
+    connect(ui->button_sectores, &QPushButton::clicked, this, &PlanificacionWindow::VentanaSector);
+    connect(ui->button_datos, &QPushButton::clicked, this, &PlanificacionWindow::on_button_datos_clicked);
+//    connect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
 
+    connect(ui->button_abrir_mapa, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_mapa_clicked);
+    connect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
+
+    connect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
 }
 
-MainWindow::~MainWindow()
+PlanificacionWindow::~PlanificacionWindow()
 {
     delete ui;
 }
 
 
-void MainWindow::on_button_estrategia_clicked()
+void PlanificacionWindow::on_button_estrategia_clicked()
 {
     // Crear el menú contextual
     QMenu contextMenu(tr("Menú contextual"), this);
@@ -73,9 +91,9 @@ void MainWindow::on_button_estrategia_clicked()
     contextMenu.exec(pos);
 }
 
-void MainWindow::on_button_optimizacion_clicked()
+void PlanificacionWindow::on_button_optimizacion_clicked()
 {
-    disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &MainWindow::on_button_optimizacion_clicked);
+    disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_optimizacion_clicked);
 
     QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
 
@@ -97,7 +115,7 @@ void MainWindow::on_button_optimizacion_clicked()
     }
         QProcess *process = new QProcess(this);
         QString homeDir = QDir::homePath();
-        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Código_QT_PYTHON_V1_2.py";
+        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/Código_QT_PYTHON_V1_2.py";
                              process->start("python", QStringList() << scriptPath);
 
         if (!process->waitForStarted()) {
@@ -130,14 +148,14 @@ void MainWindow::on_button_optimizacion_clicked()
 }
 
 
-void MainWindow::on_button_compilacion_clicked()
+void PlanificacionWindow::on_button_compilacion_clicked()
 {
-    disconnect(ui->button_compilacion, &QPushButton::clicked, this, &MainWindow::on_button_compilacion_clicked);
+    disconnect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
 
     // Crear un proceso para ejecutar el script Python
     QProcess *process_compilacion = new QProcess(this);
 
-    QString scriptPath_compilacion = homeDir + "/PprzGCS/Planificacion/Python_sw/compilacion_paparazzi.py";
+    QString scriptPath_compilacion = homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/compilacion_paparazzi.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_compilacion->start("python", QStringList() << scriptPath_compilacion);
@@ -170,9 +188,9 @@ void MainWindow::on_button_compilacion_clicked()
 }
 
 
-void MainWindow::on_button_datos_clicked()
+void PlanificacionWindow::on_button_datos_clicked()
 {
-    disconnect(ui->button_datos, &QPushButton::clicked, this, &MainWindow::on_button_datos_clicked);
+    disconnect(ui->button_datos, &QPushButton::clicked, this, &PlanificacionWindow::on_button_datos_clicked);
 
     QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
 
@@ -194,9 +212,9 @@ void MainWindow::on_button_datos_clicked()
     }
 }
 
-void MainWindow::on_button_editor_clicked()
+void PlanificacionWindow::on_button_editor_clicked()
 {
-    disconnect(ui->button_editor, &QPushButton::clicked, this, &MainWindow::on_button_editor_clicked);
+    disconnect(ui->button_editor, &QPushButton::clicked, this, &PlanificacionWindow::on_button_editor_clicked);
 
     QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
 
@@ -223,7 +241,7 @@ void MainWindow::on_button_editor_clicked()
     // Obtener la ruta del directorio home del usuario
     QString homeDir = QDir::homePath();
 
-    QString scriptPath_editor= homeDir + "/PprzGCS/Planificacion/Python_sw/open_flight_plan_editor.py";
+    QString scriptPath_editor= homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/open_flight_plan_editor.py";
 
     // Usa la ruta completa al ejecutable de Python
     process_editor->start("python", QStringList() << scriptPath_editor);
@@ -245,9 +263,96 @@ void MainWindow::on_button_editor_clicked()
     process_editor ->deleteLater(); // Eliminar el proceso después de ejecutarse
 }
 
+void PlanificacionWindow::on_button_abrir_mapa_clicked()
+{
+    disconnect(ui->button_abrir_mapa, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_mapa_clicked);
+    // Abrir el explorador de archivos para seleccionar el archivo de mapa
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de mapa"), QDir::homePath() + "/paparazzi/conf/flight_plans/UCM", tr("Archivos de mapa (*.xml);;Todos los archivos (*)"));
+
+    // Si el usuario selecciona un archivo, mostrar solo el nombre del archivo sin extensión en el QLabel
+    if (!filePath.isEmpty()) {
+        QFileInfo fileInfo(filePath); // Obtener información del archivo
+        QString fileName = fileInfo.completeBaseName(); // Extraer solo el nombre del archivo sin extensión
+        ui->label_mapa->setText(fileName); // Mostrar solo el nombre sin extensión en el QLabel
+    }
+}
 
 
-void MainWindow::VentanaSector()
+
+void PlanificacionWindow::on_button_abrir_controlador_clicked() // Similar para el archivo de controlador
+{
+    disconnect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_controlador_clicked);
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de controlador"), QDir::homePath() + "/paparazzi/conf/airframes/UCM", tr("Archivos de controlador (*.xml);;Todos los archivos (*)"));
+
+    if (!filePath.isEmpty()) {
+        QFileInfo fileInfo(filePath); // Obtener información del archivo
+        QString fileName = fileInfo.completeBaseName(); // Extraer solo el nombre del archivo sin extensión
+        ui->label_controlador->setText(fileName); // Mostrar solo el nombre en el label
+    }
+}
+
+int PlanificacionWindow::leerArchivo(const char *filename, int32_t lat[], int32_t lon[], int max_puntos) {
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error al abrir el archivo");
+        return -1;
+    }
+
+    int count = 0;
+    char nombre[50]; // Para leer el nombre, aunque no lo guardamos
+    char linea[256]; // Para leer líneas completas
+
+    // Ignorar la primera línea (encabezado)
+    fgets(linea, sizeof(linea), file);
+
+    // Leer cada línea y guardar latitud y longitud
+    while (count < max_puntos && fgets(linea, sizeof(linea), file)) {
+        if (scanf(linea, "%49s\t%u\t%u", nombre, &lat[count], &lon[count]) == 3) {
+                count++;
+        }
+    }
+
+    fclose(file);
+    return count; // Número de puntos leídos
+}
+
+
+void PlanificacionWindow::on_button_move_wp_clicked()
+{
+    //disconnect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
+    auto messages = appConfig()->value("MESSAGES").toString();
+
+    dict = new pprzlink::MessageDictionary(messages);
+
+    QString ac_id = "4";
+    quint8 wp_id = 8;
+    double lat = 39.7910881;
+    double lon = -4.0881361;
+    float alt = 660;
+
+    pprzlink::Message msg(dict->getDefinition("MOVE_WAYPOINT"));
+    msg.setSenderId(pprzlink_id);
+    msg.addField("ac_id", ac_id);
+    msg.addField("wp_id", wp_id);
+    msg.addField("lat", lat);
+    msg.addField("long", lon);
+    msg.addField("alt", alt);
+
+    if (m_dispatcher) {
+
+        PprzDispatcher::get()->setStart(true);
+        qDebug() << "m_dispatcher es no nulo!";
+    } else {
+        qDebug() << "m_dispatcher es nulo!";
+    }
+    PprzDispatcher::get()->sendMessage(msg);
+}
+
+
+
+
+
+void PlanificacionWindow::VentanaSector()
 {
     QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
 

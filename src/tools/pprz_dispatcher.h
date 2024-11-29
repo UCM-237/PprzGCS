@@ -8,6 +8,7 @@
 #include "PprzApplication.h"
 #include <pprzlinkQt/IvyQtLink.h>
 #include <pprzlinkQt/Message.h>
+//#include "mainwindow.h"
 
 class PprzDispatcher : public PprzTool
 {
@@ -21,11 +22,16 @@ public:
     }
 
     virtual void setToolbox(PprzToolbox* toolbox) override;
+    bool started;
+    
+    void setStart(bool value){ started=value;}
 
     void start();
     void stop();
     void unbindAll();
-
+    
+    void updateSettings(pprzlink::Message msg);
+    void requestConfig(QString ac_id);
     void sendMessage(pprzlink::Message);
     pprzlink::MessageDictionary* getDict() {return dict;}
 
@@ -65,10 +71,9 @@ public slots:
     void requestAircrafts();
 
 private:
-    void updateSettings(pprzlink::Message msg);
+    
     using sig_ptr_t = decltype(&PprzDispatcher::flight_param);
 
-    void requestConfig(QString ac_id);
     void bindDeftoSignal(QString const &name, sig_ptr_t sig);
 
     QList<long> _bindIds;
@@ -78,7 +83,7 @@ private:
 
     QString pprzlink_id;
 
-    bool started;
+
     bool silent_mode;
 
     qint64 time_msg_server;

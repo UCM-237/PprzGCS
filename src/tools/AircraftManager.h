@@ -93,6 +93,9 @@ signals:
     void waypoint_changed(Waypoint*, QString ac_id);    //wp moved from backend
     void waypoint_added(Waypoint*, QString ac_id);      //new waypoint (for flightplan edition)
 
+public slots:
+    void moveWaypoint(pprzlink::Message msg);
+
 private:
     static QColor parseColor(QString str);
     QDomDocument getXml(QString uri);
@@ -101,7 +104,7 @@ private:
 
 private slots:
     void addAircraft(ConfigData* config);
-    void moveWaypoint(pprzlink::Message msg);
+    
 
 };
 

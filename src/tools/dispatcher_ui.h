@@ -26,6 +26,7 @@ signals:
     void ac_deleted(QString);
     void new_ac_config(QString);
     void move_waypoint_ui(Waypoint*, QString ac_id);   //wp moved from UI
+    //void move_waypoint_planificacion(Waypoint*, Qstring ac_id); //wp moved from plani
     void settingUpdated(QString ac_id, Setting*, float value);
     void mapRotated(double);    // map view rotation in degrees
     void centerMap(Point2DLatLon pos);
@@ -40,6 +41,7 @@ public slots:
 
 private:
     QString selected_ac_id;
+    int boton;
 
 };
 

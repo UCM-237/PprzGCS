@@ -6,7 +6,7 @@
 #include "units.h"
 #include "dispatcher_ui.h"
 #include "watcher.h"
-
+//#include "movewpopt.h"
 #if defined(SPEECH_ENABLED)
 #include "speaker.h"
 #endif
@@ -23,6 +23,7 @@ PprzToolbox::PprzToolbox(PprzApplication* app)
     _units                = new Units               (app, this);
     _dispatcherUi         = new DispatcherUi        (app, this);
     _watcher              = new Watcher             (app, this);
+    //_movewpopt            = new MoveWpOpt          (app, this);
 #if defined(SPEECH_ENABLED)
     _speaker              = new Speaker             (app, this);
 #endif
@@ -39,6 +40,7 @@ void PprzToolbox::setChildToolboxes(void) {
     _units->setToolbox(this);
     _dispatcherUi->setToolbox(this);
     _watcher->setToolbox(this);
+    //_movewpopt->setToolbox(this);
 #if defined(SPEECH_ENABLED)
     _speaker->setToolbox(this);
 #endif

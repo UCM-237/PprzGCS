@@ -3,6 +3,7 @@
 //
 
 #include "AircraftManager.h"
+#include "planificacionwindow.h"
 #include <QDebug>
 #include <QApplication>
 #include "flightplan.h"
@@ -12,15 +13,19 @@
 #include "dispatcher_ui.h"
 #include "gcs_utils.h"
 #include <optional>
+#include <QMessageBox>
+#include <QApplication>
 
 AircraftManager::AircraftManager(PprzApplication* app, PprzToolbox* toolbox) : PprzTool(app, toolbox)
-{
-
+{   
 }
 
 void AircraftManager::setToolbox(PprzToolbox* toolbox) {
     PprzTool::setToolbox(toolbox);
     connect(PprzDispatcher::get(), &PprzDispatcher::waypoint_moved, this, &AircraftManager::moveWaypoint);
+
+//    PlanificacionWindow* emisora = new PlanificacionWindow();
+//    connect(emisora, &PlanificacionWindow::waypoint_moved, this, &AircraftManager::moveWaypoint);
 }
 
 Aircraft* AircraftManager::getAircraft(QString id) {

@@ -188,6 +188,8 @@ WaypointEditor::WaypointEditor(WaypointItem* wi, QString ac_id, QWidget *parent)
     connect(buttonBox->button(QDialogButtonBox::Ok), &QPushButton::clicked, this, [=](){
         emit DispatcherUi::get()->move_waypoint_ui(wi->waypoint(), ac_id);
         accept();
+        QMessageBox::information(this, "Info boton accept", "Boton accept enviado.");
+
 
     });
 

@@ -677,6 +677,8 @@ void MapWidget::dragMoveEvent(QDragMoveEvent *event) {
  * geo URI : "geo:<lat>,<lon>[,<alt>][?z=<zoom>]"
  */
 void MapWidget::dropEvent(QDropEvent *event) {
+
+    qDebug() << "dropEvent";
     QString text = event->mimeData()->text();
     QStringList args = text.split(QString(":"));
 

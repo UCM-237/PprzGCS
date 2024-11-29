@@ -8,7 +8,8 @@
 #include "pprzmain.h"
 #include <QSettings>
 #include "gcs_utils.h"
-
+#include <QMessageBox>
+#include <QApplication>
 using namespace std;
 
 Q_DECLARE_METATYPE(pprzlink::Message)
@@ -20,6 +21,8 @@ PprzDispatcher::PprzDispatcher(PprzApplication* app, PprzToolbox* toolbox) : Ppr
 
 void PprzDispatcher::setToolbox(PprzToolbox* toolbox) {
     PprzTool::setToolbox(toolbox);
+
+    qDebug() << "tras setToolBox dispatcher";
 
     auto settings_path = appConfig()->value("SETTINGS_PATH").toString();
 
@@ -88,7 +91,7 @@ void PprzDispatcher::setToolbox(PprzToolbox* toolbox) {
     bindDeftoSignal("FLIGHT_PARAM", &PprzDispatcher::flight_param);
     bindDeftoSignal("SVSINFO", &PprzDispatcher::svsinfo);
 
-
+    
     connect(DispatcherUi::get(), &DispatcherUi::move_waypoint_ui, this,
         [=](Waypoint* wp, QString ac_id) {
             //Do not send the message if this is a "flight plan only" AC.
@@ -100,8 +103,10 @@ void PprzDispatcher::setToolbox(PprzToolbox* toolbox) {
                 msg.addField("lat", wp->getLat());
                 msg.addField("long", wp->getLon());
                 msg.addField("alt", wp->getAlt());
+                qDebug() << "fuera del started";
                 if(started) {
                     this->sendMessage(msg);
+                    qDebug() << "mensaje enviado pprz_dispatcher";
                 }
             }
         });
@@ -167,6 +172,7 @@ void PprzDispatcher::sendMessage(pprzlink::Message msg) {
     if(!silent_mode) {
         msg.setSenderId(pprzlink_id);
         link->sendMessage(msg);
+        qDebug() << "sendMessage";
     }
 }
 

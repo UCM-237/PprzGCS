@@ -1,7 +1,7 @@
 #include "pprzmap.h"
 #include "ui_pprzmap.h"
 #include "pprz_dispatcher.h"
-#include"mainwindow.h""
+#include "planificacionwindow.h"
 #include "dispatcher_ui.h"
 #include <iostream>
 #include "maputils.h"
@@ -141,7 +141,7 @@ void PprzMap::handleMouseMove(QPointF scenePos) {
 void PprzMap::VentanaPlanificacion()
 {
     // Crear una instancia de VentanaPlanificacion
-    MainWindow *ventana = new MainWindow(this); // 'this' establece la ventana principal como padre
+    PlanificacionWindow *ventana = new PlanificacionWindow(this); // 'this' establece la ventana principal como padre
     ventana->show(); // Mostrar la ventana
 }
 

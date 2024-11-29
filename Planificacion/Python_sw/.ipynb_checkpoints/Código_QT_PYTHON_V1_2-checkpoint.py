@@ -78,13 +78,40 @@ try:
     Archivo = Estrategia.iloc[1,1]
     Controlador = Estrategia.iloc[2,1]
     Aircraft = Estrategia.iloc[3,1]
-
+    
+    ruta_archivo = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}.xml")
+    tree = ET.parse(ruta_archivo)
+    root = tree.getroot()
+    
     if Mapa == "  Sin Mapa":
-
-        print("SIN MAPAA")
-        ruta_archivo = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}.xml")
-        tree = ET.parse(ruta_archivo)
-        root = tree.getroot()
+        
+        from lxml import etree
+        
+        # Ruta a tu archivo XML y DTD
+        xml_file = ruta_archivo
+        ruta_dtd = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "flight_plan.dtd")
+        dtd_file = ruta_dtd
+        
+        # Cargar el DTD
+        with open(dtd_file, 'r') as dtd_f:
+            dtd = etree.DTD(dtd_f)
+        
+        # Cargar el archivo XML
+        with open(xml_file, 'r') as xml_f:
+            xml_content = xml_f.read()
+        
+        # Validar el XML contra el DTD
+        try:
+            xml_doc = etree.fromstring(xml_content)
+            if dtd.validate(xml_doc):
+                print("El archivo XML es válido.")
+            else:
+                print("El archivo XML no es válido.")
+                #print("Errores:")
+                for error in dtd.error_log:
+                    print(f"Línea {error.line}: {error.message}")
+        except etree.XMLSyntaxError as e:
+            print("Error de sintaxis XML:")
         
         # Encontrar todos los waypoints
         way_points = root.find('waypoints')
@@ -132,36 +159,7 @@ try:
         paradas = (waypoints[:,-2:])
         #print(paradas)
         #Definimos parámetros del barco
-        velocidad_media = 40
-        
-        from lxml import etree
-        
-        # Ruta a tu archivo XML y DTD
-        xml_file = ruta_archivo
-        ruta_dtd = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "flight_plan.dtd")
-        dtd_file = ruta_dtd
-        
-        # Cargar el DTD
-        with open(dtd_file, 'r') as dtd_f:
-            dtd = etree.DTD(dtd_f)
-        
-        # Cargar el archivo XML
-        with open(xml_file, 'r') as xml_f:
-            xml_content = xml_f.read()
-        
-        # Validar el XML contra el DTD
-        try:
-            xml_doc = etree.fromstring(xml_content)
-            if dtd.validate(xml_doc):
-                print("El archivo XML es válido.")
-            else:
-                print("El archivo XML no es válido.")
-                #print("Errores:")
-                for error in dtd.error_log:
-                    print(f"Línea {error.line}: {error.message}")
-        except etree.XMLSyntaxError as e:
-            print("Error de sintaxis XML:")
-            
+        velocidad_media = 40            
         
         def closest_point_and_reorder(home, points):
         

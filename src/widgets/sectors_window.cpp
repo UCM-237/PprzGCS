@@ -143,9 +143,13 @@ void sectors_window::addSelectedWaypointsToTable() {
     estrategiaSeleccionada = QInputDialog::getItem(this, "Seleccionar Estrategia", "Seleccione la estrategia:",
         estrategias, 0, false, &ok);
 
+    Estrategia_vect.append(estrategiaSeleccionada);
+
     // Crear un cuadro de diálogo para seleccionar el número de puntos por sector
     numPuntos = QInputDialog::getInt(this, "Número de Puntos",
         "Seleccione el número de puntos por sector:", 1, 1, 100, 1, &ok);
+
+    numPuntos_vect.append(numPuntos);
 
 
     if (!ok) {
@@ -158,7 +162,7 @@ void sectors_window::addSelectedWaypointsToTable() {
     tableWidget->insertColumn(columnCount);  // Insertar una nueva columna
 
     // Establecer el encabezado de la columna (nombre del sector)
-    tableWidget->setHorizontalHeaderItem(columnCount, new QTableWidgetItem("estrategiaSeleccionada" + QString::number(columnCount)));
+    tableWidget->setHorizontalHeaderItem(columnCount, new QTableWidgetItem(estrategiaSeleccionada + QString::number(columnCount)));
 
     // Añadir los puntos seleccionados a la nueva columna
     for (int i = 0; i < selectedItems.size(); ++i) {
@@ -213,6 +217,7 @@ void sectors_window::saveSectorsToXml() {
     }
 
     // Añadir los nuevos sectores dentro del bloque <sectors>
+    int i=1;
     for (int col = 1; col <= columnCount; ++col) {
         QString sectorName = "Sector" + QString::number(col);
         QDomElement sectorElement = doc.createElement("sector");
@@ -221,8 +226,8 @@ void sectors_window::saveSectorsToXml() {
         QString columnHeader = headerItem ? headerItem->text() : "Unknown";
 
         sectorElement.setAttribute("color", "red");
-        sectorElement.setAttribute("name", estrategiaSeleccionada);
-        sectorElement.setAttribute("type", QString::number(numPuntos));
+        sectorElement.setAttribute("name", columnHeader);
+        sectorElement.setAttribute("type", QString::number(numPuntos_vect[col-1]));
         sectors.appendChild(sectorElement);  // Añadir el sector al bloque <sectors>
 
         for (int row = 0; row < tableWidget->rowCount(); ++row) {
@@ -233,6 +238,7 @@ void sectors_window::saveSectorsToXml() {
                 sectorElement.appendChild(cornerElement);  // Añadir el corner al sector
             }
         }
+        i++;
     }
 
     // Buscar el nodo <waypoints> en el documento

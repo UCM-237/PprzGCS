@@ -36,6 +36,8 @@ private:
     QString estrategiaSeleccionada;
     int columnCount;  // Número de columnas en la tabla
     int numPuntos; //Número de puntos del sector
+    QList<int> numPuntos_vect; //Vector que guarda el número de puntos por sector de cada sector
+    QList<QString> Estrategia_vect; //Vector que guarda la estrategia 
     QString xmlFileName;
 };
 

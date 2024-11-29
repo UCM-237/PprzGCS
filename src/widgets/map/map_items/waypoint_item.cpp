@@ -7,7 +7,6 @@
 #include "AircraftManager.h"
 #include "coordinatestransform.h"
 #include "gcs_utils.h"
-
 // create WaypointItem from position -> create corresponding Waypoint.
 WaypointItem::WaypointItem(Point2DLatLon pt, QString ac_id, double neutral_scale_zoom, QObject *parent) :
     MapItem(ac_id, neutral_scale_zoom, parent), moving(false), m_size(0)
@@ -148,6 +147,7 @@ void WaypointItem::setPosition(Point2DLatLon ll) {
     _waypoint->setLon(ll.lon());
     emit itemChanged();
     emit waypointMoved(ll);
+
 }
 
 void WaypointItem::update() {

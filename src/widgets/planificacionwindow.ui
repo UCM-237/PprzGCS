@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>PlanificacionWindow</class>
+ <widget class="QMainWindow" name="PlanificacionWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>588</width>
-    <height>336</height>
+    <width>637</width>
+    <height>398</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>PlanificacionWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="button_estrategia">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>21</y>
       <width>80</width>
       <height>25</height>
      </rect>
@@ -27,68 +27,107 @@
      <string>Estrategia</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="button_datos">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>21</y>
+      <width>105</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Guardar datos</string>
+    </property>
+   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>9</x>
-      <y>42</y>
-      <width>561</width>
-      <height>246</height>
+      <x>12</x>
+      <y>60</y>
+      <width>581</width>
+      <height>283</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <layout class="QFormLayout" name="formLayout">
-       <item row="0" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Flight plan</string>
+          <string>Flight plan         </string>
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item>
         <widget class="QLineEdit" name="label_mapa">
          <property name="text">
           <string>flight_plan_pruebaQT</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label">
+       <item>
+        <widget class="QPushButton" name="button_abrir_mapa">
          <property name="text">
-          <string>Controlador</string>
+          <string>Explorador</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Controlador      </string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLineEdit" name="label_controlador">
          <property name="text">
           <string>rover2f405WSE</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_3">
+       <item>
+        <widget class="QPushButton" name="button_abrir_controlador">
          <property name="text">
-          <string>Aircraft</string>
+          <string>Explorador</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Aircraft               </string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QLineEdit" name="label_aircraft">
          <property name="text">
           <string>Rover_Avelino</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Número de puntos de paso</string>
+          <string>Puntos de paso</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item>
         <widget class="QLineEdit" name="label_Puntos_paso">
          <property name="text">
           <string>12</string>
@@ -97,48 +136,42 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="0">
+     <item>
       <widget class="QPushButton" name="button_editor">
        <property name="text">
         <string>Abrir flight plan editor</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QPushButton" name="button_optimizacion">
-       <property name="text">
-        <string>Optimizador</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QPushButton" name="button_compilacion">
-       <property name="text">
-        <string>Descargar ruta optimizada</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
+     <item>
       <widget class="QPushButton" name="button_sectores">
        <property name="text">
         <string>Selección de sectores</string>
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="button_optimizacion">
+       <property name="text">
+        <string>Optimizador</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_move_wp">
+       <property name="text">
+        <string>Cargar flight plan</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_compilacion">
+       <property name="text">
+        <string>Descargar nuevo flight plan</string>
+       </property>
+      </widget>
+     </item>
     </layout>
-   </widget>
-   <widget class="QPushButton" name="button_datos">
-    <property name="geometry">
-     <rect>
-      <x>399</x>
-      <y>10</y>
-      <width>171</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Guardar datos</string>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -146,7 +179,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>588</width>
+     <width>637</width>
      <height>22</height>
     </rect>
    </property>
