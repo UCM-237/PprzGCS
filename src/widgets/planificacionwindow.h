@@ -36,6 +36,7 @@ signals:
     void waypoint_moved(pprzlink::Message message);
     
 private slots:
+    void sendwp(double latitud, double longitud);
     void on_button_estrategia_clicked();
     void on_button_optimizacion_clicked();   
     void on_button_compilacion_clicked(); 
@@ -45,10 +46,10 @@ private slots:
     void on_button_abrir_controlador_clicked();
     void on_button_abrir_mapa_clicked();
     void VentanaSector();
-    int leerArchivo(const char *filename, int32_t lat[], int32_t lon[], int max_puntos);
+    int leerArchivo(const char *filename, double lat[], double lon[], int max_puntos);
 private:
     Ui::PlanificacionWindow *ui;
-    
+    int i=0;
     WaypointItem* wi;
     QString ac_id;
     bool started;
