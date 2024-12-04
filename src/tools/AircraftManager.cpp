@@ -24,8 +24,6 @@ void AircraftManager::setToolbox(PprzToolbox* toolbox) {
     PprzTool::setToolbox(toolbox);
     connect(PprzDispatcher::get(), &PprzDispatcher::waypoint_moved, this, &AircraftManager::moveWaypoint);
 
-//    PlanificacionWindow* emisora = new PlanificacionWindow();
-//    connect(emisora, &PlanificacionWindow::waypoint_moved, this, &AircraftManager::moveWaypoint);
 }
 
 Aircraft* AircraftManager::getAircraft(QString id) {

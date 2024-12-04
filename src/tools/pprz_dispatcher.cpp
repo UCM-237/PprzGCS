@@ -172,7 +172,7 @@ void PprzDispatcher::sendMessage(pprzlink::Message msg) {
     if(!silent_mode) {
         msg.setSenderId(pprzlink_id);
         link->sendMessage(msg);
-        qDebug() << "sendMessage 31224";
+        //qDebug() << "Mensaje enviado";
     }
 }
 

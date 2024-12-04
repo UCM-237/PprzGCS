@@ -471,21 +471,6 @@ void PlanificacionWindow::on_button_move_wp_clicked()
     // Llamada a la función para leer los puntos del archivo
     int puntos_leidos = leerArchivo(filename.toStdString().c_str(), latitudes, longitudes, max_puntos);
 
-//    for (int i = 0; i < puntos_leidos; i++) {
-
-//        double latitud = latitudes[i];
-//        double longitud = longitudes[i];
-//        sendwp(latitud, longitud);
-//        qDebug() << ": " << latitudes[i] << ", " << longitudes[i] << "iteracion: " << i;
-//        //unsigned int microsecond = 5*1000000;
-//        //usleep(microsecond);
-
-//     }
-//    if (puntos_leidos <= 0) {
-//        qDebug() << "No se pudieron leer puntos del archivo.";
-//        return;
-//    }
-
     // Configurar el temporizador para enviar los puntos uno por uno
     currentIndex = 0;  // Reiniciar el índice de los puntos
     timer = new QTimer(this);
@@ -506,7 +491,7 @@ void PlanificacionWindow::on_button_move_wp_clicked()
     });
 
     // Iniciar el temporizador con un intervalo de 1 segundo (1000 ms)
-    timer->start(1000);
+    timer->start(300);
 
     //}
 }
@@ -531,25 +516,13 @@ int PlanificacionWindow::leerArchivo(const char *filename, double lat[], double 
     while (count < max_puntos && fgets(linea, sizeof(linea), file)) {
 //        qDebug() << "Leyendo línea: " << linea; // Depuración
 
-//        char *token = strtok(linea, " \t"); // Leer el nombre
-//        if (token == NULL) continue;
-
-//        token = strtok(NULL, " \t"); // Leer latitud
-//        if (token == NULL) continue;
-//        lat[count] = atof(token); // Convertir a double
-
-//        token = strtok(NULL, " \t"); // Leer longitud
-//        if (token == NULL) continue;
-//        lon[count] = atof(token); // Convertir a double
-
         sscanf(linea, "%s\t%s\t%s\n", nombre, slat, slon);
-//        lat[count]=atof("3,141592");
-//        lon[count]=atof(slon);
+
         sscanf(slat, "%lf", &lat[count]);
         sscanf(slon, "%lf", &lon[count]);
 //        qDebug() << "Nombre" << nombre <<"count" << count << "Latitud:" << slat << "Longitud:" << slon;
 //        qDebug() << "Nombre" << nombre <<"count" << count << "Latitud:" << lat[count] << "Longitud:" << lon[count];
-//        printf("Latitud %11.6lf\n", lat[count]);
+
 
         count++;
     }
@@ -569,8 +542,8 @@ double lat;
 double lon;
 float alt;
 PprzDispatcher::get()->setStart(true);
+
 // Recorrer cada par de coordenadas
-//for (int i = 0; i < puntos_leidos; i++) {
 QString ac_id = "4";
 quint8 wp_id = i+8; // Puedes usar el índice para asignar un ID de waypoint único
 lat = latitud; // Convertir a formato de latitud/longitud
@@ -585,17 +558,10 @@ msg.addField("lat", lat);
 msg.addField("long", lon);
 msg.addField("alt", alt);
 
-//        if (m_dispatcher) {
-//                qDebug() << "m_dispatcher es no nulo!";
-//        } else {
-//                qDebug() << "m_dispatcher es nulo!";
-//        }
 
 // Enviar el mensaje para este waypoint
 
 PprzDispatcher::get()->sendMessage(msg);
-
-//        PprzDispatcher::get()->setStart(true);
 
 qDebug() << "Enviado waypoint " << wp_id << ": " << lat << ", " << lon << "," << alt << "," << i;
 //printf("Latitud enviada %11.8lf\n", lat);
