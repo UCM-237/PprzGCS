@@ -124,7 +124,7 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
     }
         QProcess *process = new QProcess(this);
         QString homeDir = QDir::homePath();
-        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/Código_QT_PYTHON_V1_2.py";
+        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_Regiones_zigzag_espiral_V2.py";
                              process->start("python", QStringList() << scriptPath);
 
         if (!process->waitForStarted()) {

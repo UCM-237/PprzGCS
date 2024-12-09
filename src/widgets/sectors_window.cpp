@@ -138,7 +138,7 @@ void sectors_window::addSelectedWaypointsToTable() {
     }
 
     // Crear un cuadro de diálogo para seleccionar la estrategia
-    QStringList estrategias = {"ZigZag", "Espiral", "Red"};  // Ejemplo de estrategias
+    QStringList estrategias = {"ZigZag", "Espiral", "Net", "Zona_prohibida"};  // Ejemplo de estrategias
     bool ok;
     estrategiaSeleccionada = QInputDialog::getItem(this, "Seleccionar Estrategia", "Seleccione la estrategia:",
         estrategias, 0, false, &ok);
