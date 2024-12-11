@@ -1,4 +1,4 @@
-Estrategia seleccionada: 
+Estrategia seleccionada:  Sin Mapa
 Ruta mapa:flight_plan_pruebaQT
 Ruta controlador:rover2f405WSE
 Ruta aircraft:Rover_Avelino

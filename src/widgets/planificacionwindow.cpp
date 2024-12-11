@@ -76,7 +76,7 @@ void PlanificacionWindow::on_button_estrategia_clicked()
 
     // Crear las acciones para el menú
     QAction action1("Con Mapa", this);
-    QAction action2("Sin mapa", this);
+    QAction action2("Sin Mapa", this);
 
     // Conectar las acciones a los slots si es necesario
     connect(&action1, &QAction::triggered, this, [this]() {
@@ -122,6 +122,9 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
 
         //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
     }
+
+    if (EstrategiaSeleccionada == " Sin Mapa"){
+        QMessageBox::information(this, "Estrategia Seleccionada", "Ejecutando la optimización sin mapa");
         QProcess *process = new QProcess(this);
         QString homeDir = QDir::homePath();
         QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_Regiones_zigzag_espiral_V2.py";
@@ -154,6 +157,16 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
         }
 
         process->deleteLater();
+    }
+
+    else if(EstrategiaSeleccionada == " Con Mapa"){
+        QMessageBox::information(this, "Estrategia Seleccionada", "El optimizador con mapa aún no está desarrollado");
+    }
+
+
+    else{
+        QMessageBox::information(this, "Estrategia Seleccionada", "Seleccione una estrategia");
+    }
 }
 
 

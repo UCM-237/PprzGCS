@@ -7,6 +7,14 @@
 		format=".png"
 	/>
 	<source
+		name="Guajaraz" dir="Guajaraz"
+		addr=""
+		zoomMin="0" zoomMax="12"
+		tileSize="256"
+		format=".png"
+	/>
+
+	<source
 		name="Google" dir="GOOGLE"
 		addr="https://mt1.google.com/vt/lyrs=s&amp;x={x}&amp;y={y}&amp;z={z}"
 		zoomMin="0" zoomMax="19"

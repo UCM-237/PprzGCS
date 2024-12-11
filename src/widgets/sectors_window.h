@@ -23,6 +23,7 @@ public:
 private slots:
     void loadXmlFileNameFromTxt();  // Cargar el nombre del archivo XML desde datos.txt
     void loadWaypoints(const QString &xmlFileName);  // Cargar waypoints desde el archivo XML
+    void loadSectors(const QString &xmlFileName);
     void addSelectedWaypointsToTable();  // Añadir los waypoints seleccionados a la tabla
     void removeColumnFromTable();  // Eliminar una columna de la tabla
     void saveSectorsToXml();  // Guardar los sectores en un archivo XML

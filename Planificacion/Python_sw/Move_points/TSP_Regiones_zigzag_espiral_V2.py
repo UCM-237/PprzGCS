@@ -39,6 +39,11 @@ Config.warnings['not_compiled'] = False
 
 import logging
 
+from shapely.geometry import Polygon, Point
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+
 
 # In[2]:
 
@@ -156,7 +161,7 @@ if sectors_node is not None:
     for sector in sectors_node:
         sector_name = sector.attrib['name'] 
         sectors_names.append(sector_name)
-        points_in_sector = sector.attrib.get('type', 'undefined')
+        points_in_sector = sector_name.split('_')[-1]  # Esto obtiene la parte después del _
         points_in_sectors.append(points_in_sector)
         corners = []
         for corner in sector.findall('corner'):
@@ -363,11 +368,11 @@ def visualize_3(problem, x, sectors, fig=None, ax=None, show=True, label=True):
         for sector_name, points in sectors.items():
             sector_points = np.array(points)
             color = "red" if sector_name.startswith("Zona_prohibida") else "blue"
-            if sector_name != "Net":
+            if not sector_name.startswith("Net"):
                 ax.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
          
         #fig.suptitle(f"Route length: {problem.get_route_length(x)}km \nRoute time: {problem.get_route_length(x)*60/velocidad_media}min")
-        fig.suptitle("Ruta a realizar")
+        fig.suptitle("Ruta a realizar \n Verifique que no pasa por zonas prohibidas")
 
         if show:
             plt.show()  # Muestra el gráfico en una ventana emergente
@@ -469,18 +474,12 @@ res = minimize(
 #print("Maximum Span:", np.round(res.F[0], 3))
 #print("Function Evaluations:", res.algorithm.evaluator.n_eval)
 
-print(res.X)
+#print(res.X)
 #%matplotlib inline
 visualize_3(problem, res.X, sectors)
 
 
 # In[9]:
-
-
-res.X
-
-
-# In[10]:
 
 
 #res.X[0][0] = closest_index
@@ -491,7 +490,7 @@ res.X
 #print(res.X)
 
 
-# In[11]:
+# In[10]:
 
 
 #En este vector vamos a tener el orden del TSP pero con las coordenadas
@@ -505,7 +504,7 @@ for i in range(len(res.X[0])):
 resultado = np.vstack(resultado)
 
 
-# In[12]:
+# In[11]:
 
 
 # Crear una cuadrícula dentro del área
@@ -640,16 +639,13 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
     return waypoints
 
 
-# In[13]:
+# In[19]:
 
 
 # Importar bibliotecas necesarias
-from shapely.geometry import Polygon, Point
-import numpy as np
-import matplotlib.pyplot as plt
-import math
+
     
-long_añadidos = 0
+Matriz_pnts_añadidos = np.empty((0, 2))
 centroides_undefined=0
 resultados_sectores = [list(map(float, punto)) for punto in resultado]
 # Suponiendo que tienes un bucle que llama a esta función con los parámetros adecuados
@@ -664,14 +660,14 @@ for i in range(len(sectors_names)):
     elif not sectors_names[i].startswith("Net") and not sectors_names[i].startswith("Zona_prohibida"):
         #print("centroides defined", i-centroides_undefined)
         #print("ENTRADO EN DEFINED")
-        print(sectors_names[i])
+        #print(sectors_names[i])
         poligono = Polygon(sectors[sectors_names[i]])
         vertices = sectors[sectors_names[i]]
         area = poligono.area
         
         Estrategia_recorrido=sectors_names[i]
         n_puntos=int(points_in_sectors[i])
-    
+        #print(n_puntos)
         vertices = sectors[sectors_names[i]]
         # Obtener coordenadas iniciales y finales
         #print("Centroide", centroides[i-centroides_undefined])
@@ -693,15 +689,24 @@ for i in range(len(sectors_names)):
         #print("Waypoints = ", waypoints)
         #print("Long wp", len(waypoints))
         #print("Long res ini", len(resultados_sectores
+        
+        #La estrategia para ver cuantos puntos hemos añadido en el proceso es la siguiente:
+            #Guardo en una matriz la posicion del centroide en el vector resultados_sectores junto con los pnts añadidos
+            #Miro cuantos centroides he modificado con un ínidce menor que el centroide que estoy sustituyendo en esta iteración
+            #La suma será el número de puntos que he añadido antes de este centroide
+        Matriz_filtrada = Matriz_pnts_añadidos[Matriz_pnts_añadidos[:,0] < sector_indice]
+        puntos_añadidos = int(np.sum(Matriz_filtrada[:,1]))
+        #print("Matriz_filtrada", Matriz_filtrada)
+        #print("Se va a borrar el punto: ", sector_indice + puntos_añadidos)
         if Estrategia_recorrido.startswith("ZigZag"):
             #print("resultados sectores antes\n", resultados_sectores)
-            resultados_sectores = np.delete(resultados_sectores, sector_indice, axis = 0)
+            resultados_sectores = np.delete(resultados_sectores, sector_indice + puntos_añadidos, axis = 0)
             #print("resultados sectores tras delete\n", resultados_sectores)
             #print("Indice delete", sector_indice)
-            #Punto_borrado=resultados_sectores[sector_indice + long_añadidos]
+            #Punto_borrado=resultados_sectores[sector_indice + puntos_añadidos]
             #print("Punto borrado=", Punto_borrado)
             #print("Centroide", centroides[i-centroides_undefined])
-            resultados_sectores = np.insert(resultados_sectores, sector_indice, waypoints, axis = 0)
+            resultados_sectores = np.insert(resultados_sectores, sector_indice + puntos_añadidos, waypoints, axis = 0)
             #print("resultados sectores tras insert\n", resultados_sectores)
             #print("Puntos añadidos=", waypoints)
             #print("Resultado sectores=", resultados_sectores)
@@ -709,14 +714,17 @@ for i in range(len(sectors_names)):
             #print("Centroide", centroides[i-centroides_undefined])
             #print("resultados sectores antes\n", resultados_sectores)
             #print("Centroide a eliminar", centroides[i])
-            resultados_sectores = np.delete(resultados_sectores, sector_indice, axis = 0)
+            resultados_sectores = np.delete(resultados_sectores, sector_indice + puntos_añadidos, axis = 0)
             #print("Indice delete", sector_indice)
             #print("resultados sectores tras delete\n", resultados_sectores)
-            resultados_sectores = np.insert(resultados_sectores, sector_indice, waypoints, axis = 0)
+            resultados_sectores = np.insert(resultados_sectores, sector_indice + puntos_añadidos, waypoints, axis = 0)
             #print("resultados sectores tras insert\n", resultados_sectores)
-        long_añadidos+=len(waypoints)-1
-       # Dibujar el área y los waypoints
-        x_coords, y_coords = zip(*waypoints)
+        long_añadidos = len(waypoints)-1
+        
+        Matriz_pnts_añadidos = np.append(Matriz_pnts_añadidos, [[sector_indice, long_añadidos]], axis = 0)
+       # print("Matriz puntos añadidos", Matriz_pnts_añadidos)
+       # #Dibujar el área y los waypoints
+       #  x_coords, y_coords = zip(*waypoints)
     
         #print("Puntos en el poligono = ", len(x_coords))
         
@@ -724,7 +732,7 @@ for i in range(len(sectors_names)):
         # x_poly, y_poly = poligono.exterior.xy
         # plt.plot(x_poly, y_poly, color='green', label='Área')
         
-        # Dibujar el recorrido (waypoints)
+        # # Dibujar el recorrido (waypoints)
         # plt.plot(x_coords, y_coords, marker='o', linestyle='-', color='b', label='Waypoints')
         # plt.scatter(x_coords, y_coords, marker='x', color='red')  # Marcar los puntos
         # #plt.scatter(centroides[0], centroides[1], s=250, marker='o', color='orange') #Marcar el centroide
@@ -736,38 +744,35 @@ for i in range(len(sectors_names)):
         # plt.show()
 
 
-# In[14]:
-
-
-# 3# Crear el gráfico
-# plt.figure(figsize=(8, 6))
-
-# # Dibujar el camino
-# plt.plot(resultados_sectores[:,0], resultados_sectores[:,1], marker='o', linestyle='-', color='b', label='Camino')
-
-# # Agregar etiquetas y título
-# plt.title('Dibujo de un Camino')
-# plt.xlabel('Coordenada X')
-# plt.ylabel('Coordenada Y')
-# plt.grid(True)
-# plt.legend()
-
-# # Mostrar el gráfico
-# plt.show()
-
-
-# In[16]:
-
-
-resultados_sectores
-
-
 # In[15]:
+
+
+3# Crear el gráfico
+plt.figure(figsize=(8, 6))
+
+# Dibujar el camino
+plt.plot(resultados_sectores[:,0], resultados_sectores[:,1], marker='o', linestyle='-', color='b', label='Camino')
+
+# Agregar etiquetas y título
+plt.title('Ruta completa')
+plt.xlabel('Coordenada X')
+plt.ylabel('Coordenada Y')
+plt.grid(True)
+plt.legend()
+
+# Mostrar el gráfico
+plt.show()
+
+
+# In[17]:
 
 
 # Ahora hay que meter estos puntos en el xml
 
 # Añadimos una columna de ceros donde meteremos los nombres
+if not isinstance(resultados_sectores, np.ndarray):
+    # Convertir a numpy array si no lo es
+    resultados_sectores = np.array(resultados_sectores)
 
 Columna_nombres = np.zeros(resultados_sectores.shape[0], dtype=object)  # Cambiado a un vector de tamaño adecuado
 
@@ -818,7 +823,7 @@ def prettify(element):
 # Guardar los cambios en el archivo XML
 ruta_archivo_opt = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}_opt.xml")
 with open(ruta_archivo_opt, 'w', encoding='utf-8') as f:
-    print("Archivo actualizado")
+    #print("Archivo actualizado")
     f.write('<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">\n')
     f.write(prettify(root))
 #print("FLIGHT PLAN GUARDADO")
@@ -872,7 +877,7 @@ tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
 #f.write(prettify(root))
 
 
-# In[ ]:
+# In[20]:
 
 
 from pyproj import CRS, Transformer
@@ -904,9 +909,10 @@ def guardar_puntos_en_txt(puntos, archivo_salida):
                 lat_coma = lat_str.replace(".", ",")
                 lon_coma = lon_str.replace(".", ",")
                 #print(lat_coma, lon_coma)
+                print
                 f.write(f"{punto['nombre']}\t{lat_coma}\t{lon_coma}\n")
         
-        print(f"Los puntos han sido guardados exitosamente en '{archivo_salida}'")
+        #print(f"Los puntos han sido guardados exitosamente en '{archivo_salida}'")
     
     except Exception as e:
         print(f"Error al guardar los puntos: {e}")
@@ -914,24 +920,7 @@ def guardar_puntos_en_txt(puntos, archivo_salida):
 # Llamada a la función para guardar los puntos en el archivo de texto
 ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints.txt")
 guardar_puntos_en_txt(ruta, ruta_waypoints_finales)
-
-
-# In[19]:
-
-
-resultados_sectores.type
-
-
-# In[ ]:
-
-
-stops
-
-
-# In[ ]:
-
-
-res.X
+print("Optimización exitosa, en caso de que la ruta pase por alguna zona prohibida mueva los puntos que forman el segmento en el editor, guarde el flight plan y vuelva a ejecutar la optimización.")
 
 
 # In[ ]:
