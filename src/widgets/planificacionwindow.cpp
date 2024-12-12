@@ -100,11 +100,81 @@ void PlanificacionWindow::on_button_estrategia_clicked()
     contextMenu.exec(pos);
 }
 
+//void PlanificacionWindow::on_button_optimizacion_clicked()
+//{
+//    disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_optimizacion_clicked);
+
+//    QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
+
+//    Ruta_mapa = ui->label_mapa->text();
+//    Ruta_controlador = ui->label_controlador->text();
+//    Ruta_aircraft = ui->label_aircraft->text();
+//    Puntos_paso = ui->label_Puntos_paso->text();
+
+//    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+//        QTextStream out(&file);
+//        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+//        out << "Ruta mapa:" << Ruta_mapa << "\n";
+//        out << "Ruta controlador:" << Ruta_controlador << "\n";
+//        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
+//        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+//        file.close();
+
+//        //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
+//    }
+
+//    if (EstrategiaSeleccionada == " Sin Mapa"){
+//        QMessageBox::information(this, "Estrategia Seleccionada", "Ejecutando la optimización sin mapa");
+//        QProcess *process = new QProcess(this);
+//        QString homeDir = QDir::homePath();
+//        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_Regiones_zigzag_espiral_V2.py";
+//                             process->start("python", QStringList() << scriptPath);
+
+//        if (!process->waitForStarted()) {
+//            qDebug() << "Error al iniciar el script Python:" << process->errorString();
+//        }
+
+//        process->waitForFinished();
+//        QString output = process->readAllStandardOutput();
+//        QString errorOutput = process->readAllStandardError();
+
+//        // Analizar la salida JSON del script Python
+//        QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
+//        if (!jsonResponse.isNull() && jsonResponse.isObject()) {
+//            QJsonObject jsonObj = jsonResponse.object();
+//            QString status = jsonObj.value("status").toString();
+//            QString message = jsonObj.value("message").toString();
+
+//            if (status == "success") {
+//                QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
+//            } else {
+//                QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores:\n" + message);
+//                qDebug() << "Error en la ejecución del script Python. Mensaje:" << message;
+//            }
+//        } else {
+//            QMessageBox::information(this, "Resultado de la optimización", output);
+//            qDebug() << "Salida no válida del script Python:" << output;
+//        }
+
+//        process->deleteLater();
+//    }
+
+//    else if(EstrategiaSeleccionada == " Con Mapa"){
+//        QMessageBox::information(this, "Estrategia Seleccionada", "El optimizador con mapa aún no está desarrollado");
+//    }
+
+
+//    else{
+//        QMessageBox::information(this, "Estrategia Seleccionada", "Seleccione una estrategia");
+//    }
+//}
+
+
 void PlanificacionWindow::on_button_optimizacion_clicked()
 {
     disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_optimizacion_clicked);
 
-    QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
+    QFile file(homeDir + "/PprzGCS/Planificacion/datos.txt");
 
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
@@ -119,52 +189,60 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
         out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
-
-        //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
     }
 
-    if (EstrategiaSeleccionada == " Sin Mapa"){
+    if (EstrategiaSeleccionada == " Sin Mapa") {
         QMessageBox::information(this, "Estrategia Seleccionada", "Ejecutando la optimización sin mapa");
         QProcess *process = new QProcess(this);
         QString homeDir = QDir::homePath();
         QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_Regiones_zigzag_espiral_V2.py";
-                             process->start("python", QStringList() << scriptPath);
+        process->start("python", QStringList() << scriptPath);
 
         if (!process->waitForStarted()) {
-            qDebug() << "Error al iniciar el script Python:" << process->errorString();
+            QMessageBox::critical(this, "Error", "Error al iniciar el script Python:\n" + process->errorString());
+            process->deleteLater();
+            return;
         }
 
         process->waitForFinished();
         QString output = process->readAllStandardOutput();
         QString errorOutput = process->readAllStandardError();
 
-        // Analizar la salida JSON del script Python
+        if (!errorOutput.isEmpty()) {
+            // Mostrar los errores capturados en stderr
+            QJsonDocument jsonError = QJsonDocument::fromJson(errorOutput.toUtf8());
+            if (!jsonError.isNull() && jsonError.isObject()) {
+                QJsonObject errorObj = jsonError.object();
+                QString errorMessage = errorObj.value("message").toString();
+                QMessageBox::critical(this, "Error en la optimización", "El script Python falló:\n" + errorMessage);
+            } else {
+                QMessageBox::critical(this, "Error inesperado", "Salida de error no válida:\n" + errorOutput);
+            }
+            process->deleteLater();
+            return;
+        }
+
+        // Procesar salida estándar si no hay errores
         QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
         if (!jsonResponse.isNull() && jsonResponse.isObject()) {
             QJsonObject jsonObj = jsonResponse.object();
             QString status = jsonObj.value("status").toString();
-            QString message = jsonObj.value("message").toString();
+            QString message = QString::fromUtf8(jsonObj.value("message").toString().toUtf8());
+
 
             if (status == "success") {
-                QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
+                QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente:\n" + message);
             } else {
-                QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores:\n" + message);
-                qDebug() << "Error en la ejecución del script Python. Mensaje:" << message;
+                QMessageBox::warning(this, "Advertencia", "El script Python reportó un problema:\n" + message);
             }
         } else {
             QMessageBox::information(this, "Resultado de la optimización", output);
-            qDebug() << "Salida no válida del script Python:" << output;
         }
 
         process->deleteLater();
-    }
-
-    else if(EstrategiaSeleccionada == " Con Mapa"){
+    } else if (EstrategiaSeleccionada == " Con Mapa") {
         QMessageBox::information(this, "Estrategia Seleccionada", "El optimizador con mapa aún no está desarrollado");
-    }
-
-
-    else{
+    } else {
         QMessageBox::information(this, "Estrategia Seleccionada", "Seleccione una estrategia");
     }
 }

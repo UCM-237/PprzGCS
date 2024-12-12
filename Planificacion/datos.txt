@@ -1,5 +1,5 @@
-Estrategia seleccionada: 
-Ruta mapa:Prueba_12_12_24
+Estrategia seleccionada:  Sin Mapa
+Ruta mapa:Prueba_12_12_27
 Ruta controlador:rover2f405WSE
 Ruta aircraft:Rover_Avelino
 Numero de puntos de paso:12
