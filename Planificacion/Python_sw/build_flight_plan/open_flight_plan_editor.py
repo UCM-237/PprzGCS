@@ -34,7 +34,7 @@ def run_gcs():
     # Verificar si el archivo de vuelo existe
     if not os.path.exists(flight_plan_file):
         QMessageBox.critical(None, "Error", f"El archivo de vuelo no se encuentra en la ruta:\n{flight_plan_file}, abriendo un archivo de vuelo en blanco")
-        flight_plan_file = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "UCM", "flight_plan_empty.xml")
+        flight_plan_file = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", "flight_plan_empty.xml")
         
 
     # Intentar ejecutar el comando con el archivo de vuelo

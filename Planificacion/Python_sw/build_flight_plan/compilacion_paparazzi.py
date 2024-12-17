@@ -4,6 +4,31 @@ import time
 import os
 home_dir = os.path.expanduser("~")
 # Función para cerrar los procesos relacionados con Paparazzi y GCS
+
+#Ahora vamos a modificar el archivo conf.xml que se encuentra en la ruta paparazzi/conf/airframes/UCM para que cuando se abra paparazzi de nuevo el flight plan y el airframe sean los que pongamos aqui
+
+# Ruta del archivo XML que deseas modificar
+ruta_conf = os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", "conf.xml")
+tree = ET.parse(ruta_conf)
+root = tree.getroot()
+
+new_flight_plan = f'flight_plans/UCM/{Archivo}_opt.xml'
+new_airframe = f'airframes/UCM/{Controlador}.xml'
+aircraft_name = Aircraft
+# Parsear el archivo XML
+
+#Buscar el nodo correspondiente al aircraft
+for aircraft in root.iter('aircraft'):
+    # Si el nombre del aircraft coincide, actualizar los valores
+    if aircraft.get('name') == aircraft_name:
+        aircraft.set('airframe', new_airframe)
+        aircraft.set('flight_plan', new_flight_plan)
+# Guardar los cambios en el archivo XML
+output_path_comp = ruta_conf
+tree.write(output_path_comp, encoding='utf-8', xml_declaration=True)
+#f.write(prettify(root))
+
+
 def close_paparazzi_and_gcs():
     try:
         # Buscar procesos que están usando el puerto 2010

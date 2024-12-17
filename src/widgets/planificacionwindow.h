@@ -36,7 +36,7 @@ signals:
     void waypoint_moved(pprzlink::Message message);
     
 private slots:
-    void sendwp(double latitud, double longitud);
+    void sendwp(double latitud, double longitud, bool aux_reset);
     void on_button_estrategia_clicked();
     void on_button_optimizacion_clicked();   
     void on_button_compilacion_clicked(); 
@@ -45,8 +45,13 @@ private slots:
     void on_button_move_wp_clicked();
     void on_button_abrir_controlador_clicked();
     void on_button_abrir_mapa_clicked();
+    void on_button_clear_clicked();
+    int countWaypoints(QString &filePath);
     void VentanaSector();
     int leerArchivo(const char *filename, double lat[], double lon[], int max_puntos);
+    void mostrarError(const QString &titulo, const QString &mensaje);
+    void mostrarInformacion(const QString &titulo, const QString &mensaje);
+    void mostrarAdvertencia(const QString &titulo, const QString &mensaje);
 private:
     Ui::PlanificacionWindow *ui;
     int i=0;
@@ -65,8 +70,18 @@ private:
     QString pprzlink_id;
     QList<long> _bindIds;
     void ejecutarScriptPython();  // Método para ejecutar el script y manejar su salida
-    
+    QString aircraft_name;
+    QStringList lineas;
+    bool estado_send_move_wp;
+    bool estado_send_conf;
     PprzDispatcher *m_dispatcher;  // Puntero al dispatcher
+    
+signals:
+    // Señales para pasar los mensajes al hilo principal
+    void errorSignal(const QString &titulo, const QString &mensaje);
+    void infoSignal(const QString &titulo, const QString &mensaje);
+    void warningSignal(const QString &titulo, const QString &mensaje);
+    
 };
 
 #endif // MAINWINDOW_H

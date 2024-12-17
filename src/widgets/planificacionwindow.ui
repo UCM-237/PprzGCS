@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>637</width>
-    <height>398</height>
+    <width>640</width>
+    <height>433</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,7 +46,7 @@
       <x>12</x>
       <y>60</y>
       <width>581</width>
-      <height>283</height>
+      <height>314</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -158,6 +158,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="button_clear">
+       <property name="text">
+        <string>Limpiar waypoints</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="button_move_wp">
        <property name="text">
         <string>Cargar flight plan</string>
@@ -179,7 +186,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>637</width>
+     <width>640</width>
      <height>22</height>
     </rect>
    </property>
