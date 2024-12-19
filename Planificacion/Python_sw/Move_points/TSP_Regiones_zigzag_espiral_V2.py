@@ -508,7 +508,7 @@ for i in range(len(res.X[0])):
 resultado = np.vstack(resultado)
 
 
-# In[26]:
+# In[11]:
 
 
 # Crear una cuadrícula dentro del área
@@ -556,23 +556,14 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
         punto_final = (float(x_fin), float(y_fin))
         punto_inicial=(float(x_ini),float(y_ini))
         # Controlar el orden de los puntos
-        
-        # if punto_final[1] < (max_y - (max_y-min_y)/ 2):
-        #     print("flip y")
-        #     print(punto_final[1])
-        #     print(max_y/2)
-        #     y_vals = np.flip(y_vals)
-        # if punto_final[0] < (max_x - (max_x-min_x)/ 2):
-        #     print("flip x")
-        #     x_vals = np.flip(x_vals)
-
-        if punto_final[1] < (y_vals[-1] - (y_vals[-1]-y_vals[0])/ 2):
-            print("flip y")
-            print(punto_inicial[1])
-            print(max_y/2)
+        #Vamos a hacer que la entrada controle el eje x y la salida el eje y
+        if punto_final[1] < (min_y):
+            #print("flip y")
+            #print(punto_final[1])
+            #print(max_y/2)
             y_vals = np.flip(y_vals)
-        if punto_inicial[0] > (x_vals[-1] - (x_vals[-1]-x_vals[0])/ 2):
-            print("flip x")
+        if punto_final[0] < (max_x):
+            #print("flip x")
             x_vals = np.flip(x_vals)
 
         
@@ -587,6 +578,8 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
                         #print("cont_aux = ", cont_aux)
                         waypoints.append((float(x), float(y)))  # Asegurarte de que son flotantes   
                     cont_aux+=1
+        #print("ZigZag")
+
     if estrategia.startswith("Espiral"):
         
         centroide_i = Point(centroide[0], centroide[1])
@@ -661,7 +654,7 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
     return waypoints
 
 
-# In[27]:
+# In[12]:
 
 
 # Importar bibliotecas necesarias
@@ -766,13 +759,13 @@ for i in range(len(sectors_names)):
         plt.show()
 
 
-# In[28]:
+# In[13]:
 
 
 waypoints
 
 
-# In[ ]:
+# In[14]:
 
 
 if sectores_navegacion > 0:
@@ -793,7 +786,7 @@ if sectores_navegacion > 0:
     plt.show()
 
 
-# In[21]:
+# In[15]:
 
 
 # Ahora hay que meter estos puntos en el xml
