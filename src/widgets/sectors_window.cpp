@@ -59,7 +59,7 @@ void sectors_window::loadXmlFileNameFromTxt() {
     QTextStream in(&file);
     QString xmlFileName;
     bool foundRutaMapa = false;
-    QString planPath = QDir::homePath() + "/paparazzi/conf/flight_plans/UCM/";  // Ruta base donde están los archivos XML
+    QString planPath = QDir::homePath() + "/paparazzi/conf/flight_plans/";  // Ruta base donde están los archivos XML
 
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -69,7 +69,7 @@ void sectors_window::loadXmlFileNameFromTxt() {
         if (line.startsWith("Ruta mapa:")) {
             // Extraemos todo después de "Ruta mapa:"
             xmlFileName = line.mid(10).trimmed();  // mid(10) elimina "Ruta mapa:" y obtiene el resto
-            xmlFileName.append(".xml");  // Agregamos ".xml" al final
+            //xmlFileName.append(".xml");  // Agregamos ".xml" al final
 
             // Añadimos la ruta base para crear la ruta completa
             xmlFileName = planPath + xmlFileName;

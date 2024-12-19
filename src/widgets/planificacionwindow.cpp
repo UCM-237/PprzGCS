@@ -51,14 +51,15 @@ PlanificacionWindow::PlanificacionWindow(QWidget *parent)
     // Conectar botones a sus respectivos slots
     connect(ui->button_estrategia, &QPushButton::clicked, this, &PlanificacionWindow::on_button_estrategia_clicked);
     connect(ui->button_optimizacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_optimizacion_clicked);
-    connect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
+    //connect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
     connect(ui->button_editor, &QPushButton::clicked, this, &PlanificacionWindow::on_button_editor_clicked);
     connect(ui->button_sectores, &QPushButton::clicked, this, &PlanificacionWindow::VentanaSector);
     connect(ui->button_datos, &QPushButton::clicked, this, &PlanificacionWindow::on_button_datos_clicked);
 //    connect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
     connect(ui->button_clear, &QPushButton::clicked, this, &PlanificacionWindow::on_button_clear_clicked);
     connect(ui->button_abrir_mapa, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_mapa_clicked);
-    connect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
+    connect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_controlador_clicked);
+    connect(ui->button_abrir_conf, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_conf_clicked);
 
     connect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
 
@@ -88,8 +89,9 @@ PlanificacionWindow::PlanificacionWindow(QWidget *parent)
     // Asignar cada línea a su correspondiente label
     if (lineas.size() > 1) ui->label_mapa->setText(lineas[1].split(":").last().trimmed());
     if (lineas.size() > 2) ui->label_controlador->setText(lineas[2].split(":").last().trimmed());
-    if (lineas.size() > 3) ui->label_aircraft->setText(lineas[3].split(":").last().trimmed());
-    if (lineas.size() > 4) ui->label_Puntos_paso->setText(lineas[4].split(":").last().trimmed());
+    if (lineas.size() > 3) ui->label_conf->setText(lineas[3].split(":").last().trimmed());
+    if (lineas.size() > 4) ui->label_aircraft->setText(lineas[4].split(":").last().trimmed());
+    if (lineas.size() > 5) ui->label_Puntos_paso->setText(lineas[5].split(":").last().trimmed());
 
     //COnectamos las señales que gestionan las salidas de errores del optimizador
     connect(this, &PlanificacionWindow::errorSignal, this, &PlanificacionWindow::mostrarError);
@@ -145,6 +147,7 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
+    Ruta_conf = ui->label_conf->text();
     Puntos_paso = ui->label_Puntos_paso->text();
 
     // Intentamos abrir el archivo para escribir
@@ -153,6 +156,7 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
         out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
         out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
@@ -265,44 +269,44 @@ void PlanificacionWindow::mostrarAdvertencia(const QString &titulo, const QStrin
     QMessageBox::warning(this, titulo, mensaje);
 }
 
-void PlanificacionWindow::on_button_compilacion_clicked()
-{
-    disconnect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
+//void PlanificacionWindow::on_button_compilacion_clicked()
+//{
+//    disconnect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
 
-    // Crear un proceso para ejecutar el script Python
-    QProcess *process_compilacion = new QProcess(this);
+//    // Crear un proceso para ejecutar el script Python
+//    QProcess *process_compilacion = new QProcess(this);
 
-    QString scriptPath_compilacion = homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/compilacion_paparazzi.py";
+//    QString scriptPath_compilacion = homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/compilacion_paparazzi.py";
 
-    // Usa la ruta completa al ejecutable de Python
-    process_compilacion->start("python", QStringList() << scriptPath_compilacion);
+//    // Usa la ruta completa al ejecutable de Python
+//    process_compilacion->start("python", QStringList() << scriptPath_compilacion);
 
-    if (!process_compilacion->waitForStarted()) {
-        qDebug() << "Error al iniciar el script Python:" << process_compilacion->errorString();
-        return;
-    }
+//    if (!process_compilacion->waitForStarted()) {
+//        qDebug() << "Error al iniciar el script Python:" << process_compilacion->errorString();
+//        return;
+//    }
 
-    // Esperar a que el proceso termine
-    process_compilacion->waitForFinished();
-    int exitCode = process_compilacion ->exitCode();
-    QString output = process_compilacion ->readAllStandardOutput();
-    QString errorOutput = process_compilacion ->readAllStandardError();  // Capturar errores
+//    // Esperar a que el proceso termine
+//    process_compilacion->waitForFinished();
+//    int exitCode = process_compilacion ->exitCode();
+//    QString output = process_compilacion ->readAllStandardOutput();
+//    QString errorOutput = process_compilacion ->readAllStandardError();  // Capturar errores
 
-    // Mostrar la salida y los errores en la consola de depuración
-    qDebug() << "Salida del script Python:" << output;
-    qDebug() << "Error del script Python:" << errorOutput;
+//    // Mostrar la salida y los errores en la consola de depuración
+//    qDebug() << "Salida del script Python:" << output;
+//    qDebug() << "Error del script Python:" << errorOutput;
 
-    // Mostrar mensaje de confirmación según el resultado del script Python
-    if (exitCode == 0) {
-        QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
-    } else {
-        QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores.");
-        qDebug() << "Error en la ejecución del script Python. Código de salida:" << exitCode;
-    }
+//    // Mostrar mensaje de confirmación según el resultado del script Python
+//    if (exitCode == 0) {
+//        QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
+//    } else {
+//        QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores.");
+//        qDebug() << "Error en la ejecución del script Python. Código de salida:" << exitCode;
+//    }
 
-    process_compilacion ->deleteLater(); // Eliminar el proceso después de ejecutarse
-    this->close();
-}
+//    process_compilacion ->deleteLater(); // Eliminar el proceso después de ejecutarse
+//    this->close();
+//}
 
 
 void PlanificacionWindow::on_button_datos_clicked()
@@ -313,6 +317,7 @@ void PlanificacionWindow::on_button_datos_clicked()
 
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
+    Ruta_conf = ui->label_conf->text();
     Ruta_aircraft = ui->label_aircraft->text();
     Puntos_paso = ui->label_Puntos_paso->text();
 
@@ -321,6 +326,7 @@ void PlanificacionWindow::on_button_datos_clicked()
         out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
         out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
@@ -339,6 +345,7 @@ void PlanificacionWindow::on_button_editor_clicked()
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
+    Ruta_conf = ui->label_conf->text();
     Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -346,6 +353,7 @@ void PlanificacionWindow::on_button_editor_clicked()
         out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
         out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
@@ -384,28 +392,65 @@ void PlanificacionWindow::on_button_editor_clicked()
 void PlanificacionWindow::on_button_abrir_mapa_clicked()
 {
     disconnect(ui->button_abrir_mapa, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_mapa_clicked);
-    // Abrir el explorador de archivos para seleccionar el archivo de mapa
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de mapa"), QDir::homePath() + "/paparazzi/conf/flight_plans/UCM", tr("Archivos de mapa (*.xml);;Todos los archivos (*)"));
 
-    // Si el usuario selecciona un archivo, mostrar solo el nombre del archivo sin extensión en el QLabel
+    // Directorio base desde donde calcular la ruta relativa
+    QString basePath = QDir::homePath() + "/paparazzi/conf/flight_plans";
+
+    // Abrir el explorador de archivos para seleccionar el archivo de mapa
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de mapa"), basePath, tr("Archivos de mapa (*.xml);;Todos los archivos (*)"));
+
+    // Si el usuario selecciona un archivo
     if (!filePath.isEmpty()) {
         QFileInfo fileInfo(filePath); // Obtener información del archivo
-        QString fileName = fileInfo.completeBaseName(); // Extraer solo el nombre del archivo sin extensión
-        ui->label_mapa->setText(fileName); // Mostrar solo el nombre sin extensión en el QLabel
+        QDir baseDir(basePath); // Crear un objeto QDir con el directorio base
+        QString relativePath = baseDir.relativeFilePath(filePath); // Calcular la ruta relativa
+
+        // Mostrar la ruta relativa en el QLabel
+        ui->label_mapa->setText(relativePath); // Ejemplo: "UCM/flight_plan_default.xml"
     }
 }
 
 
 
+void PlanificacionWindow::on_button_abrir_conf_clicked()
+{
+    disconnect(ui->button_abrir_conf, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_conf_clicked);
+
+    // Directorio base desde donde calcular la ruta relativa
+    QString basePath = QDir::homePath() + "/paparazzi/conf/airframes";
+
+    // Abrir el explorador de archivos para seleccionar el archivo de mapa
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de mapa"), QDir::homePath() + "/paparazzi/conf/airframes", tr("Archivos de mapa (*.xml);;Todos los archivos (*)"));
+
+    // Si el usuario selecciona un archivo
+    if (!filePath.isEmpty()) {
+        QFileInfo fileInfo(filePath); // Obtener información del archivo
+        QDir baseDir(basePath); // Crear un objeto QDir con el directorio base
+        QString relativePath = baseDir.relativeFilePath(filePath); // Calcular la ruta relativa
+
+        // Mostrar la ruta relativa en el QLabel
+        ui->label_conf->setText(relativePath); // Ejemplo: "UCM/flight_plan_default.xml"
+    }
+}
+
+
 void PlanificacionWindow::on_button_abrir_controlador_clicked() // Similar para el archivo de controlador
 {
     disconnect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_controlador_clicked);
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de controlador"), QDir::homePath() + "/paparazzi/conf/airframes/UCM", tr("Archivos de controlador (*.xml);;Todos los archivos (*)"));
 
+    // Directorio base desde donde calcular la ruta relativa
+    QString basePath = QDir::homePath() + "/paparazzi/conf/airframes";
+
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de controlador"), QDir::homePath() + "/paparazzi/conf/airframes", tr("Archivos de controlador (*.xml);;Todos los archivos (*)"));
+
+    // Si el usuario selecciona un archivo
     if (!filePath.isEmpty()) {
         QFileInfo fileInfo(filePath); // Obtener información del archivo
-        QString fileName = fileInfo.completeBaseName(); // Extraer solo el nombre del archivo sin extensión
-        ui->label_controlador->setText(fileName); // Mostrar solo el nombre en el label
+        QDir baseDir(basePath); // Crear un objeto QDir con el directorio base
+        QString relativePath = baseDir.relativeFilePath(filePath); // Calcular la ruta relativa
+
+        // Mostrar la ruta relativa en el QLabel
+        ui->label_controlador->setText(relativePath); // Ejemplo: "UCM/flight_plan_default.xml"
     }
 }
 
@@ -416,6 +461,7 @@ void PlanificacionWindow::VentanaSector()
     Ruta_mapa = ui->label_mapa->text();
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
+    Ruta_conf = ui->label_conf->text();
     Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -423,6 +469,7 @@ void PlanificacionWindow::VentanaSector()
         out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
+        out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
         out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
@@ -446,9 +493,12 @@ void PlanificacionWindow::on_button_move_wp_clicked()
     disconnect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
     // Obtener la ruta del archivo usando QString
     QString name_flight_plan = ui->label_mapa->text();
-    const QString filename = homeDir + "/PprzGCS/Planificacion/Resources/waypoints_opt/" + name_flight_plan + "_waypoints.txt"; // Cambia esta ruta al archivo real
+
+    QFileInfo fileInfo(name_flight_plan); // Usar QFileInfo para manejar la ruta
+    const QString filename = homeDir + "/PprzGCS/Planificacion/Resources/waypoints_opt/" + fileInfo.baseName() + "_waypoints.txt"; // Obtener el nombre sin extensión
+//    Ruta_mapa = ui->label_mapa->text();
     qDebug() << "ruta waypoint " << filename;
-    qDebug() << "Ruta mapa " << Ruta_mapa;
+//    qDebug() << "Ruta mapa " << Ruta_mapa;
     double latitudes[100];  // Asegúrate de que el tamaño sea suficiente
     double longitudes[100];
     int max_puntos = 100;    // Número máximo de puntos que leerás del archivo
@@ -520,9 +570,9 @@ void PlanificacionWindow::on_button_clear_clicked()
     disconnect(ui->button_clear, &QPushButton::clicked, this, &PlanificacionWindow::on_button_clear_clicked);
 
     //Primero buscamos que flight_plan está cargado
-    QString rutaXml_conf = homeDir + "/paparazzi/conf/airframes/UCM/conf.xml"; // Ruta del archivo XML
+    QString rutaXml_conf = homeDir + "/paparazzi/conf/airframes/" + ui->label_conf->text(); // Ruta del archivo XML
     QString Aircraft_cargado = ui->label_aircraft->text(); // Nombre a buscar
-    QString flight_plan_cargado; // Variable para almacenar el ac_id encontrado
+    QString flight_plan_cargado = ui->label_mapa->text(); // Variable para almacenar el flight_plan encontrado
 
     qDebug() << "Archivo xml: " << rutaXml_conf;
     // Abrir el archivo XML
@@ -552,7 +602,7 @@ void PlanificacionWindow::on_button_clear_clicked()
         if (!aircraft.isNull()) {
             QString name = aircraft.attribute("name");
             if (name == Aircraft_cargado) {
-                //qDebug() << "Buscando el ac_id";
+                //qDebug() << "Buscando el flight_plan";
                 flight_plan_cargado = aircraft.attribute("flight_plan");
                 break;
             }
@@ -648,7 +698,7 @@ void PlanificacionWindow::sendwp(double latitud, double longitud, bool aux_reset
 
     //Se busca el ac_id del vehículo en el archivo conf.xml por el nombre del aircraft que se le haya dado en el datos.txt
 
-    QString rutaXml = homeDir + "/paparazzi/conf/airframes/UCM/conf.xml"; // Ruta del archivo XML
+    QString rutaXml = homeDir + "/paparazzi/conf/airframes/" + ui->label_conf->text(); // Ruta del archivo XML
     QString nombreBuscado = ui->label_aircraft->text(); // Nombre a buscar
     QString aircraft_id; // Variable para almacenar el ac_id encontrado
 

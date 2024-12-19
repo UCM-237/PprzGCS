@@ -39,12 +39,13 @@ private slots:
     void sendwp(double latitud, double longitud, bool aux_reset);
     void on_button_estrategia_clicked();
     void on_button_optimizacion_clicked();   
-    void on_button_compilacion_clicked(); 
+    //void on_button_compilacion_clicked(); 
     void on_button_editor_clicked();  
     void on_button_datos_clicked(); 
     void on_button_move_wp_clicked();
     void on_button_abrir_controlador_clicked();
     void on_button_abrir_mapa_clicked();
+    void on_button_abrir_conf_clicked();
     void on_button_clear_clicked();
     int countWaypoints(QString &filePath);
     void VentanaSector();
@@ -63,6 +64,7 @@ private:
     QString homeDir;
     QString Ruta_mapa;
     QString Ruta_controlador;
+    QString Ruta_conf;
     QString Ruta_aircraft;
     QString Puntos_paso;
     QProcess *process;  // Para manejar el proceso del script Python

@@ -1,5 +1,6 @@
-Estrategia seleccionada: 
-Ruta mapa:prueba2_17_11_24
-Ruta controlador:rover2f405WSE
-Ruta aircraft:Rover_Avelino
+Estrategia seleccionada:  Sin Mapa
+Ruta mapa:UCM/Prueba2_19_12_24.xml
+Ruta controlador:HOOPERFLY/hooperfly_teensyfly_quad_lisa_mx_20.xml
+Ruta conf:HOOPERFLY/hooperfly_conf.xml
+Ruta aircraft:Teensy_Fly_Quad
 Numero de puntos de paso:12

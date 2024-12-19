@@ -6,47 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
-    <height>433</height>
+    <width>617</width>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>PlanificacionWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="button_estrategia">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>21</y>
-      <width>80</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Estrategia</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="button_datos">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>21</y>
-      <width>105</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Guardar datos</string>
-    </property>
-   </widget>
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>12</x>
-      <y>60</y>
-      <width>581</width>
-      <height>314</height>
+      <x>10</x>
+      <y>50</y>
+      <width>571</width>
+      <height>401</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -93,6 +67,31 @@
        </item>
        <item>
         <widget class="QPushButton" name="button_abrir_controlador">
+         <property name="text">
+          <string>Explorador</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Archivo conf     </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="label_conf">
+         <property name="text">
+          <string>conf</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_abrir_conf">
          <property name="text">
           <string>Explorador</string>
          </property>
@@ -158,6 +157,32 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="button_move_wp">
+       <property name="text">
+        <string>Cargar flight plan</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>571</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_6">
+     <item>
+      <widget class="QPushButton" name="button_estrategia">
+       <property name="text">
+        <string>Estrategia</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="button_clear">
        <property name="text">
         <string>Limpiar waypoints</string>
@@ -165,16 +190,9 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="button_move_wp">
+      <widget class="QPushButton" name="button_datos">
        <property name="text">
-        <string>Cargar flight plan</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="button_compilacion">
-       <property name="text">
-        <string>Descargar nuevo flight plan</string>
+        <string>Guardar datos</string>
        </property>
       </widget>
      </item>
@@ -186,7 +204,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>640</width>
+     <width>617</width>
      <height>22</height>
     </rect>
    </property>

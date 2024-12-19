@@ -3,9 +3,29 @@ import psutil
 import time
 import os
 home_dir = os.path.expanduser("~")
+import pandas as pd
+
+from lxml import etree
+
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+
 # Función para cerrar los procesos relacionados con Paparazzi y GCS
 
 #Ahora vamos a modificar el archivo conf.xml que se encuentra en la ruta paparazzi/conf/airframes/UCM para que cuando se abra paparazzi de nuevo el flight plan y el airframe sean los que pongamos aqui
+
+
+#Leemos los archivos sacados del boton de planificación
+ruta_datos = os.path.join(home_dir, "PprzGCS", "Planificacion", "datos.txt")
+Estrategia = pd.read_csv(ruta_datos, delimiter=':', header = None) #Datos.txt
+
+Estrategia=pd.DataFrame(Estrategia)
+
+#Carga de archivo XML
+Mapa = Estrategia.iloc[0,1]
+Archivo = Estrategia.iloc[1,1]
+Controlador = Estrategia.iloc[2,1]
+Aircraft = Estrategia.iloc[3,1]
 
 # Ruta del archivo XML que deseas modificar
 ruta_conf = os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", "conf.xml")

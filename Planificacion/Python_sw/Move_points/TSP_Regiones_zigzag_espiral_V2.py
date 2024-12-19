@@ -66,9 +66,10 @@ Estrategia=pd.DataFrame(Estrategia)
 Mapa = Estrategia.iloc[0,1]
 Archivo = Estrategia.iloc[1,1]
 Controlador = Estrategia.iloc[2,1]
-Aircraft = Estrategia.iloc[3,1]
+Conf = Estrategia.iloc[3,1]
+Aircraft = Estrategia.iloc[4,1]
 
-ruta_archivo = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}.xml")
+ruta_archivo = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", f"{Archivo}")
 tree = ET.parse(ruta_archivo)
 root = tree.getroot()
 
@@ -225,7 +226,7 @@ if sectores_navegacion > 0:
     centroides = []
     
     for i in range(len(sectors_names)):
-        if sectors_names[i] != "Net" and not sectors_names[i].startswith("Zona_prohibida"):
+        if not sectors_names[i].startswith("Net") and not sectors_names[i].startswith("Zona_prohibida"):
             C_x, C_y = calcular_centroide(sectors[sectors_names[i]])
             #print("Puntos del centroide:\n", sectors[sectors_names[i]])
             C_i = [C_x, C_y]
@@ -507,7 +508,7 @@ for i in range(len(res.X[0])):
 resultado = np.vstack(resultado)
 
 
-# In[11]:
+# In[26]:
 
 
 # Crear una cuadrícula dentro del área
@@ -551,17 +552,30 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
         # Obtener el punto más cercano
         min_index = np.argmin(dists)
         closest_point = tuple(map(float, vertices[min_index]))  # Asegúrate de que es una tupla de flotantes
-        #waypoints.append(closest_point)  # Agregar el punto más cercano
-    
+        
         punto_final = (float(x_fin), float(y_fin))
         punto_inicial=(float(x_ini),float(y_ini))
         # Controlar el orden de los puntos
         
-        if punto_final[1] < (max_y / 2):
+        # if punto_final[1] < (max_y - (max_y-min_y)/ 2):
+        #     print("flip y")
+        #     print(punto_final[1])
+        #     print(max_y/2)
+        #     y_vals = np.flip(y_vals)
+        # if punto_final[0] < (max_x - (max_x-min_x)/ 2):
+        #     print("flip x")
+        #     x_vals = np.flip(x_vals)
+
+        if punto_final[1] < (y_vals[-1] - (y_vals[-1]-y_vals[0])/ 2):
+            print("flip y")
+            print(punto_inicial[1])
+            print(max_y/2)
             y_vals = np.flip(y_vals)
-        if punto_final[0] < (max_x / 2):
+        if punto_inicial[0] > (x_vals[-1] - (x_vals[-1]-x_vals[0])/ 2):
+            print("flip x")
             x_vals = np.flip(x_vals)
-    
+
+        
         # Generar waypoints dentro del polígono
         cont_aux=0
         for y in y_vals:
@@ -573,7 +587,6 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
                         #print("cont_aux = ", cont_aux)
                         waypoints.append((float(x), float(y)))  # Asegurarte de que son flotantes   
                     cont_aux+=1
-    #print("Waypoints inicio", waypoints)
     if estrategia.startswith("Espiral"):
         
         centroide_i = Point(centroide[0], centroide[1])
@@ -648,7 +661,7 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
     return waypoints
 
 
-# In[12]:
+# In[27]:
 
 
 # Importar bibliotecas necesarias
@@ -753,7 +766,13 @@ for i in range(len(sectors_names)):
         plt.show()
 
 
-# In[13]:
+# In[28]:
+
+
+waypoints
+
+
+# In[ ]:
 
 
 if sectores_navegacion > 0:
@@ -774,7 +793,7 @@ if sectores_navegacion > 0:
     plt.show()
 
 
-# In[14]:
+# In[21]:
 
 
 # Ahora hay que meter estos puntos en el xml
@@ -828,23 +847,31 @@ def prettify(element):
     """ Devuelve una versión 'bonita' del XML """
     rough_string = ET.tostring(element, 'utf-8')
     reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="  ")
+    return reparsed.toprettyxml(indent="  ", newl="\n", encoding=None)
+
+Archivo_sin_extension = os.path.splitext(Archivo)[0]
 
 # Guardar los cambios en el archivo XML
-ruta_archivo_opt = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", "UCM", f"{Archivo}_opt.xml")
+ruta_archivo_opt = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", f"{Archivo_sin_extension}_opt.xml")
 with open(ruta_archivo_opt, 'w', encoding='utf-8') as f:
     #print("Archivo actualizado")
     f.write('<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">\n')
-    f.write(prettify(root))
+    xml_pretty = prettify(root)
+    xml_sin_version = '\n'.join(xml_pretty.splitlines()[1:])  
+    # Escribir el XML limpio en el archivo
+    f.write(xml_sin_version)
 #print("FLIGHT PLAN GUARDADO")
 # print("Waypoints reescritos y guardados")
     
 import xml.etree.ElementTree as ET
 
 # Abrimos el archivo XML
-ruta_controlador = os.path.join(home_dir, "paparazzi", "conf", "airframes", "UCM", f"{Controlador}.xml")
+ruta_controlador = os.path.join(home_dir, "paparazzi", "conf", "airframes", f"{Controlador}")
 tree = ET.parse(ruta_controlador)
 root = tree.getroot()
+
+#print("Ruta _opt: ", ruta_archivo_opt)
+#print("Ruta controlador: ", ruta_controlador)
 
 n_segmentos = str(len(paradas) - 1)  # Asegúrate de que `paradas` esté definida en el código
 
@@ -860,11 +887,12 @@ for module in root.iter('module'):
                # print("Nuevo valor asignado a GVF_PARAMETRIC_BARE_2D_BEZIER_N_SEG:", define.get('value'))
                 cambio_realizado = True  # Marcar el cambio como realizado
 
-if not cambio_realizado:
-   print("No se encontró el módulo o define especificado.")
+#if not cambio_realizado:
+   #Puede saltar cambio no realizado si el controlador no tiene el módulo gvf bezier bare
+   #print("No se encontró el módulo o define especificado. Esto no significa que la optimización no se haya realizado correctamente, sino que el controlador no tiene el módulo gvf_Bezier_bare.")
 
 
-# In[15]:
+# In[16]:
 
 
 from pyproj import CRS, Transformer
@@ -904,8 +932,10 @@ def guardar_puntos_en_txt(puntos, archivo_salida):
     except Exception as e:
         print(f"Error al guardar los puntos: {e}")
 
+Archivo_basename = os.path.splitext(os.path.basename(Archivo))[0]
+
 # Llamada a la función para guardar los puntos en el archivo de texto
-ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo}_waypoints.txt")
+ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
 guardar_puntos_en_txt(ruta, ruta_waypoints_finales)
 print("Optimización exitosa, en caso de que la ruta pase por alguna zona prohibida mueva los puntos que forman el segmento en el editor, guarde el flight plan y vuelva a ejecutar la optimización.")
 
