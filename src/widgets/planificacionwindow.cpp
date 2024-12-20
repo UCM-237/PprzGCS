@@ -484,54 +484,135 @@ void PlanificacionWindow::VentanaSector()
     ventana->show();
 }
 
+//void PlanificacionWindow::on_button_move_wp_clicked()
+//{
+//    this->setEnabled(false);  // Deshabilitar toda la ventana
+//    QMessageBox::information(this, "Moviendo waypoints", "Se va a cargar el flight plan, espere hasta que se haya completado el proceso.");
+//    bool estado_send_move_wp;
+//    estado_send_move_wp = 1;
+//    disconnect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
+//    // Obtener la ruta del archivo usando QString
+//    QString name_flight_plan = ui->label_mapa->text();
+
+//    QFileInfo fileInfo(name_flight_plan); // Usar QFileInfo para manejar la ruta
+//    const QString filename = homeDir + "/PprzGCS/Planificacion/Resources/waypoints_opt/" + fileInfo.baseName() + "_waypoints.txt"; // Obtener el nombre sin extensión
+////    Ruta_mapa = ui->label_mapa->text();
+//    qDebug() << "ruta waypoint " << filename;
+////    qDebug() << "Ruta mapa " << Ruta_mapa;
+//    double latitudes[100];  // Asegúrate de que el tamaño sea suficiente
+//    double longitudes[100];
+//    int max_puntos = 100;    // Número máximo de puntos que leerás del archivo
+
+//    // Llamada a la función para leer los puntos del archivo
+//    int puntos_leidos = leerArchivo(filename.toStdString().c_str(), latitudes, longitudes, max_puntos);
+
+//    // Configurar el temporizador para enviar los puntos uno por uno
+//    currentIndex = 0;  // Reiniciar el índice de los puntos
+//    timer = new QTimer(this);
+
+//    // Conectar la señal timeout del temporizador a una función lambda que maneja el envío de puntos
+//    connect(timer, &QTimer::timeout, [=]() mutable {
+//        if (currentIndex < puntos_leidos) {
+//            double latitud = latitudes[currentIndex];
+//            double longitud = longitudes[currentIndex];
+//            sendwp(latitud, longitud, estado_send_move_wp);  // Llamada a tu función para enviar el waypoint
+//            estado_send_move_wp = 0;
+//            qDebug() << ": " << latitudes[currentIndex] << ", " << longitudes[currentIndex] << " iteración: " << currentIndex;
+//                    currentIndex++;
+//        } else {
+//            timer->stop();  // Detener el temporizador cuando se hayan enviado todos los puntos
+//            timer->deleteLater();
+//            this->setEnabled(true);  // Deshabilitar toda la ventana
+//            qDebug() << "Todos los puntos han sido enviados.";
+//        }
+//    });
+
+//    // Iniciar el temporizador con un intervalo de 1 segundo (1000 ms)
+//    timer->start(300);
+
+//    //}
+//}
+
+
 void PlanificacionWindow::on_button_move_wp_clicked()
 {
-    this->setEnabled(false);  // Deshabilitar toda la ventana
-    QMessageBox::information(this, "Moviendo waypoints", "Se va a cargar el flight plan, espere hasta que se haya completado el proceso.");
-    bool estado_send_move_wp;
-    estado_send_move_wp = 1;
-    disconnect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
-    // Obtener la ruta del archivo usando QString
-    QString name_flight_plan = ui->label_mapa->text();
+    try {
+        this->setEnabled(false);  // Deshabilitar toda la ventana
+        QMessageBox::information(this, "Moviendo waypoints", "Se va a cargar el flight plan, espere hasta que se haya completado el proceso.");
+        bool estado_send_move_wp = true;
 
-    QFileInfo fileInfo(name_flight_plan); // Usar QFileInfo para manejar la ruta
-    const QString filename = homeDir + "/PprzGCS/Planificacion/Resources/waypoints_opt/" + fileInfo.baseName() + "_waypoints.txt"; // Obtener el nombre sin extensión
-//    Ruta_mapa = ui->label_mapa->text();
-    qDebug() << "ruta waypoint " << filename;
-//    qDebug() << "Ruta mapa " << Ruta_mapa;
-    double latitudes[100];  // Asegúrate de que el tamaño sea suficiente
-    double longitudes[100];
-    int max_puntos = 100;    // Número máximo de puntos que leerás del archivo
+        disconnect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
 
-    // Llamada a la función para leer los puntos del archivo
-    int puntos_leidos = leerArchivo(filename.toStdString().c_str(), latitudes, longitudes, max_puntos);
+        // Obtener la ruta del archivo usando QString
+        QString name_flight_plan = ui->label_mapa->text();
 
-    // Configurar el temporizador para enviar los puntos uno por uno
-    currentIndex = 0;  // Reiniciar el índice de los puntos
-    timer = new QTimer(this);
-
-    // Conectar la señal timeout del temporizador a una función lambda que maneja el envío de puntos
-    connect(timer, &QTimer::timeout, [=]() mutable {
-        if (currentIndex < puntos_leidos) {
-            double latitud = latitudes[currentIndex];
-            double longitud = longitudes[currentIndex];
-            sendwp(latitud, longitud, estado_send_move_wp);  // Llamada a tu función para enviar el waypoint
-            estado_send_move_wp = 0;
-            qDebug() << ": " << latitudes[currentIndex] << ", " << longitudes[currentIndex] << " iteración: " << currentIndex;
-                    currentIndex++;
-        } else {
-            timer->stop();  // Detener el temporizador cuando se hayan enviado todos los puntos
-            timer->deleteLater();
-            this->setEnabled(true);  // Deshabilitar toda la ventana
-            qDebug() << "Todos los puntos han sido enviados.";
+        if (name_flight_plan.isEmpty()) {
+            throw std::runtime_error("El label del mapa está vacío. No se puede continuar.");
         }
-    });
 
-    // Iniciar el temporizador con un intervalo de 1 segundo (1000 ms)
-    timer->start(300);
+        QFileInfo fileInfo(name_flight_plan); // Usar QFileInfo para manejar la ruta
+        const QString filename = homeDir + "/PprzGCS/Planificacion/Resources/waypoints_opt/" + fileInfo.baseName() + "_waypoints.txt"; // Obtener el nombre sin extensión
+        qDebug() << "Ruta waypoint: " << filename;
 
-    //}
+        if (!QFile::exists(filename)) {
+            throw std::runtime_error("El archivo de waypoints no existe: " + filename.toStdString());
+        }
+
+        double latitudes[100];  // Asegúrate de que el tamaño sea suficiente
+        double longitudes[100];
+        int max_puntos = 100;    // Número máximo de puntos que leerás del archivo
+
+        // Llamada a la función para leer los puntos del archivo
+        int puntos_leidos = leerArchivo(filename.toStdString().c_str(), latitudes, longitudes, max_puntos);
+
+        if (puntos_leidos <= 0) {
+            throw std::runtime_error("No se pudieron leer puntos del archivo.");
+        }
+
+        // Configurar el temporizador para enviar los puntos uno por uno
+        currentIndex = 0;  // Reiniciar el índice de los puntos
+        timer = new QTimer(this);
+
+        // Conectar la señal timeout del temporizador a una función lambda que maneja el envío de puntos
+        connect(timer, &QTimer::timeout, [=]() mutable {
+            try {
+                if (currentIndex < puntos_leidos) {
+                    double latitud = latitudes[currentIndex];
+                    double longitud = longitudes[currentIndex];
+                    sendwp(latitud, longitud, estado_send_move_wp);  // Llamada a tu función para enviar el waypoint
+                    estado_send_move_wp = false;
+                    qDebug() << "Waypoint enviado - Latitud:" << latitudes[currentIndex]
+                             << " Longitud:" << longitudes[currentIndex]
+                             << " Iteración:" << currentIndex;
+                    currentIndex++;
+                } else {
+                    timer->stop();  // Detener el temporizador cuando se hayan enviado todos los puntos
+                    timer->deleteLater();
+                    this->setEnabled(true);  // Volver a habilitar la ventana
+                    qDebug() << "Todos los puntos han sido enviados.";
+                }
+            } catch (const std::exception &e) {
+                qDebug() << "Error durante el envío de waypoints:" << e.what();
+                QMessageBox::critical(this, "Error", "Ocurrió un error durante el envío de los waypoints.");
+                timer->stop();
+                timer->deleteLater();
+                this->setEnabled(true);
+            }
+        });
+
+        // Iniciar el temporizador con un intervalo de 1 segundo (1000 ms)
+        timer->start(300);
+    } catch (const std::exception &e) {
+        qDebug() << "Error en on_button_move_wp_clicked:" << e.what();
+        QMessageBox::critical(this, "Error", QString("Ocurrió un error: %1").arg(e.what()));
+        this->setEnabled(true);
+    } catch (...) {
+        qDebug() << "Error desconocido en on_button_move_wp_clicked.";
+        QMessageBox::critical(this, "Error", "Ocurrió un error desconocido.");
+        this->setEnabled(true);
+    }
 }
+
 
 //Función para contar el número de waypoints que hay en el xml cargado
 int PlanificacionWindow::countWaypoints(QString &filePath) {
