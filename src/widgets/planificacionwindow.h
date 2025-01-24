@@ -37,6 +37,7 @@ signals:
     
 private slots:
     void sendwp(double latitud, double longitud, bool aux_reset);
+    void sendNumwp(quint8 numWpMoved);
     void on_button_estrategia_clicked();
     void on_button_optimizacion_clicked();   
     //void on_button_compilacion_clicked(); 

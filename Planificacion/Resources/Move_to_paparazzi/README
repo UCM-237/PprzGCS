@@ -1,0 +1,6 @@
+En este archivo se detalla a que paths hay que mover las carpetas de este directorio
+
+- UCM -> ~/paparazzi/conf/flight_plans
+- Defaults -> ~/paparazzi/conf/flight_plans
+- gvf.c -> ~/paparazzi/sw/airborne/modules/guidance/gvf (En esta carpeta ya habrá un gvf.c, hay que sustituirlo)
+- send_num_wp_moved.py -> ~/paparazzi/sw/ground_segment_python (En caso de que el envío del mensaje NUM_WAYPOINT_MOVED_DATALINK se haga a través de python)
