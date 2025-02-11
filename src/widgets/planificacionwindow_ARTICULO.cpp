@@ -61,7 +61,7 @@ PlanificacionWindow::PlanificacionWindow(QWidget *parent)
 //    connect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
     connect(ui->button_clear, &QPushButton::clicked, this, &PlanificacionWindow::on_button_clear_clicked);
     connect(ui->button_abrir_mapa, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_mapa_clicked);
-    //connect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_controlador_clicked);
+
     connect(ui->button_abrir_conf, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_conf_clicked);
 
     connect(ui->button_move_wp, &QPushButton::clicked, this, &PlanificacionWindow::on_button_move_wp_clicked);
@@ -94,7 +94,7 @@ PlanificacionWindow::PlanificacionWindow(QWidget *parent)
     if (lineas.size() > 2) ui->label_controlador->setText(lineas[2].split(":").last().trimmed());
     if (lineas.size() > 3) ui->label_conf->setText(lineas[3].split(":").last().trimmed());
     if (lineas.size() > 4) ui->label_aircraft->setText(lineas[4].split(":").last().trimmed());
-    if (lineas.size() > 5) ui->label_Puntos_paso->setText(lineas[5].split(":").last().trimmed());
+
 
     //COnectamos las señales que gestionan las salidas de errores del optimizador
     connect(this, &PlanificacionWindow::errorSignal, this, &PlanificacionWindow::mostrarError);
@@ -151,7 +151,6 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
     Ruta_conf = ui->label_conf->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     // Intentamos abrir el archivo para escribir
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -321,7 +320,6 @@ void PlanificacionWindow::on_button_datos_clicked()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_conf = ui->label_conf->text();
     Ruta_aircraft = ui->label_aircraft->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
@@ -348,7 +346,6 @@ void PlanificacionWindow::on_button_editor_clicked()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
     Ruta_conf = ui->label_conf->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
@@ -482,27 +479,6 @@ void PlanificacionWindow::on_button_abrir_conf_clicked()
     ui->label_controlador->setText(ruta_controller_cargado);
 }
 
-
-//void PlanificacionWindow::on_button_abrir_controlador_clicked() // Similar para el archivo de controlador
-//{
-//    disconnect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_controlador_clicked);
-
-//    // Directorio base desde donde calcular la ruta relativa
-//    QString basePath = QDir::homePath() + "/paparazzi/conf/airframes";
-
-//    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de controlador"), QDir::homePath() + "/paparazzi/conf/airframes", tr("Archivos de controlador (*.xml);;Todos los archivos (*)"));
-
-//    // Si el usuario selecciona un archivo
-//    if (!filePath.isEmpty()) {
-//        QFileInfo fileInfo(filePath); // Obtener información del archivo
-//        QDir baseDir(basePath); // Crear un objeto QDir con el directorio base
-//        QString relativePath = baseDir.relativeFilePath(filePath); // Calcular la ruta relativa
-
-//        // Mostrar la ruta relativa en el QLabel
-//        ui->label_controlador->setText(relativePath); // Ejemplo: "UCM/flight_plan_default.xml"
-//    }
-//}
-
 void PlanificacionWindow::VentanaSector()
 {
     QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
@@ -511,7 +487,6 @@ void PlanificacionWindow::VentanaSector()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
     Ruta_conf = ui->label_conf->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);

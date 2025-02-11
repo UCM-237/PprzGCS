@@ -11,9 +11,9 @@
 
 sectors_window::sectors_window(QWidget *parent)
     : QMainWindow(parent), listWidget(new QListWidget(this)), tableWidget(new QTableWidget(this)),
-      button_add_sector(new QPushButton("Añadir sector", this)),
-      button_remove_sector(new QPushButton("Eliminar sector", this)),
-      button_save(new QPushButton("Guardar sectores", this)),  // Botón para guardar sectores en XML
+      button_add_sector(new QPushButton("Add sector", this)),
+      button_remove_sector(new QPushButton("Delete sector", this)),
+      button_save(new QPushButton("Save sector", this)),  // Botón para guardar sectores en XML
       columnCount(0) {
 
     // Configura el tamaño inicial de la ventana

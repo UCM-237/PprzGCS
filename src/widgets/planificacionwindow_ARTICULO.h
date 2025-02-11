@@ -4,7 +4,7 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QMenu>
-#include <QProcess>  // Para ejecutar scripts de Python 
+#include <QProcess>  // Para ejecutar scripts de Python
 #include "mapwidget.h"
 #include "pprz_dispatcher.h"
 #include <pprzlinkQt/Message.h>
@@ -14,17 +14,17 @@
 //#include "movewpopt.h"
 #include "waypoint_item.h"
 #include "flightplan.h"
-#include "pprzpalette.h" 
-
+#include "pprzpalette.h"
+ 
 QT_BEGIN_NAMESPACE
-namespace Ui { class PlanificacionWindow; } 
+namespace Ui { class PlanificacionWindow; }
 QT_END_NAMESPACE
 
-class PlanificacionWindow : public QMainWindow
-{ 
+class PlanificacionWindow : public QMainWindow 
+{
     Q_OBJECT
 
-public:
+public: 
     PlanificacionWindow(QWidget *parent = nullptr);
     ~PlanificacionWindow();
     //void sendMessage(pprzlink::Message);
@@ -44,7 +44,6 @@ private slots:
     void on_button_editor_clicked();  
     void on_button_datos_clicked(); 
     void on_button_move_wp_clicked();
-    //void on_button_abrir_controlador_clicked();
     void on_button_abrir_mapa_clicked();
     void on_button_abrir_conf_clicked();
     void on_button_clear_clicked();

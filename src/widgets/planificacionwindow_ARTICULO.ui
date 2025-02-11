@@ -29,39 +29,14 @@
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Aircraft               </string>
+          <string>Aircraft/USV    </string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QLineEdit" name="label_aircraft">
          <property name="text">
-          <string>Rover_UCM</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Conf file              </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="label_conf">
-         <property name="text">
-          <string>conf </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="button_abrir_conf">
-         <property name="text">
-          <string>Explorer</string>
+          <string>Rover_UCM </string>
          </property>
         </widget>
        </item>
@@ -79,12 +54,37 @@
        <item>
         <widget class="QLineEdit" name="label_mapa">
          <property name="text">
-          <string>flight_plan_pruebaQT  </string>
+          <string>flight_plan_pruebaQT</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="button_abrir_mapa">
+         <property name="text">
+          <string>Explorer</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Conf file             </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="label_conf">
+         <property name="text">
+          <string>conf </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_abrir_conf">
          <property name="text">
           <string>Explorer</string>
          </property>
@@ -109,9 +109,9 @@
             <colorrole role="Base">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>136</red>
-               <green>138</green>
-               <blue>133</blue>
+               <red>186</red>
+               <green>189</green>
+               <blue>182</blue>
               </color>
              </brush>
             </colorrole>
@@ -120,9 +120,9 @@
             <colorrole role="Base">
              <brush brushstyle="SolidPattern">
               <color alpha="255">
-               <red>136</red>
-               <green>138</green>
-               <blue>133</blue>
+               <red>186</red>
+               <green>189</green>
+               <blue>182</blue>
               </color>
              </brush>
             </colorrole>
@@ -130,26 +130,11 @@
            <disabled/>
           </palette>
          </property>
-         <property name="text">
-          <string>rover2f405WSE</string>
+         <property name="autoFillBackground">
+          <bool>false</bool>
          </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Waypoints         </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="label_Puntos_paso">
-         <property name="text">
-          <string>11</string>
+          <string>Rover</string>
          </property>
         </widget>
        </item>

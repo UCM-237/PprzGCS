@@ -6,7 +6,10 @@
 #include "aircraft.h"
 #include "gcs_utils.h"
 #include "graphics_icon.h"
-
+#include <QFile>
+#include <QTextStream>
+#include <QList>
+#include "point2dlatlon.h"
 
 AircraftItem::AircraftItem(Point2DLatLon pt, QString ac_id, double neutral_scale_zoom, QObject *parent) :
     MapItem(ac_id, neutral_scale_zoom, parent),
@@ -87,22 +90,64 @@ void AircraftItem::updateGraphics(MapWidget* map, uint32_t update_event) {
 
         }
     }
+
 }
+
+
+    void AircraftItem::saveTrackPointsToFile(const QList<Point2DLatLon>& track_points, const QString& filename) {
+    // Abre el archivo para escritura
+    QFile file(filename);
+
+    // Verifica si el archivo se abre correctamente
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "No se pudo abrir el archivo para escritura:" << filename;
+        return;
+    }
+
+    // Prepara el flujo de salida
+    QTextStream out(&file);
+
+    // Recorre los puntos de track_points y escribe en el archivo
+    for (const Point2DLatLon& point : track_points) {
+        // Se asegura de que se obtienen correctamente latitud y longitud
+        double lat = const_cast<Point2DLatLon&>(point).lat();
+        double lon = const_cast<Point2DLatLon&>(point).lon();
+
+        // Depuración: Verifica que los valores se están escribiendo correctamente
+        qDebug() << "Escribiendo punto: Latitud:" << lat << "Longitud:" << lon;
+
+        // Escribe el punto en el archivo en formato CSV (lat, lon)
+        out << lat << "," << lon << "\n";
+    }
+
+    // Cierra el archivo
+    file.close();
+
+    // Depuración: Confirma que el archivo se guardó
+    qDebug() << "Track points guardados en" << filename;
+}
+
+
+
+
 
 void AircraftItem::setPosition(Point2DLatLon pt) {
     latlon = pt;
     auto settings = getAppSettings();
 
     track_points.append(pt);
-    if(track_points.size() > settings.value("map/aircraft/track_size").toInt()) {
+    if (track_points.size() > settings.value("map/aircraft/track_size").toInt()) {
         track_points.removeFirst();
     }
+
 
     emit itemChanged();
 }
 
 void AircraftItem::clearTrack() {
+    saveTrackPointsToFile(track_points, "track_points.txt");
     track_points.clear();
+
     emit itemChanged();
 }
 

@@ -82,7 +82,7 @@
    <item>
     <widget class="QPushButton" name="config_button">
      <property name="text">
-      <string>Planificación</string>
+      <string>Planner Window</string>
      </property>
     </widget>
    </item>

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>803</width>
+    <height>521</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -39,21 +39,21 @@
     <item>
      <widget class="QPushButton" name="button_add_sector">
       <property name="text">
-       <string>Añadir sector</string>
+       <string>Add sector</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="button_sector_delete">
       <property name="text">
-       <string>Eliminar sector</string>
+       <string>Delete sector</string>
       </property>
      </widget>
     </item>
     <item>
      <widget class="QPushButton" name="button_save_sectors">
       <property name="text">
-       <string>Guardar</string>
+       <string>Save</string>
       </property>
      </widget>
     </item>

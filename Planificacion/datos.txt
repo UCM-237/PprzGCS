@@ -1,6 +1,6 @@
 Estrategia seleccionada: 
-Ruta mapa:UCM/prueba_gvf_lines_array.xml
-Ruta controlador:UCM/rover2f405.xml
+Ruta mapa:UCM/flight_plan_example.xml
+Ruta controlador:UCM/rover2f405WSE.xml
 Ruta conf:UCM/conf.xml
-Ruta aircraft:Rover_UCM
-Numero de puntos de paso:12
+Ruta aircraft:Rover_Avelino
+Numero de puntos de paso:

@@ -376,7 +376,7 @@ def visualize_3(problem, x, sectors, fig=None, ax=None, show=True, label=True):
                 ax.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
          
         #fig.suptitle(f"Route length: {problem.get_route_length(x)}km \nRoute time: {problem.get_route_length(x)*60/velocidad_media}min")
-        fig.suptitle("Ruta a realizar \n Verifique que no pasa por zonas prohibidas")
+        fig.suptitle("Route to take \nVerify that it does not pass through prohibited areas")
 
         if show:
             plt.show()  # Muestra el gráfico en una ventana emergente
@@ -751,7 +751,6 @@ for i in range(len(sectors_names)):
         # plt.plot(x_coords, y_coords, marker='o', linestyle='-', color='b', label='Waypoints')
         # plt.scatter(x_coords, y_coords, marker='x', color='red')  # Marcar los puntos
         # #plt.scatter(centroides[0], centroides[1], s=250, marker='o', color='orange') #Marcar el centroide
-        # plt.title('Waypoints generados en el área (Pentágono Custom)')
         # plt.xlabel('Coordenada X')
         # plt.ylabel('Coordenada Y')
         # plt.grid(True)
@@ -770,15 +769,15 @@ waypoints
 
 if sectores_navegacion > 0:
     #3 Crear el gráfico
-    plt.figure(figsize=(8, 6))
+    plt.figure()
     
     # Dibujar el camino
     plt.plot(resultados_sectores[:,0], resultados_sectores[:,1], marker='o', linestyle='-', color='b', label='Camino')
     
     # Agregar etiquetas y título
-    plt.title('Ruta completa')
-    plt.xlabel('Coordenada X')
-    plt.ylabel('Coordenada Y')
+    plt.title('Route')
+    plt.xlabel('X')
+    plt.ylabel('Y')
     plt.grid(True)
     plt.legend()
     

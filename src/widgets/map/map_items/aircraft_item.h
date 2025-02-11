@@ -9,7 +9,7 @@
 #include "graphics_icon.h"
 #include "aircraft_watcher.h"
 #include "graphics_group.h"
-
+#include "point2dlatlon.h"
 
 class AircraftItem : public MapItem
 {
@@ -27,6 +27,8 @@ public:
     void setPosition(Point2DLatLon pt);
     void setHeading(double h);
     void clearTrack();
+    
+   void saveTrackPointsToFile(const QList<Point2DLatLon>& track_points, const QString& filename);
 
 signals:
 
