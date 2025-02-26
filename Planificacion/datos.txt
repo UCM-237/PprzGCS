@@ -1,6 +1,6 @@
-Estrategia seleccionada: 
-Ruta mapa:UCM/flight_plan_example.xml
+Estrategia seleccionada:  Sin Mapa
+Ruta mapa:UCM/flight_plan_example_only_wp.xml
 Ruta controlador:UCM/rover2f405WSE.xml
 Ruta conf:UCM/conf.xml
-Ruta aircraft:Rover_Avelino
-Numero de puntos de paso:
+Ruta aircraft:UAV_Boyi
+Numero de puntos de paso:11
