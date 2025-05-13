@@ -62,7 +62,7 @@ Estrategia = pd.read_csv(ruta_datos, delimiter=':', header = None) #Datos.txt
 Estrategia=pd.DataFrame(Estrategia)
 
 #Carga de archivo XML
-Mapa = Estrategia.iloc[0,1]
+TipoTrayectoria = Estrategia.iloc[0,1]
 Archivo = Estrategia.iloc[1,1]
 Controlador = Estrategia.iloc[2,1]
 Conf = Estrategia.iloc[3,1]
@@ -356,7 +356,7 @@ def visualize_3(problem, x, sectors, j, fig=None, ax=None, show=True, label=True
             ax.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
         
     #fig.suptitle(f"Route length: {problem.get_route_length(x)}km \nRoute time: {problem.get_route_length(x)*60/velocidad_media}min")
-    fig.suptitle("Final route")
+    fig.suptitle("Final route PtP")
     
     ax.legend()
     plt.legend(loc="upper left")
@@ -452,7 +452,7 @@ res = minimize(
 
 #PARA VISUALIZAR TODAS LAS SOLUCIONES DEL FRENTE
 
-if sectores_navegacion == 0: 
+if sectores_navegacion == 0 and TipoTrayectoria == "Point to point": 
     visualize_3(problem, res.X, sectors, j=0)
 
 resultado_rutas = []
@@ -641,28 +641,6 @@ for j in range(len(resultado_rutas)):
     resultados_sectores_rutas.append(resultado)
     resultado = np.vstack(resultado)
 
-    # if sectores_navegacion > 0:
-    #     plt.figure(figsize=(10, 8))  # Ajustar tamaño del gráfico
-        
-    #     # 1️⃣ Dibujar el camino
-    #     plt.plot(resultado[:, 0], resultado[:, 1], marker='o', color='b', linestyle='-', label='Camino')
-    
-    #     # 2️⃣ Dibujar las regiones (sectores)
-    #     for sector_name in sectors_names:
-    #         if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
-    #             poligono = Polygon(sectors[sector_name])  # Convertir a polígono
-    #             x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
-    #             plt.fill(x_poly, y_poly, alpha=0.3, label=sector_name)  # Dibujar la región con transparencia
-    
-    #     # 3️⃣ Agregar etiquetas y título
-    #     plt.title('Route with Regions')
-    #     plt.xlabel('X')
-    #     plt.ylabel('Y')
-    #     plt.legend()
-    #     plt.grid(True)
-    
-    #     # 4️⃣ Mostrar el gráfico
-    #     plt.show()
 
 def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas):
     """
@@ -906,83 +884,81 @@ else:
     ruta_mas_corta = resultados_sectores
     resultados_sectores_ruta_mas_corta = resultados_sectores
 
+if TipoTrayectoria == "Point to point":
+    if len(resultados_sectores_rutas) > 1:
 
-if len(resultados_sectores_rutas) > 1:
-
-    if sectores_navegacion > 0:
-        resultados_sectores = resultados_sectores_ruta_mas_corta
-        plt.figure(figsize=(10, 8))  # Ajustar tamaño del gráfico
+        if sectores_navegacion > 0:
+            resultados_sectores = resultados_sectores_ruta_mas_corta
+            
+            #Dibujar el camino
+            plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
+            plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            
+            #Dibujar los puntos de rodeo (superponiendo sobre el camino)
+            plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos', s=150)
+            for i, c in enumerate(resultados_sectores_ruta_mas_corta):
+                    plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
+            #Dibujar las regiones (sectores)
+            for sector_name in sectors_names:
+                if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
+                    if sector_name.startswith("Zona_prohibida"):
+                        color = "red"
+                    else:
+                        color = "blue"
+                    poligono = Polygon(sectors[sector_name])  # Convertir a polígono
+                    x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
+                    plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
         
-        #Dibujar el camino
-        plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
-        plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            #Agregar etiquetas y título
+            plt.title('Final Route PtP ')
+            plt.xlabel('X')
+            plt.ylabel('Y')
         
-        #Dibujar los puntos de rodeo (superponiendo sobre el camino)
-        plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos', s=150)
-        for i, c in enumerate(resultados_sectores_ruta_mas_corta):
-                plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
-        #Dibujar las regiones (sectores)
-        for sector_name in sectors_names:
-            if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
-                if sector_name.startswith("Zona_prohibida"):
-                    color = "red"
-                else:
-                    color = "blue"
-                poligono = Polygon(sectors[sector_name])  # Convertir a polígono
-                x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
-                plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
-    
-        #Agregar etiquetas y título
-        plt.title('Final Route')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-    
-        #Evitar duplicados en la leyenda
-        handles, labels = plt.gca().get_legend_handles_labels()
-        by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
-        plt.legend(by_label.values(), by_label.keys())
-    
-        plt.grid(True)
-    
-        #Mostrar el gráfico
-        plt.show()
+            #Evitar duplicados en la leyenda
+            handles, labels = plt.gca().get_legend_handles_labels()
+            by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
+            plt.legend(by_label.values(), by_label.keys())
         
-else:
-    if sectores_navegacion > 0:
-        plt.figure(figsize=(10, 8))  # Ajustar tamaño del gráfico
-    
-        #Dibujar el camino
-        #plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
-        plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            plt.grid(True)
         
-        #Dibujar los puntos de rodeo (superponiendo sobre el camino)
-        plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos')
+            #Mostrar el gráfico
+            plt.show()
+            
+    else:
+        if sectores_navegacion > 0:
         
-        #Dibujar las regiones (sectores)
-        for sector_name in sectors_names:
-            if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
-                if sector_name.startswith("Zona_prohibida"):
-                    color = "red"
-                else:
-                    color = "blue"
-                poligono = Polygon(sectors[sector_name])  # Convertir a polígono
-                x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
-                plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
-    
-        #Agregar etiquetas y título
-        plt.title('Final Route')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-    
-        #Evitar duplicados en la leyenda
-        handles, labels = plt.gca().get_legend_handles_labels()
-        by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
-        plt.legend(by_label.values(), by_label.keys())
-    
-        plt.grid(True)
-    
-        #Mostrar el gráfico
-        plt.show()
+            #Dibujar el camino
+            #plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
+            plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            
+            #Dibujar los puntos de rodeo (superponiendo sobre el camino)
+            plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos')
+            
+            #Dibujar las regiones (sectores)
+            for sector_name in sectors_names:
+                if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
+                    if sector_name.startswith("Zona_prohibida"):
+                        color = "red"
+                    else:
+                        color = "blue"
+                    poligono = Polygon(sectors[sector_name])  # Convertir a polígono
+                    x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
+                    plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
+        
+            #Agregar etiquetas y título
+            plt.title('Final Route PtP')
+            plt.xlabel('X')
+            plt.ylabel('Y')
+        
+            #Evitar duplicados en la leyenda
+            handles, labels = plt.gca().get_legend_handles_labels()
+            by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
+            plt.legend(by_label.values(), by_label.keys())
+        
+            plt.grid(True)
+        
+            #Mostrar el gráfico
+            plt.show()
 # Ahora hay que meter estos puntos en el xml
 
 # Añadimos una columna de ceros donde meteremos los nombres
@@ -1108,15 +1084,11 @@ def guardar_puntos_en_txt(puntos, archivo_salida):
 
 Archivo_basename = os.path.splitext(os.path.basename(Archivo))[0]
 
-# Llamada a la función para guardar los puntos en el archivo de texto
-ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
-guardar_puntos_en_txt(ruta, ruta_waypoints_finales)
-print("Optimización exitosa.")
+if TipoTrayectoria == "Point to point":
+    ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
+    guardar_puntos_en_txt(ruta, ruta_waypoints_finales)
+    print("Optimización exitosa.")
 
-
-# ## HASTA AQUI ES LO QUE SE NECESITA PARA EL OPTIMIZADOR DEL TSP. A partir de aqui se sacan los puntos de control para obtener las curvas de Bézier y se sacan los mensajes de los logs para hacer estudio de trayectoria y velocidad.
-
-#A partir de aqui para sacar los puntos de control de los puntos de paso para recorrer la ruta con curvas de Bézier
 
 from scipy.special import comb
 
@@ -1168,10 +1140,6 @@ def get_bezier_parameters(X, Y, smooth_factor, degree=12):
     final[len(final)-1] = [X[len(X)-1], Y[len(Y)-1]]
     return final
 
-
-# In[23]:
-
-
 def bernstein_poly(i, n, t):
     """
      The Bernstein polynomial of n, i as a function of t
@@ -1205,6 +1173,7 @@ def bezier_curve(points, nTimes=1000):
     yvals = np.dot(yPoints, polynomial_array)
 
     return xvals, yvals
+
 
 #Añadimos los puntos
 points = []
@@ -1241,7 +1210,8 @@ def calcular_puntos_en_recta(punto1, punto2, x_values):
 
 import matplotlib.pyplot as plt
 # Plot the original points
-plt.plot(xpoints, ypoints, "ro", markersize = 7, label='Original Points')
+plt.scatter(xpoints, ypoints, s=150, c="black", edgecolors="white", label="Original Points")
+
 # Get the Bezier parameters based on a degree.
 data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2) #BZ0 BZ5 BZ8 BZ11 son los de paso, por tanto habrá 4*2 + 1 puntos de contol ya que el algoritmo te pone 1 pnt cntrl en el 1 punto y en el último
 
@@ -1265,21 +1235,20 @@ x_val = np.insert(x_val, 1, puntos_en_recta[0][0])
 y_val = np.insert(y_val, 1, puntos_en_recta[0][1])
 #y_val = np.insert(y_val, 2, puntos_en_recta[1][1])
 
+if TipoTrayectoria == "Continuous":
+    # Plot the control points
+    plt.scatter(x_val, y_val, s=150, c="blue", edgecolors="white", linewidths=1, label='Control Points')
 
-# Plot the control points
-#plt.plot(x_val,y_val,'k--o', label='Control Points')
+    for i, c in enumerate(zip(xpoints, ypoints)):
+        plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
 
-# Plot the resulting Bezier curve
-xvals, yvals = bezier_curve(data, nTimes=1000)
-#plt.xlim(40, 40.5)
-#plt.ylim(-3.72725, -3.72580)
-# plt.plot(xvals, yvals, 'b-', label='B Curve')
-# plt.legend()
-# plt.show()
-
-
-# In[27]:
-
+    # Plot the resulting Bezier curve
+    xvals, yvals = bezier_curve(data, nTimes=1000)
+    plt.plot(xvals, yvals, 'black', label='Curve')
+    plt.title("Final route continuous")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 #Para añadir los puntos de paso y de control en el txt para mandarselo a paparazzi desde la GCS. Guarda 1 paso, 2 control, 1 paso, 2 control...
 #Añadimos en primer lugar BZ0 y los 4 puntos de control (si es con continuidad C2)
@@ -1308,166 +1277,19 @@ Puntos_Bezier = np.array(Puntos_Bezier)
 
 #En caso de que se quiera guardar la ruta con curvas de Bézier en vez de point-to-point
 
-puntos_control=[x_val, y_val]
+if TipoTrayectoria == "Continuous":
+    puntos_control=[x_val, y_val]
 
-# Concatenar la columna de nombres y Puntos
-columna_nombres_bz = np.zeros(len(Puntos_Bezier))
-ruta_bz = np.empty(len(Puntos_Bezier), dtype=dtype)  # Crear un array vacío del tipo correcto
-ruta_bz['nombre'] = columna_nombres_bz[:]  # Asignar la columna de nombres
-ruta_bz['x'] = Puntos_Bezier[:, 0]  # Asignar la columna x
-ruta_bz['y'] = Puntos_Bezier[:, 1]  # Asignar la columna y
+    # Concatenar la columna de nombres y Puntos
+    columna_nombres_bz = np.zeros(len(Puntos_Bezier))
+    ruta_bz = np.empty(len(Puntos_Bezier), dtype=dtype)  # Crear un array vacío del tipo correcto
+    ruta_bz['nombre'] = columna_nombres_bz[:]  # Asignar la columna de nombres
+    ruta_bz['x'] = Puntos_Bezier[:, 0]  # Asignar la columna x
+    ruta_bz['y'] = Puntos_Bezier[:, 1]  # Asignar la columna y
 
-for i in range(len(resultados_sectores)):
-        ruta_bz[i]['nombre']=f'BZ{i}'
+    for i in range(len(resultados_sectores)):
+            ruta_bz[i]['nombre']=f'BZ{i}'
 
-ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints_bez.txt")
-guardar_puntos_en_txt(ruta_bz, ruta_waypoints_finales)
-
-
-# In[29]:
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-#Para sacar los datos de los mensajes que se quieran de los log
-#Posible idea, añadir una condición que se seleccione en la GCS si se quieren extraer los logs
-
-#Vamos a sacar el data de la simulación correspondiente
-#En primer lugar cargamos el archivo
-import os
-home_dir = os.path.expanduser("~")
-#ruta_datos = os.path.join(home_dir, "paparazzi", "var", "logs", "BZ_2.data")
-ruta_datos = os.path.join(home_dir, "Desktop", "Simulacion Boyi", "PtP", "PtP.data")
-# Listas para almacenar las filas filtradas
-nps_speed_pos_lines = []
-energy_lines = []
-
-# Leer el archivo línea por línea
-with open(ruta_datos, "r", encoding="utf-8") as file:
-    for line in file:
-        if "NPS_SPEED_POS" in line:
-            nps_speed_pos_lines.append(line.strip())  # Almacenar la línea
-        elif "ENERGY" in line:
-            energy_lines.append(line.strip())
-
-# Lista para almacenar la magnitud de la velocidad
-velocidades_x = []
-velocidades_y = []
-velocidades = []
-aceleraciones = []
-pos_x = []
-pos_y = []
-tiempos_v = []
-tiempos_e = []
-energy = []
-wp=[]
-tiempos_wp=[]
-# Leer el archivo y extraer los valores
-with open(ruta_datos, "r", encoding="utf-8") as file:
-    for line in file:
-        if "NPS_SPEED_POS" in line:
-            parts_v = line.split()  # Dividir la línea por espacios
-            
-            # Asegurar que hay suficientes elementos en la línea
-            if len(parts_v) >= 9:
-                try:
-                    # Extraer vx, vy, vz
-                    vx, vy, vz = float(parts_v[6]), float(parts_v[7]), float(parts_v[8])
-                    
-                    ax, ay, az = float(parts_v[3]), float(parts_v[4]), float(parts_v[5])
-
-                    # Extraer x, y, z
-                    x, y, z = float(parts_v[9]), float(parts_v[10]), float(parts_v[11])
-                    
-                    # Calcular la velocidad absoluta v = sqrt(vx^2 + vy^2 + vz^2)
-                    v = np.sqrt(vx**2 + vy**2 + vz**2)
-                    a = np.sqrt(ax**2 + ay**2 + az**2)
-                    # Guardar el valor
-                    velocidades.append(v)
-                    velocidades_x.append(vx)
-                    velocidades_y.append(vy)
-                    aceleraciones.append(a)
-                    pos_x.append(x)
-                    pos_y.append(y)
-                    
-                    # Extraer tiempos
-                    t_v = float(parts_v[0])
-
-                    #Guardar el valor
-                    tiempos_v.append(t_v)
-                except ValueError:
-                    continue  # Si hay un error al convertir, ignorar la línea
-        elif "ROTORCRAFT_NAV_STATUS" in line:
-            parts_wp = line.split()
-            
-            if len(parts_wp) >= 9:
-                try:
-                    waypoint= float(parts_wp[6])
-                    wp.append(waypoint)
-
-                    t_wp = float(parts_wp[0])
-
-                    tiempos_wp.append(t_wp)
-                except ValueError:
-                    continue  # Si hay un error al convertir, ignorar la línea
-# Verificar si hay datos antes de graficar
-
-        elif "ENERGY" in line:
-            parts_e = line.split()
-            
-            if len(parts_e) >= 9:
-                try:
-                    E = float(parts_e[6])
-                    energy.append(E)
-
-                    t_e = float(parts_e[0])
-
-                    tiempos_e.append(t_e)
-                except ValueError:
-                    continue  # Si hay un error al convertir, ignorar la línea
-
-#Para sacar los datos del planner en un txt
-
-import scipy.interpolate as interp
-# Datos de los waypoints
-x_wp = resultados_sectores[:, 0]
-y_wp = resultados_sectores[:, 1]
-
-# Crear interpolación lineal para obtener puntos intermedios
-t = np.linspace(0, 1, len(x_wp))  # Variable de parametrización
-interp_x = interp.interp1d(t, x_wp, kind='linear')
-interp_y = interp.interp1d(t, y_wp, kind='linear')
-
-# Generar puntos intermedios
-t_fino = np.linspace(0, 1, 200)  # Más puntos en el path
-path_x = interp_x(t_fino)
-path_y = interp_y(t_fino)
-
-# Guardar el path en un archivo .txt
-#path_data = np.column_stack((path_x, path_y)) #para ptp
-path_data = np.column_stack((path_x, path_y))
-np.savetxt("BZ_1.txt", path_data, delimiter=",", header="X,Y", comments="")
-
-#Guardar el path de Bézier
-path_data = np.column_stack((xvals, yvals))
-np.savetxt("PtP_Bez.txt", path_data, delimiter=",", header="X,Y", comments="")
-
-
-# In[31]:
-
-
-#Para sacar los datos del log en un txt
-
-pos_x_array = np.array(pos_x)
-pos_y_array = np.array(pos_y)
-
-path_data = np.column_stack((pos_y_array, pos_x_array, tiempos_v))
-
-np.savetxt("PtP.txt", path_data, delimiter=",", header="X,Y, tiempo", comments="")
-
-path_data = np.column_stack((velocidades_x, velocidades_y,tiempos_v))
-np.savetxt("velocidades_simulacion_07_02.txt", path_data, delimiter=",", header="VX,VY, tiempo", comments="")
-
-path_data = np.column_stack((ruta["x"], ruta["y"]))
-np.savetxt("waypoints_xy_07_02.txt", path_data, delimiter=",", header="VX,VY")
+    ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
+    guardar_puntos_en_txt(ruta_bz, ruta_waypoints_finales)
+    print("Optimización exitosa.")

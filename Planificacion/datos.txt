@@ -1,4 +1,4 @@
-Estrategia seleccionada:  Sin Mapa
+Estrategia seleccionada:Point to point
 Ruta mapa:UCM/Calibracion_rozamientos.xml
 Ruta controlador:UCM/boat_f405_v2.xml
 Ruta conf:UCM/conf.xml

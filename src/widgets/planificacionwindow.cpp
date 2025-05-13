@@ -115,20 +115,20 @@ void PlanificacionWindow::on_button_estrategia_clicked()
     QMenu contextMenu(tr("Menú contextual"), this);
 
     // Crear las acciones para el menú
-    QAction action1("Con Mapa", this);
-    QAction action2("Sin Mapa", this);
+    QAction action1("Point to point", this);
+    QAction action2("Continuous", this);
 
     // Conectar las acciones a los slots si es necesario
     connect(&action1, &QAction::triggered, this, [this]() {
-        EstrategiaSeleccionada = " Con Mapa";
+        EstrategiaSeleccionada = "Point to point";
         ui->button_estrategia->setText(EstrategiaSeleccionada);
-        qDebug() << "Estrategia seleccionada:" << EstrategiaSeleccionada;
+        qDebug() << "Tipo de trayectoria: " << EstrategiaSeleccionada;
     });
 
     connect(&action2, &QAction::triggered, this, [this]() {
-        EstrategiaSeleccionada = " Sin Mapa";
+        EstrategiaSeleccionada = "Continuous";
         ui->button_estrategia->setText(EstrategiaSeleccionada);
-        qDebug() << "Estrategia seleccionada:" << EstrategiaSeleccionada;
+        qDebug() << "Tipo de trayectoria: " << EstrategiaSeleccionada;
     });
 
     // Añadir las acciones al menú
@@ -156,7 +156,7 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
     // Intentamos abrir el archivo para escribir
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
-        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+        out << "Estrategia seleccionada:" << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
         out << "Ruta conf:" << Ruta_conf << "\n";
@@ -168,91 +168,83 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
         return;
     }
 
-    if (EstrategiaSeleccionada == " Sin Mapa") {
-        emit infoSignal("Estrategia Seleccionada", "Ejecutando la optimización sin mapa");
 
-        // Crea el hilo
-        QThread* thread_opt = new QThread(this);
+    // Crea el hilo
+    QThread* thread_opt = new QThread(this);
 
-        // Crea un objeto de tipo QObject que contenga el trabajo a hacer
-        QObject* worker_opt = new QObject();
+    // Crea un objeto de tipo QObject que contenga el trabajo a hacer
+    QObject* worker_opt = new QObject();
 
-        // Conecta la ejecución del script al hilo
-        QObject::connect(thread_opt, &QThread::started, worker_opt, [this]() {
-            QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_zonas_prohibidas_pareto.py";
+    // Conecta la ejecución del script al hilo
+    QObject::connect(thread_opt, &QThread::started, worker_opt, [this]() {
+        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_zonas_prohibidas_pareto.py";
 
-            // Verifica si el archivo del script existe antes de intentar ejecutarlo
-            QFile scriptFile(scriptPath);
-            if (!scriptFile.exists()) {
-                emit errorSignal("Error", "El archivo del script no existe: " + scriptPath);
-                return;
-            }
+        // Verifica si el archivo del script existe antes de intentar ejecutarlo
+        QFile scriptFile(scriptPath);
+        if (!scriptFile.exists()) {
+            emit errorSignal("Error", "El archivo del script no existe: " + scriptPath);
+            return;
+        }
 
-            QProcess *process = new QProcess();
-            process->start("python", QStringList() << scriptPath);
+        QProcess *process = new QProcess();
+        process->start("python", QStringList() << scriptPath);
 
-            // Verifica si el proceso se inicia correctamente
-            if (!process->waitForStarted()) {
-                emit errorSignal("Error", "No se pudo iniciar el script Python: " + process->errorString());
-                process->deleteLater();
-                return;
-            }
+        // Verifica si el proceso se inicia correctamente
+        if (!process->waitForStarted()) {
+            emit errorSignal("Error", "No se pudo iniciar el script Python: " + process->errorString());
+            process->deleteLater();
+            return;
+        }
 
-            process->waitForFinished();
-            QString output = process->readAllStandardOutput();
-            QString errorOutput = process->readAllStandardError();
+        process->waitForFinished();
+        QString output = process->readAllStandardOutput();
+        QString errorOutput = process->readAllStandardError();
 
-            // Verifica si hay errores en la salida estándar de error
-            if (!errorOutput.isEmpty()) {
-                emit errorSignal("Error en la optimización", "Error en la salida del script Python:\n" + errorOutput);
-                process->deleteLater();
-                return;
-            }
+        // Verifica si hay errores en la salida estándar de error
+        if (!errorOutput.isEmpty()) {
+            emit errorSignal("Error en la optimización", "Error en la salida del script Python:\n" + errorOutput);
+            process->deleteLater();
+            return;
+        }
 
-            // Procesa la salida estándar del script Python
-            if (!output.isEmpty()) {
-                // Si la salida contiene información en formato JSON, la procesamos
-                QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
-                if (!jsonResponse.isNull() && jsonResponse.isObject()) {
-                    QJsonObject jsonObj = jsonResponse.object();
-                    QString status = jsonObj.value("status").toString();
-                    QString message = QString::fromUtf8(jsonObj.value("message").toString().toUtf8());
+        // Procesa la salida estándar del script Python
+        if (!output.isEmpty()) {
+            // Si la salida contiene información en formato JSON, la procesamos
+            QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
+            if (!jsonResponse.isNull() && jsonResponse.isObject()) {
+                QJsonObject jsonObj = jsonResponse.object();
+                QString status = jsonObj.value("status").toString();
+                QString message = QString::fromUtf8(jsonObj.value("message").toString().toUtf8());
 
-                    if (status == "success") {
-                        emit infoSignal("Ejecución exitosa", "El script de Python se ejecutó correctamente:\n" + message);
-                    } else {
-                        emit warningSignal("Advertencia", "El script Python reportó un problema:\n" + message);
-                    }
+                if (status == "success") {
+                    emit infoSignal("Ejecución exitosa", "El script de Python se ejecutó correctamente:\n" + message);
                 } else {
-                    // Si la salida no es JSON, simplemente la mostramos
-                    emit infoSignal("Resultado de la optimización", output);
+                    emit warningSignal("Advertencia", "El script Python reportó un problema:\n" + message);
                 }
             } else {
-                // Si no hay salida estándar, mostramos un mensaje genérico
-                emit infoSignal("Resultado de la optimización", "El script Python no produjo salida.");
+                // Si la salida no es JSON, simplemente la mostramos
+                emit infoSignal("Resultado de la optimización", output);
             }
+        } else {
+            // Si no hay salida estándar, mostramos un mensaje genérico
+            emit infoSignal("Resultado de la optimización", "El script Python no produjo salida.");
+        }
 
-            process->deleteLater();
-        });
+        process->deleteLater();
+    });
 
-        // Conecta el hilo para que el objeto 'worker' se destruya después de ejecutar el trabajo
-        QObject::connect(thread_opt, &QThread::finished, worker_opt, &QObject::deleteLater);
+    // Conecta el hilo para que el objeto 'worker' se destruya después de ejecutar el trabajo
+    QObject::connect(thread_opt, &QThread::finished, worker_opt, &QObject::deleteLater);
 
 
-        // Mueve el 'worker' al hilo
-        worker_opt->moveToThread(thread_opt);
+    // Mueve el 'worker' al hilo
+    worker_opt->moveToThread(thread_opt);
 
-        // Inicia el hilo
-        thread_opt->start();
+    // Inicia el hilo
+    thread_opt->start();
 
-        // Destruye el hilo una vez haya terminado
-        QObject::connect(thread_opt, &QThread::finished, thread_opt, &QThread::deleteLater);
-
-    } else if (EstrategiaSeleccionada == " Con Mapa") {
-        emit mostrarInformacion("Estrategia Seleccionada", "El optimizador con mapa aún no está desarrollado");
-    } else {
-        emit mostrarInformacion("Estrategia Seleccionada", "Seleccione una estrategia");
-    }
+    // Destruye el hilo una vez haya terminado
+    QObject::connect(thread_opt, &QThread::finished, thread_opt, &QThread::deleteLater);
 }
 
 // Señales para mensajes
@@ -325,7 +317,7 @@ void PlanificacionWindow::on_button_datos_clicked()
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
-        out << "Estrategia seleccionada: " << EstrategiaSeleccionada << "\n";
+        out << "Tipo de trayectoria:" << EstrategiaSeleccionada << "\n";
         out << "Ruta mapa:" << Ruta_mapa << "\n";
         out << "Ruta controlador:" << Ruta_controlador << "\n";
         out << "Ruta conf:" << Ruta_conf << "\n";
