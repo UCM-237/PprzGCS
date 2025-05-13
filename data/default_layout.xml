@@ -15,7 +15,7 @@
                 <widget name="plotter" icon="plotter.svg">
                     <configure>
                         <plot name="ground:ENGINE_STATUS:bat:1." min="9" max="13"/>
-                    </configure>
+                    </configure>-->
                 </widget>
                 <widget name="link_status" icon="link_ok.svg"/>
             </columnRight>

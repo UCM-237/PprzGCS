@@ -22,7 +22,7 @@ protected:
 signals:
     void updated();
 private:
-
+    pprzlink::MessageDictionary* dict;
     static const QMap<QString, QString> mode_colors;
 
     enum SpeedMode {

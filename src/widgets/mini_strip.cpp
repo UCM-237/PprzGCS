@@ -364,7 +364,6 @@ void MiniStrip::updateData() {
     uint32_t block_time = 0;
     uint32_t stage_time = 0;
 
-
     auto engine_status_msg = AircraftManager::get()->getAircraft(ac_id)->getStatus()->getMessage("ENGINE_STATUS");
     if(engine_status_msg) {
         engine_status_msg->getField("throttle", throttle);

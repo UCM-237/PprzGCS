@@ -179,7 +179,7 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
 
         // Conecta la ejecución del script al hilo
         QObject::connect(thread_opt, &QThread::started, worker_opt, [this]() {
-            QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_Regiones_zigzag_espiral_V2.py";
+            QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_zonas_prohibidas_pareto.py";
 
             // Verifica si el archivo del script existe antes de intentar ejecutarlo
             QFile scriptFile(scriptPath);
