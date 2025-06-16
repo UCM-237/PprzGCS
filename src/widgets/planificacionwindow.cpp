@@ -94,7 +94,6 @@ PlanificacionWindow::PlanificacionWindow(QWidget *parent)
     if (lineas.size() > 2) ui->label_controlador->setText(lineas[2].split(":").last().trimmed());
     if (lineas.size() > 3) ui->label_conf->setText(lineas[3].split(":").last().trimmed());
     if (lineas.size() > 4) ui->label_aircraft->setText(lineas[4].split(":").last().trimmed());
-    if (lineas.size() > 5) ui->label_Puntos_paso->setText(lineas[5].split(":").last().trimmed());
 
     //COnectamos las señales que gestionan las salidas de errores del optimizador
     connect(this, &PlanificacionWindow::errorSignal, this, &PlanificacionWindow::mostrarError);
@@ -111,6 +110,7 @@ PlanificacionWindow::~PlanificacionWindow()
 
 void PlanificacionWindow::on_button_estrategia_clicked()
 {
+    disconnect(ui->button_estrategia, &QPushButton::clicked, this, &PlanificacionWindow::on_button_estrategia_clicked);
     // Crear el menú contextual
     QMenu contextMenu(tr("Menú contextual"), this);
 
@@ -138,113 +138,119 @@ void PlanificacionWindow::on_button_estrategia_clicked()
     // Mostrar el menú en la posición del botón
     QPoint pos = ui->button_estrategia->mapToGlobal(QPoint(ui->button_estrategia->width()/2, ui->button_estrategia->height()/2));  // Centrar el menú en el botón
     contextMenu.exec(pos);
+
+
 }
 
 
 void PlanificacionWindow::on_button_optimizacion_clicked()
 {
     disconnect(ui->button_optimizacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_optimizacion_clicked);
+    emit infoSignal("Ejecutando", "Se está lanzando la optimización con la estrategia " + EstrategiaSeleccionada);
+    if (EstrategiaSeleccionada == "Point to point" or EstrategiaSeleccionada == "Continuous")
+    {
+        QFile file(homeDir + "/PprzGCS/Planificacion/datos.txt");
 
-    QFile file(homeDir + "/PprzGCS/Planificacion/datos.txt");
-
-    Ruta_mapa = ui->label_mapa->text();
-    Ruta_controlador = ui->label_controlador->text();
-    Ruta_aircraft = ui->label_aircraft->text();
-    Ruta_conf = ui->label_conf->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
-
-    // Intentamos abrir el archivo para escribir
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        QTextStream out(&file);
-        out << "Estrategia seleccionada:" << EstrategiaSeleccionada << "\n";
-        out << "Ruta mapa:" << Ruta_mapa << "\n";
-        out << "Ruta controlador:" << Ruta_controlador << "\n";
-        out << "Ruta conf:" << Ruta_conf << "\n";
-        out << "Ruta aircraft:" << Ruta_aircraft << "\n";
-        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
-        file.close();
-    } else {
-        emit errorSignal("Error", "No se pudo abrir el archivo para escribir: " + file.errorString());
-        return;
-    }
-
-
-    // Crea el hilo
-    QThread* thread_opt = new QThread(this);
-
-    // Crea un objeto de tipo QObject que contenga el trabajo a hacer
-    QObject* worker_opt = new QObject();
-
-    // Conecta la ejecución del script al hilo
-    QObject::connect(thread_opt, &QThread::started, worker_opt, [this]() {
-        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_zonas_prohibidas_pareto.py";
-
-        // Verifica si el archivo del script existe antes de intentar ejecutarlo
-        QFile scriptFile(scriptPath);
-        if (!scriptFile.exists()) {
-            emit errorSignal("Error", "El archivo del script no existe: " + scriptPath);
+        Ruta_mapa = ui->label_mapa->text();
+        Ruta_controlador = ui->label_controlador->text();
+        Ruta_aircraft = ui->label_aircraft->text();
+        Ruta_conf = ui->label_conf->text();
+        // Intentamos abrir el archivo para escribir
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            QTextStream out(&file);
+            out << "Estrategia seleccionada:" << EstrategiaSeleccionada << "\n";
+            out << "Ruta mapa:" << Ruta_mapa << "\n";
+            out << "Ruta controlador:" << Ruta_controlador << "\n";
+            out << "Ruta conf:" << Ruta_conf << "\n";
+            out << "Ruta aircraft:" << Ruta_aircraft << "\n";
+            file.close();
+        } else {
+            emit errorSignal("Error", "No se pudo abrir el archivo para escribir: " + file.errorString());
             return;
         }
 
-        QProcess *process = new QProcess();
-        process->start("python", QStringList() << scriptPath);
 
-        // Verifica si el proceso se inicia correctamente
-        if (!process->waitForStarted()) {
-            emit errorSignal("Error", "No se pudo iniciar el script Python: " + process->errorString());
-            process->deleteLater();
-            return;
-        }
+        // Crea el hilo
+        QThread* thread_opt = new QThread(this);
 
-        process->waitForFinished();
-        QString output = process->readAllStandardOutput();
-        QString errorOutput = process->readAllStandardError();
+        // Crea un objeto de tipo QObject que contenga el trabajo a hacer
+        QObject* worker_opt = new QObject();
 
-        // Verifica si hay errores en la salida estándar de error
-        if (!errorOutput.isEmpty()) {
-            emit errorSignal("Error en la optimización", "Error en la salida del script Python:\n" + errorOutput);
-            process->deleteLater();
-            return;
-        }
+        // Conecta la ejecución del script al hilo
+        QObject::connect(thread_opt, &QThread::started, worker_opt, [this]() {
+            QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Move_points/TSP_zonas_prohibidas_pareto.py";
 
-        // Procesa la salida estándar del script Python
-        if (!output.isEmpty()) {
-            // Si la salida contiene información en formato JSON, la procesamos
-            QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
-            if (!jsonResponse.isNull() && jsonResponse.isObject()) {
-                QJsonObject jsonObj = jsonResponse.object();
-                QString status = jsonObj.value("status").toString();
-                QString message = QString::fromUtf8(jsonObj.value("message").toString().toUtf8());
+            // Verifica si el archivo del script existe antes de intentar ejecutarlo
+            QFile scriptFile(scriptPath);
+            if (!scriptFile.exists()) {
+                emit errorSignal("Error", "El archivo del script no existe: " + scriptPath);
+                return;
+            }
 
-                if (status == "success") {
-                    emit infoSignal("Ejecución exitosa", "El script de Python se ejecutó correctamente:\n" + message);
+            QProcess *process = new QProcess();
+            process->start("python", QStringList() << scriptPath);
+
+            // Verifica si el proceso se inicia correctamente
+            if (!process->waitForStarted()) {
+                emit errorSignal("Error", "No se pudo iniciar el script Python: " + process->errorString());
+                process->deleteLater();
+                return;
+            }
+
+            process->waitForFinished();
+            QString output = process->readAllStandardOutput();
+            QString errorOutput = process->readAllStandardError();
+
+            // Verifica si hay errores en la salida estándar de error
+            if (!errorOutput.isEmpty()) {
+                emit errorSignal("Error en la optimización", "Error en la salida del script Python:\n" + errorOutput);
+                process->deleteLater();
+                return;
+            }
+
+            // Procesa la salida estándar del script Python
+            if (!output.isEmpty()) {
+                // Si la salida contiene información en formato JSON, la procesamos
+                QJsonDocument jsonResponse = QJsonDocument::fromJson(output.toUtf8());
+                if (!jsonResponse.isNull() && jsonResponse.isObject()) {
+                    QJsonObject jsonObj = jsonResponse.object();
+                    QString status = jsonObj.value("status").toString();
+                    QString message = QString::fromUtf8(jsonObj.value("message").toString().toUtf8());
+
+                    if (status == "success") {
+                        emit infoSignal("Ejecución exitosa", "El script de Python se ejecutó correctamente:\n" + message);
+                    } else {
+                        emit warningSignal("Advertencia", "El script Python reportó un problema:\n" + message);
+                    }
                 } else {
-                    emit warningSignal("Advertencia", "El script Python reportó un problema:\n" + message);
+                    // Si la salida no es JSON, simplemente la mostramos
+                    emit infoSignal("Resultado de la optimización", output);
                 }
             } else {
-                // Si la salida no es JSON, simplemente la mostramos
-                emit infoSignal("Resultado de la optimización", output);
+                // Si no hay salida estándar, mostramos un mensaje genérico
+                emit infoSignal("Resultado de la optimización", "El script Python no produjo salida.");
             }
-        } else {
-            // Si no hay salida estándar, mostramos un mensaje genérico
-            emit infoSignal("Resultado de la optimización", "El script Python no produjo salida.");
-        }
 
-        process->deleteLater();
-    });
+            process->deleteLater();
+        });
 
-    // Conecta el hilo para que el objeto 'worker' se destruya después de ejecutar el trabajo
-    QObject::connect(thread_opt, &QThread::finished, worker_opt, &QObject::deleteLater);
+        // Conecta el hilo para que el objeto 'worker' se destruya después de ejecutar el trabajo
+        QObject::connect(thread_opt, &QThread::finished, worker_opt, &QObject::deleteLater);
 
 
-    // Mueve el 'worker' al hilo
-    worker_opt->moveToThread(thread_opt);
+        // Mueve el 'worker' al hilo
+        worker_opt->moveToThread(thread_opt);
 
-    // Inicia el hilo
-    thread_opt->start();
+        // Inicia el hilo
+        thread_opt->start();
 
-    // Destruye el hilo una vez haya terminado
-    QObject::connect(thread_opt, &QThread::finished, thread_opt, &QThread::deleteLater);
+        // Destruye el hilo una vez haya terminado
+        QObject::connect(thread_opt, &QThread::finished, thread_opt, &QThread::deleteLater);
+    }
+    else
+    {
+        emit warningSignal("Advertencia","Seleccione una estrategia");
+    }
 }
 
 // Señales para mensajes
@@ -263,46 +269,6 @@ void PlanificacionWindow::mostrarAdvertencia(const QString &titulo, const QStrin
     QMessageBox::warning(this, titulo, mensaje);
 }
 
-//void PlanificacionWindow::on_button_compilacion_clicked()
-//{
-//    disconnect(ui->button_compilacion, &QPushButton::clicked, this, &PlanificacionWindow::on_button_compilacion_clicked);
-
-//    // Crear un proceso para ejecutar el script Python
-//    QProcess *process_compilacion = new QProcess(this);
-
-//    QString scriptPath_compilacion = homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/compilacion_paparazzi.py";
-
-//    // Usa la ruta completa al ejecutable de Python
-//    process_compilacion->start("python", QStringList() << scriptPath_compilacion);
-
-//    if (!process_compilacion->waitForStarted()) {
-//        qDebug() << "Error al iniciar el script Python:" << process_compilacion->errorString();
-//        return;
-//    }
-
-//    // Esperar a que el proceso termine
-//    process_compilacion->waitForFinished();
-//    int exitCode = process_compilacion ->exitCode();
-//    QString output = process_compilacion ->readAllStandardOutput();
-//    QString errorOutput = process_compilacion ->readAllStandardError();  // Capturar errores
-
-//    // Mostrar la salida y los errores en la consola de depuración
-//    qDebug() << "Salida del script Python:" << output;
-//    qDebug() << "Error del script Python:" << errorOutput;
-
-//    // Mostrar mensaje de confirmación según el resultado del script Python
-//    if (exitCode == 0) {
-//        QMessageBox::information(this, "Ejecución exitosa", "El script de Python se ejecutó correctamente.");
-//    } else {
-//        QMessageBox::warning(this, "Error en la ejecución", "El script de Python finalizó con errores.");
-//        qDebug() << "Error en la ejecución del script Python. Código de salida:" << exitCode;
-//    }
-
-//    process_compilacion ->deleteLater(); // Eliminar el proceso después de ejecutarse
-//    this->close();
-//}
-
-
 void PlanificacionWindow::on_button_datos_clicked()
 {
     disconnect(ui->button_datos, &QPushButton::clicked, this, &PlanificacionWindow::on_button_datos_clicked);
@@ -313,7 +279,6 @@ void PlanificacionWindow::on_button_datos_clicked()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_conf = ui->label_conf->text();
     Ruta_aircraft = ui->label_aircraft->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
@@ -322,7 +287,7 @@ void PlanificacionWindow::on_button_datos_clicked()
         out << "Ruta controlador:" << Ruta_controlador << "\n";
         out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
-        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
+
         file.close();
 
         QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
@@ -340,7 +305,6 @@ void PlanificacionWindow::on_button_editor_clicked()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
     Ruta_conf = ui->label_conf->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
@@ -349,7 +313,6 @@ void PlanificacionWindow::on_button_editor_clicked()
         out << "Ruta controlador:" << Ruta_controlador << "\n";
         out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
-        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
 
         //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");
@@ -474,27 +437,6 @@ void PlanificacionWindow::on_button_abrir_conf_clicked()
     ui->label_controlador->setText(ruta_controller_cargado);
 }
 
-
-//void PlanificacionWindow::on_button_abrir_controlador_clicked() // Similar para el archivo de controlador
-//{
-//    disconnect(ui->button_abrir_controlador, &QPushButton::clicked, this, &PlanificacionWindow::on_button_abrir_controlador_clicked);
-
-//    // Directorio base desde donde calcular la ruta relativa
-//    QString basePath = QDir::homePath() + "/paparazzi/conf/airframes";
-
-//    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de controlador"), QDir::homePath() + "/paparazzi/conf/airframes", tr("Archivos de controlador (*.xml);;Todos los archivos (*)"));
-
-//    // Si el usuario selecciona un archivo
-//    if (!filePath.isEmpty()) {
-//        QFileInfo fileInfo(filePath); // Obtener información del archivo
-//        QDir baseDir(basePath); // Crear un objeto QDir con el directorio base
-//        QString relativePath = baseDir.relativeFilePath(filePath); // Calcular la ruta relativa
-
-//        // Mostrar la ruta relativa en el QLabel
-//        ui->label_controlador->setText(relativePath); // Ejemplo: "UCM/flight_plan_default.xml"
-//    }
-//}
-
 void PlanificacionWindow::VentanaSector()
 {
     QFile file( homeDir + "/PprzGCS/Planificacion/datos.txt");
@@ -503,7 +445,6 @@ void PlanificacionWindow::VentanaSector()
     Ruta_controlador = ui->label_controlador->text();
     Ruta_aircraft = ui->label_aircraft->text();
     Ruta_conf = ui->label_conf->text();
-    Puntos_paso = ui->label_Puntos_paso->text();
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
@@ -512,7 +453,6 @@ void PlanificacionWindow::VentanaSector()
         out << "Ruta controlador:" << Ruta_controlador << "\n";
         out << "Ruta conf:" << Ruta_conf << "\n";
         out << "Ruta aircraft:" << Ruta_aircraft << "\n";
-        out << "Numero de puntos de paso:" << Puntos_paso << "\n";
         file.close();
 
         //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en datos.txt");

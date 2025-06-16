@@ -44,8 +44,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-from shapely.geometry import Point, LineString, Polygon, MultiPoint, GeometryCollection
-
 
 # In[2]:
 
@@ -107,7 +105,14 @@ except etree.XMLSyntaxError as e:
     print("Error de sintaxis XML:")
     print(e)
 
-
+try:
+    from bezier_post_correction_simple import verificar_y_corregir_bezier_simple
+    CORRECCION_POST_BEZIER_DISPONIBLE = True
+    print("Módulo de corrección post-Bézier cargado correctamente")
+except ImportError:
+    CORRECCION_POST_BEZIER_DISPONIBLE = False
+    print("Advertencia: Módulo de corrección post-Bézier no disponible")
+    
 lat0 = root.attrib.get('lat0')
 lon0 = root.attrib.get('lon0')
 
@@ -150,7 +155,6 @@ sectors_names = []
 zonas_prohibidas_names = []
 points_in_sectors = []
 sectores_navegacion=0
-
 sectors_node = root.find('sectors')
 if sectors_node is not None:
     for sector in sectors_node:
@@ -455,9 +459,8 @@ res = minimize(
 
 #PARA VISUALIZAR TODAS LAS SOLUCIONES DEL FRENTE
 
-# if sectores_navegacion == 0 and num_zonas_prohibidas == 0 and TipoTrayectoria == "Point to point": 
-#     print("Ploteando con visualize")
-#     visualize_3(problem, res.X, sectors, j=0)
+if sectores_navegacion == 0 and TipoTrayectoria == "Point to point": 
+    visualize_3(problem, res.X, sectors, j=0)
 
 resultado_rutas = []
 for j in range(len(res.X)):
@@ -645,210 +648,18 @@ for j in range(len(resultado_rutas)):
     resultados_sectores_rutas.append(resultado)
     resultado = np.vstack(resultado)
 
-from scipy.special import comb
 
-def get_bezier_parameters(X, Y, smooth_factor, degree=12):
-    """ Least square qbezier fit using penrose pseudoinverse.
-
-    Parameters:
-
-    X: array of x data.
-    Y: array of y data. Y[0] is the y point for X[0].
-    degree: degree of the Bézier curve. 2 for quadratic, 3 for cubic.
-
-    Based on https://stackoverflow.com/questions/12643079/b%C3%A9zier-curve-fitting-with-scipy
-    and probably on the 1998 thesis by Tim Andrew Pastva, "Bézier Curve Fitting".
-    """
-    if degree < 1:
-        raise ValueError('degree must be 1 or greater.')
-
-    if len(X) != len(Y):
-        raise ValueError('X and Y must be of the same length.')
-
-    def bpoly(n, t, k):
-        """ Bernstein polynomial when a = 0 and b = 1. """
-        return t ** k * (1 - t) ** (n - k) * comb(n, k)
-
-    def bmatrix(T):
-        """ Bernstein matrix for Bézier curves. """
-        return np.matrix([[bpoly(degree, t, k) for k in range(degree + 1)] for t in T])
-
-    def least_square_fit(points, M, smooth_factor):
-        M_ = np.linalg.pinv(M)
-        
-        smooth_matrix = np.eye(M.shape[1])
-        for i in range(1, M.shape[1]):
-            smooth_matrix[i, i - 1] = -1  # Penaliza diferencias grandes entre puntos de control adyacentes
-
-        # Combine the original fitting problem with the smoothness constraint
-        augmented_matrix = np.vstack([M, smooth_factor * smooth_matrix])
-        augmented_points = np.vstack([points, np.zeros((smooth_matrix.shape[0], points.shape[1]))])
-        
-        return np.linalg.pinv(augmented_matrix) @ augmented_points
-
-    T = np.linspace(0, 1, len(X))
-    M = bmatrix(T)
-    points = np.array(list(zip(X, Y)))
-    
-    final = least_square_fit(points, M, smooth_factor).tolist()
-    final[0] = [X[0], Y[0]]
-    final[len(final)-1] = [X[len(X)-1], Y[len(Y)-1]]
-    return final
-
-def bernstein_poly(i, n, t):
-    """
-     The Bernstein polynomial of n, i as a function of t
-    """
-    return comb(n, i) * ( t**(n-i) ) * (1 - t)**i
-
-
-def bezier_curve(points, nTimes=1000):
-    """
-       Given a set of control points, return the
-       bezier curve defined by the control points.
-
-       points should be a list of lists, or list of tuples
-       such as [ [1,1], 
-                 [2,3], 
-                 [4,5], ..[Xn, Yn] ]
-        nTimes is the number of time steps, defaults to 1000
-
-        See http://processingjs.nihongoresources.com/bezierinfo/
-    """
-
-    nPoints = len(points)
-    xPoints = np.array([p[0] for p in points])
-    yPoints = np.array([p[1] for p in points])
-
-    t = np.linspace(0.0, 1.0, nTimes)
-
-    polynomial_array = np.array([ bernstein_poly(i, nPoints-1, t) for i in range(0, nPoints)   ])
-
-    xvals = np.dot(xPoints, polynomial_array)
-    yvals = np.dot(yPoints, polynomial_array)
-
-    return xvals, yvals
-
-def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas, estrategia):
+def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas):
     """
     Detecta todos los cruces de la ruta con zonas prohibidas.
     Devuelve una lista de tuplas (índice de cruce, índice de zona).
     """
-
-    # print("Estrategia = ", estrategia)
-    # print("Ruta = ", ruta)
-    # print("Coordenadas =", coordenadas)
-    if estrategia == "Point to point":
-        #print("En PtP")
-        cruces = []
-        for i in range(len(ruta) - 1):
-            p1, p2 = coordenadas[i], coordenadas[i + 1]
-            for idx, zona in enumerate(zonas_prohibidas_names):
-                if segmento_atraviesa_poligono(p1, p2, zonas_prohibidas[zona]):
-                    cruces.append((i, idx))  # Añadir todos los cruces encontrados
-    elif estrategia == "Continuous":
-        #print("En cruce continous")
-        cruces = []
-        xpoints = coordenadas[:,0]
-        ypoints = coordenadas[:,1]
-        Puntos_paso = list(zip(xpoints, ypoints))
-        data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2)
-        xvals, yvals = bezier_curve(data, nTimes=1000)
-        curve = LineString(np.column_stack((xvals, yvals)))
-        coords = list(curve.coords)[::-1]
-        cruces_bz = []
-        for idx, name in enumerate(zonas_prohibidas_names):
-            zona_prohibida_poligono = Polygon(zonas_prohibidas[name])
-            for i in range(len(coords) - 1):
-                segmento = LineString([coords[i], coords[i + 1]])
-                if segmento.intersects(zona_prohibida_poligono):
-                     cruces_bz.append((i, name))
-            if cruces_bz:
-                #print("Ha cruzado")
-                i_start = cruces_bz[0][0]
-                i_end = cruces_bz[-1][0] + 1
-                p_start = coords[i_start]
-                p_end = coords[i_end]
-
-                zona_cruce = cruces_bz[0][1]
-
-                # if zona_actual != zona_cruce:
-                #     desplazamiento = None  # reset desplazamiento para nueva zona
-                #     zona_actual = zona_cruce
-
-                # Map Puntos_paso to closest coords index
-                map_p_to_c = []
-                for p_idx, p_waypoint in enumerate(Puntos_paso):
-                    min_dist = float('inf')
-                    closest_c_idx = -1
-                    for c_idx, c_point in enumerate(coords):
-                        dist = np.linalg.norm(np.array(p_waypoint) - np.array(c_point))
-                        if dist < min_dist:
-                            min_dist = dist
-                            closest_c_idx = c_idx
-                    map_p_to_c.append(closest_c_idx)
-
-                # Find idx_p_start: the last waypoint whose corresponding Bezier point is before the entry point
-                idx_p_start = 0
-                for j in range(len(map_p_to_c)):
-                    if map_p_to_c[j] < i_start:
-                        idx_p_start = j
-                    else:
-                        break
-
-                # Find idx_p_end: the first waypoint whose corresponding Bezier point is after the exit point
-                idx_p_end = len(Puntos_paso) - 1
-                for k in range(len(map_p_to_c) - 1, -1, -1):
-                    if map_p_to_c[k] > i_end:
-                        idx_p_end = k
-                    else:
-                        break
-
-                # Ensure idx_p_end is at least idx_p_start + 1 to form a valid segment
-                if idx_p_end <= idx_p_start:
-                    idx_p_end = idx_p_start + 1
-                    # If idx_p_end goes beyond the last waypoint, adjust idx_p_start back
-                    if idx_p_end >= len(Puntos_paso):
-                        idx_p_end = len(Puntos_paso) - 1
-                        if idx_p_end > 0: # Ensure idx_p_start is not negative
-                            idx_p_start = idx_p_end - 1
-                        else: # Only one waypoint, cannot form a segment
-                            idx_p_start = 0
-                            idx_p_end = 0 # This might need further refinement based on desired behavior for single point crossings
-
-
-                if idx_p_start is None or idx_p_end is None:
-                    print("No se encontraron puntos de paso en la curva antes o después del punto de cruce.")
-                
-
-                cruces.append((idx_p_start, idx))
-                #print("Ploteo en cruce")
-                # #Ploteamos los sectores
-                # for i, c in enumerate(zip(xpoints, ypoints)):
-                #     plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
-                # if sectores_navegacion > 0 :
-                #     for sector_name, points in sectors.items():
-                #         sector_points = np.array(points)
-                #         color = "blue"
-                #         if not sector_name.startswith("Net") and not sector_name.startswith("Zona_prohibida"):
-                #             plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
-                # if num_zonas_prohibidas > 0:
-                #     for sector_name, points in sectors.items():
-                #         sector_points = np.array(points)
-                #         color = "red"
-                #         if sector_name.startswith("Zona_prohibida"):
-                #             plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
-                            
-                # # Plot the resulting Bezier curve
-                # plt.scatter(xpoints, ypoints, color = "black")
-                # plt.plot(xvals, yvals, 'black', label='Curve')
-                # plt.title("Final route continuous")
-                # plt.legend()
-                # plt.grid(True)
-                # plt.show()
-
-                #print("Cruces Continous = ", cruces)
-                            
+    cruces = []
+    for i in range(len(ruta) - 1):
+        p1, p2 = coordenadas[i], coordenadas[i + 1]
+        for idx, zona in enumerate(zonas_prohibidas_names):
+            if segmento_atraviesa_poligono(p1, p2, zonas_prohibidas[zona]):
+                cruces.append((i, idx))  # Añadir todos los cruces encontrados
     return cruces
 
 def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas):
@@ -857,10 +668,8 @@ def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coorde
     Si la ruta cruza una zona prohibida, se inserta un punto de desvío.
     """
     n_zonas_prohibidas_cruzadas = 0
-    #print("Ejecutando deteccion de cruces 1")
-    cruces = detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas, TipoTrayectoria)
+    cruces = detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas)
     if cruces != []:
-        #print("He salido de la función detecta_cruce_ruta")
         puntos_extra = 0
         puntos_añadidos = 0
         flag = 0
@@ -870,9 +679,8 @@ def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coorde
                 cruce_idx = cruces[i][0]
                 zona_idx = cruces[i][1]
                 nueva_ruta = ruta
-                #print("Voy a calcular el punto de rodeo")
-                punto_de_rodeo = calcular_punto_rodeo(coordenadas[cruce_idx+puntos_añadidos], coordenadas[cruce_idx+1+puntos_añadidos], zonas_prohibidas[zonas_prohibidas_names[zona_idx]], zonas_prohibidas, zonas_prohibidas_names, coordenadas = coordenadas)
-                #print("Punto de rodeo = ", punto_de_rodeo)
+                punto_de_rodeo = calcular_punto_rodeo(coordenadas[cruce_idx+puntos_añadidos], coordenadas[cruce_idx+1+puntos_añadidos], zonas_prohibidas[zonas_prohibidas_names[zona_idx]], zonas_prohibidas, zonas_prohibidas_names)
+                
                 if punto_de_rodeo != []:
                     # Si punto_de_rodeo es un solo punto, asegúrate de que sea un array 2D de forma (1, 2)
                     if isinstance(punto_de_rodeo, (np.ndarray, tuple)) and punto_de_rodeo.ndim == 1:
@@ -891,29 +699,32 @@ def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coorde
                     problem_stops_list = problem.stops.tolist()
                 
                     problem_stops_list = [[float(coord[0]), float(coord[1])] if isinstance(coord, np.ndarray) else coord for coord in problem_stops_list]
+                
+                    
                     # Añadimos el punto de rodeo como una nueva fila de coordenadas en la lista
                     problem_stops_list.extend(punto_de_rodeo_np_array)
                     # Convertimos de nuevo la lista a `numpy.ndarray` para mantener el formato
                     problem_stops = np.array(problem_stops_list)
                     problem.stops = problem_stops
+                    
                     #problem.stops = np.append(problem.stops, [punto_de_rodeo_str], axis = 0)
                     
                     ruta=nueva_ruta
                     n_zonas_prohibidas_cruzadas += 1
-                    cruces_i = detecta_cruce_ruta(nueva_ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas, TipoTrayectoria)
+                    cruces_i = detecta_cruce_ruta(nueva_ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas)
                     if cruces_i == []:    
                         flag = 1
             else:
                 nueva_ruta = ruta
                 
-            cruces_final = detecta_cruce_ruta(nueva_ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas, TipoTrayectoria)
+            cruces_final = detecta_cruce_ruta(nueva_ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas)
         
             if cruces_final != []:   
-                return rodear_zona_prohibida(nueva_ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas)  
+
+                return rodear_zona_prohibida(nueva_ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas)     
             return nueva_ruta, coordenadas
     else:
         return ruta, coordenadas
-    
 from shapely.geometry import LineString, Polygon, Point
 import numpy as np
 
@@ -949,7 +760,7 @@ def punto_valido(punto, zonas_prohibidas, zonas_prohibidas_names):
     return True
 
 
-def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zonas_prohibidas, zonas_prohibidas_names, coordenadas, margen=50):
+def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zonas_prohibidas, zonas_prohibidas_names, margen=50):
     """
     Encuentra el primer punto con visibilidad para rodear la zona prohibida.
 
@@ -959,7 +770,7 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
     :param margen: Distancia de separación del polígono para el punto de rodeo.
     :return: Punto de rodeo (x, y).
     """
-   # print("Dentro de la función calcular punto rodeo")
+
     puntos_ajustados=[]
     puntos_ajustados_horarios=[]
     puntos_ajustados_antihorarios=[]
@@ -970,58 +781,9 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
     poligono = Polygon(vertices_zona_prohibida)
     linea = LineString([punto_inicial, punto_final])
     # 1. Encontrar el punto de intersección con la zona prohibida
-    if TipoTrayectoria == "Point to point":
-        interseccion = poligono.boundary.intersection(linea)
-       # print("Interseccion = ", interseccion)
-    if TipoTrayectoria == "Continuous":
-        #print("Punto de rodeo con trayectorio continuous")
-        xpoints = coordenadas [:,0]
-        ypoints = coordenadas [:,1]
-        data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2)
-        xvals, yvals = bezier_curve(data, nTimes=1000)
-        curve = LineString(np.column_stack((xvals, yvals)))
-        coords = list(curve.coords)[::-1]
-        interseccion_bz = []
-        interseccion = []
- 
-        for i in range(len(coords) - 1):
-            segmento = LineString([coords[i], coords[i + 1]])
-            if segmento.intersects(poligono):
-                interseccion_i = segmento.intersection(poligono)
-                interseccion_bz.append(interseccion_i)
-        # Extraemos todos los puntos individuales de las geometrías de intersección
-        puntos_interseccion = []
-        for geom in interseccion_bz:
-            if geom.geom_type == "Point":
-                puntos_interseccion.append(geom)
-            elif geom.geom_type == "MultiPoint":
-                puntos_interseccion.extend(list(geom.geoms))
-            elif geom.geom_type == "LineString":
-                puntos_interseccion.append(Point(geom.coords[0]))
-                puntos_interseccion.append(Point(geom.coords[-1]))
-            elif geom.geom_type == "GeometryCollection":
-                for g in geom.geoms:
-                    if g.geom_type == "Point":
-                        puntos_interseccion.append(g)
-                    elif g.geom_type == "LineString":
-                        puntos_interseccion.append(Point(g.coords[0]))
-                        puntos_interseccion.append(Point(g.coords[-1]))
+    interseccion = poligono.boundary.intersection(linea)
 
-        # Ordenar los puntos según su aparición en la curva
-        # Asumimos que `curve` es la trayectoria original, y comparamos la distancia al inicio
-        puntos_interseccion.sort(key=lambda p: curve.project(p))
-
-        # Tomamos primer y último punto de intersección
-        if len(puntos_interseccion) >= 2:
-            interseccion = MultiPoint([puntos_interseccion[0], puntos_interseccion[-1]])
-        elif len(puntos_interseccion) == 1:
-            interseccion = puntos_interseccion[0]
-        else:
-            interseccion = GeometryCollection()
-
-        #print("Interseccion = ", interseccion)
     if interseccion.is_empty:
-        #print("Return empty interseccion")
         return []  # No hay intersección, camino directo
 
     if interseccion.geom_type == "MultiPoint":
@@ -1058,6 +820,7 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
         punto_ajustado_horario = desplazar_punto(punto_candidato_horario, direccion_normal_horario, margen)
         punto_ajustado_antihorario = desplazar_punto(punto_candidato_antihorario, direccion_normal_antihorario, margen)
         # print("punto_ajustado")
+    
         # Calcular las distancias al punto final
         dist_horario = Point(punto_ajustado_horario).distance(Point(punto_final)) + Point(punto_ajustado_horario).distance(Point(punto_inicial))
         dist_antihorario = Point(punto_ajustado_antihorario).distance(Point(punto_final)) + Point(punto_ajustado_antihorario).distance(Point(punto_inicial))
@@ -1097,18 +860,20 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
         return ruta_ajustada_horario
     else:
         return ruta_ajustada_antihorario
-
+        
     return ruta_ajustada_horario
 
 dist_mas_corta = 1000000000
-if len(resultados_sectores_rutas) >= 1:
+
+if len(resultados_sectores_rutas) > 1:
     for w in range(len(resultados_sectores_rutas)):
         resultados_sectores = resultados_sectores_rutas[w]
         resultados_sectores_antes = np.copy(resultados_sectores)
-        resultados_sectores = np.array(resultados_sectores)
+    
         longitud_inicial = len(resultados_sectores[:,0])
         ruta_aplanada = np.linspace(0, longitud_inicial-1, longitud_inicial)
         ruta_final, resultados_sectores = rodear_zona_prohibida(ruta_aplanada, zonas_prohibidas, zonas_prohibidas_names, resultados_sectores)
+        
         if ruta_final.size == 0:
             ruta_final = ruta_aplanada
             
@@ -1127,46 +892,80 @@ else:
     resultados_sectores_ruta_mas_corta = resultados_sectores
 
 if TipoTrayectoria == "Point to point":
-    if len(resultados_sectores_rutas) >= 1:
-        resultados_sectores = resultados_sectores_ruta_mas_corta
+    if len(resultados_sectores_rutas) > 1:
+
+        if sectores_navegacion > 0:
+            resultados_sectores = resultados_sectores_ruta_mas_corta
+            
+            #Dibujar el camino
+            plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
+            plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            
+            #Dibujar los puntos de rodeo (superponiendo sobre el camino)
+            plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos', s=150)
+            for i, c in enumerate(resultados_sectores_ruta_mas_corta):
+                    plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
+            #Dibujar las regiones (sectores)
+            for sector_name in sectors_names:
+                if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
+                    if sector_name.startswith("Zona_prohibida"):
+                        color = "red"
+                    else:
+                        color = "blue"
+                    poligono = Polygon(sectors[sector_name])  # Convertir a polígono
+                    x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
+                    plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
         
-        #Dibujar el camino
-        plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
-        plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            #Agregar etiquetas y título
+            plt.title('Final Route PtP ')
+            plt.xlabel('X')
+            plt.ylabel('Y')
         
-        #Dibujar los puntos de rodeo (superponiendo sobre el camino)
-        plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos', s=150)
-        for i, c in enumerate(resultados_sectores_ruta_mas_corta):
-                plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
-        #Dibujar las regiones (sectores)
-        for sector_name in sectors_names:
-            if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
-                if sector_name.startswith("Zona_prohibida"):
-                    color = "red"
-                else:
-                    color = "blue"
-                poligono = Polygon(sectors[sector_name])  # Convertir a polígono
-                x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
-                plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
-    
-        #Agregar etiquetas y título
-        plt.title('Final Route PtP ')
-        plt.xlabel('X')
-        plt.ylabel('Y')
-    
-        #Evitar duplicados en la leyenda
-        handles, labels = plt.gca().get_legend_handles_labels()
-        by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
-        plt.legend(by_label.values(), by_label.keys())
-    
-        plt.grid(True)
-    
-        #Mostrar el gráfico
-        plt.show()
+            #Evitar duplicados en la leyenda
+            handles, labels = plt.gca().get_legend_handles_labels()
+            by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
+            plt.legend(by_label.values(), by_label.keys())
         
+            plt.grid(True)
+        
+            #Mostrar el gráfico
+            plt.show()
+            
     else:
-            print("Ploteando con visualize")
-            visualize_3(problem, res.X, sectors, j=0)
+        if sectores_navegacion > 0:
+        
+            #Dibujar el camino
+            #plt.plot(resultados_sectores_antes_ruta_mas_corta[:, 0], resultados_sectores_antes_ruta_mas_corta[:, 1], color='b', linestyle='--', label='Camino inicial')
+            plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
+            
+            #Dibujar los puntos de rodeo (superponiendo sobre el camino)
+            plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos')
+            
+            #Dibujar las regiones (sectores)
+            for sector_name in sectors_names:
+                if sector_name in sectors and sector_name != "Net":  # Verificar si el sector existe en el diccionario
+                    if sector_name.startswith("Zona_prohibida"):
+                        color = "red"
+                    else:
+                        color = "blue"
+                    poligono = Polygon(sectors[sector_name])  # Convertir a polígono
+                    x_poly, y_poly = poligono.exterior.xy  # Obtener coordenadas del borde
+                    plt.fill(x_poly, y_poly, alpha=0.3, color=color, label=sector_name)  # Dibujar la región con transparencia
+        
+            #Agregar etiquetas y título
+            plt.title('Final Route PtP')
+            plt.xlabel('X')
+            plt.ylabel('Y')
+        
+            #Evitar duplicados en la leyenda
+            handles, labels = plt.gca().get_legend_handles_labels()
+            by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
+            plt.legend(by_label.values(), by_label.keys())
+        
+            plt.grid(True)
+        
+            #Mostrar el gráfico
+            plt.show()
 # Ahora hay que meter estos puntos en el xml
 
 # Añadimos una columna de ceros donde meteremos los nombres
@@ -1298,11 +1097,107 @@ if TipoTrayectoria == "Point to point":
     print("Optimización exitosa.")
 
 
+from scipy.special import comb
+
+def get_bezier_parameters(X, Y, smooth_factor, degree=12):
+    """ Least square qbezier fit using penrose pseudoinverse.
+
+    Parameters:
+
+    X: array of x data.
+    Y: array of y data. Y[0] is the y point for X[0].
+    degree: degree of the Bézier curve. 2 for quadratic, 3 for cubic.
+
+    Based on https://stackoverflow.com/questions/12643079/b%C3%A9zier-curve-fitting-with-scipy
+    and probably on the 1998 thesis by Tim Andrew Pastva, "Bézier Curve Fitting".
+    """
+    if degree < 1:
+        raise ValueError('degree must be 1 or greater.')
+
+    if len(X) != len(Y):
+        raise ValueError('X and Y must be of the same length.')
+
+    def bpoly(n, t, k):
+        """ Bernstein polynomial when a = 0 and b = 1. """
+        return t ** k * (1 - t) ** (n - k) * comb(n, k)
+
+    def bmatrix(T):
+        """ Bernstein matrix for Bézier curves. """
+        return np.matrix([[bpoly(degree, t, k) for k in range(degree + 1)] for t in T])
+
+    def least_square_fit(points, M, smooth_factor):
+        M_ = np.linalg.pinv(M)
+        
+        smooth_matrix = np.eye(M.shape[1])
+        for i in range(1, M.shape[1]):
+            smooth_matrix[i, i - 1] = -1  # Penaliza diferencias grandes entre puntos de control adyacentes
+
+        # Combine the original fitting problem with the smoothness constraint
+        augmented_matrix = np.vstack([M, smooth_factor * smooth_matrix])
+        augmented_points = np.vstack([points, np.zeros((smooth_matrix.shape[0], points.shape[1]))])
+        
+        return np.linalg.pinv(augmented_matrix) @ augmented_points
+
+    T = np.linspace(0, 1, len(X))
+    M = bmatrix(T)
+    points = np.array(list(zip(X, Y)))
+    
+    final = least_square_fit(points, M, smooth_factor).tolist()
+    final[0] = [X[0], Y[0]]
+    final[len(final)-1] = [X[len(X)-1], Y[len(Y)-1]]
+    return final
+
+def bernstein_poly(i, n, t):
+    """
+     The Bernstein polynomial of n, i as a function of t
+    """
+    return comb(n, i) * ( t**(n-i) ) * (1 - t)**i
+
+
+def calcular_bezier_con_correccion_post(points, zonas_prohibidas, zonas_prohibidas_names, smooth_factor=0.1):
+    print("Calculando curva de Bézier...")
+    
+    # Extraer coordenadas
+    xpoints = [p[0] for p in points]
+    ypoints = [p[1] for p in points]
+    
+    # Calcular parámetros de Bézier (usando función original)
+    try:
+        parametros_bezier = get_bezier_parameters(xpoints, ypoints, smooth_factor)
+        xvals, yvals = bezier_curve(parametros_bezier, nTimes=1000)
+        puntos_bezier = list(zip(xvals, yvals))
+        
+        print(f"Curva de Bézier calculada con {len(puntos_bezier)} puntos")
+        
+        # Aplicar corrección post-Bézier si hay zonas prohibidas
+        if zonas_prohibidas_names and CORRECCION_POST_BEZIER_DISPONIBLE:
+            print("Aplicando corrección post-Bézier para evitar zonas prohibidas...")
+            
+            puntos_corregidos, iteraciones, exito = verificar_y_corregir_bezier_simple(
+                puntos_bezier, zonas_prohibidas, zonas_prohibidas_names
+            )
+            
+            if exito:
+                print(f"Corrección exitosa en {iteraciones} iteraciones")
+                print(f"Puntos después de corrección: {len(puntos_corregidos)}")
+                return puntos_corregidos
+            else:
+                print(f"Corrección parcial en {iteraciones} iteraciones (máximo alcanzado)")
+                return puntos_corregidos
+        else:
+            if not CORRECCION_POST_BEZIER_DISPONIBLE:
+                print("Módulo de corrección no disponible, usando curva original")
+            return puntos_bezier
+            
+    except Exception as e:
+        print(f"Error en cálculo de Bézier: {e}")
+        return points
+
+
 #Añadimos los puntos
 points = []
-xpoints = resultados_sectores_ruta_mas_corta[:, 0]
-ypoints = resultados_sectores_ruta_mas_corta[:, 1]
-
+xpoints = ruta["x"]
+ypoints = ruta["y"]
 for i in range(len(xpoints)):
     points.append([xpoints[i],ypoints[i]])
 
@@ -1338,11 +1233,7 @@ plt.scatter(xpoints, ypoints, s=150, c="black", edgecolors="white", label="Origi
 
 # Get the Bezier parameters based on a degree.
 data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2) #BZ0 BZ5 BZ8 BZ11 son los de paso, por tanto habrá 4*2 + 1 puntos de contol ya que el algoritmo te pone 1 pnt cntrl en el 1 punto y en el último
-xvals, yvals = bezier_curve(data, nTimes=1000)
-xpoints_antes = resultados_sectores_antes_ruta_mas_corta[:,0]
-ypoints_antes = resultados_sectores_antes_ruta_mas_corta[:,1]
-data_antes = get_bezier_parameters(xpoints_antes, ypoints_antes, 0.005, degree=len(xpoints)*2)
-xvals_antes, yvals_antes = bezier_curve(data_antes, nTimes=1000)
+
 x_val = [x[0] for x in data]
 y_val = [x[1] for x in data]
 
@@ -1358,20 +1249,6 @@ valores_x =(x_val[1]+(abs(x_val[1]-x_val[0]))/2, 0)
 
 puntos_en_recta = calcular_puntos_en_recta(punto1, punto2, valores_x)
 
-
-curve = LineString(np.column_stack((xvals, yvals)))
-coords = list(curve.coords)[::-1]
-cruces = []
-#print(f"Len puntos paso = {len(Puntos_paso)}\n len points = {len(xPoints)}")
-for name in zonas_prohibidas_names:
-    zona_prohibida_poligono = Polygon(zonas_prohibidas[name])
-    for i in range(len(coords) - 1):
-        segmento = LineString([coords[i], coords[i + 1]])
-        if segmento.intersects(zona_prohibida_poligono):
-            longitud_inicial = len(resultados_sectores[:,0])
-            ruta_aplanada = np.linspace(0, longitud_inicial-1, longitud_inicial)
-            ruta_final_bz, resultados_sectores_bz = rodear_zona_prohibida(ruta_aplanada, zonas_prohibidas, zonas_prohibidas_names, resultados_sectores)
-
 x_val = np.insert(x_val, 1, puntos_en_recta[0][0])
 #x_val = np.insert(x_val, 2, puntos_en_recta[1][0])
 y_val = np.insert(y_val, 1, puntos_en_recta[0][1])
@@ -1385,24 +1262,16 @@ if TipoTrayectoria == "Continuous":
         plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
 
     # Ploteamos los sectores
-    if sectores_navegacion > 0 :
-        for sector_name, points in sectors.items():
-            sector_points = np.array(points)
-            color = "blue"
-            if not sector_name.startswith("Net") and not sector_name.startswith("Zona_prohibida"):
-                plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
-    if num_zonas_prohibidas > 0:
-        for sector_name, points in sectors.items():
-            sector_points = np.array(points)
-            color = "red"
-            if sector_name.startswith("Zona_prohibida"):
-                plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
-                
+    for sector_name, points in sectors.items():
+        sector_points = np.array(points)
+        color = "red" if sector_name.startswith("Zona_prohibida") else "blue"
+        if not sector_name.startswith("Net"):
+            plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
+            
     # Plot the resulting Bezier curve
-    plt.plot(xvals_antes, yvals_antes, 'blue', label = 'Camino inicial', linestyle = '--')
-    plt.plot(xvals, yvals, 'black', label='Camino final')
-    
-    plt.title("Final route continuous sin cruce")
+    xvals, yvals = bezier_curve(data, nTimes=1000)
+    plt.plot(xvals, yvals, 'black', label='Curve')
+    plt.title("Final route continuous")
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -1433,7 +1302,7 @@ while idx_paso < len(Puntos_paso) and idx_control + 1 < len(Puntos_control):
 Puntos_Bezier = np.array(Puntos_Bezier)
 
 #En caso de que se quiera guardar la ruta con curvas de Bézier en vez de point-to-point
-print("TipoTrayectoria: ", TipoTrayectoria)
+
 if TipoTrayectoria == "Continuous":
     puntos_control=[x_val, y_val]
 

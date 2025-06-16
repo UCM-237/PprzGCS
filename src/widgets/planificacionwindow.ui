@@ -138,24 +138,6 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Waypoints         </string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="label_Puntos_paso">
-         <property name="text">
-          <string>11</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
       <widget class="QPushButton" name="button_editor">
        <property name="text">
         <string>Open flight plan editor</string>
@@ -198,7 +180,7 @@
      <item>
       <widget class="QPushButton" name="button_estrategia">
        <property name="text">
-        <string>Strategy</string>
+        <string>Type of trajectory</string>
        </property>
       </widget>
      </item>

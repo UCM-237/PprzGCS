@@ -1,6 +1,5 @@
-Estrategia seleccionada:Point to point
-Ruta mapa:UCM/Calibracion_rozamientos.xml
+Estrategia seleccionada:Continuous
+Ruta mapa:UCM/ejemplo1_esquiva_ZP.xml
 Ruta controlador:UCM/boat_f405_v2.xml
 Ruta conf:UCM/conf.xml
 Ruta aircraft:CYANOA
-Numero de puntos de paso:11
