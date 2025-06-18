@@ -25,6 +25,10 @@ set(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/chat.ui
     ${CMAKE_CURRENT_SOURCE_DIR}/planificacionwindow.ui
     ${CMAKE_CURRENT_SOURCE_DIR}/planificacionwindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/muestreo_window.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/muestreo_window.ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/transmision_window.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/transmision_window.ui
     ${CMAKE_CURRENT_SOURCE_DIR}/sectors_window.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sectors_window.ui
 )

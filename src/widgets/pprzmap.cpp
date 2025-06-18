@@ -2,6 +2,8 @@
 #include "ui_pprzmap.h"
 #include "pprz_dispatcher.h"
 #include "planificacionwindow.h"
+#include "muestreo_window.h"
+#include "transmision_window.h"
 #include "dispatcher_ui.h"
 #include <iostream>
 #include "maputils.h"
@@ -11,6 +13,7 @@
 #include "point2dpseudomercator.h"
 #include <QSet>
 #include "gcs_utils.h"
+#include <QDir>
 #if GRPC_ENABLED
 #include "grpcconnector.h"
 #endif
@@ -21,7 +24,7 @@ PprzMap::PprzMap(QWidget *parent) :
     current_ac("0")
 {
     ui->setupUi(this);
-
+    homeDir = QDir::homePath(); //Directorio home
     auto dl_strm = [=](bool local_only) {
 
         QSet<QString> tiles;
@@ -53,7 +56,10 @@ PprzMap::PprzMap(QWidget *parent) :
     };
 
     connect(ui->config_button, &QPushButton::clicked, this, &PprzMap::VentanaPlanificacion);
+    connect(ui->Muestreo_button, &QPushButton::clicked, this, &PprzMap::ShowMuestreoWindow);
+    connect(ui->Transmision_button, &QPushButton::clicked, this, &PprzMap::ShowTransmisionWindow);
     connect(ui->srtm_button, &QPushButton::clicked, [=]() {dl_strm(false);});
+    connect(ui->Fin_button, &QPushButton::clicked, this, &PprzMap::on_button_fin_clicked);
 #if GRPC_ENABLED
     connect(GRPCConnector::get(), &GRPCConnector::dl_srtm, [=]() {dl_strm(true);});
 #endif
@@ -145,5 +151,35 @@ void PprzMap::VentanaPlanificacion()
     ventana->show(); // Mostrar la ventana
 }
 
+void PprzMap::ShowMuestreoWindow()
+{
+    muestreo_window *ventana = new muestreo_window();
+    ventana->show();
+}
 
 
+void PprzMap::ShowTransmisionWindow()
+{
+    transmision_window *ventana = new transmision_window();
+    ventana->show();
+}
+
+void PprzMap::on_button_fin_clicked()
+{
+    QProcess *process = new QProcess(this);
+
+    QString program = "python3";
+    QStringList arguments;
+    arguments << homeDir + "/PprzGCS/Planificacion/Python_sw/Extraccion_datos/Extraccion_datos.py";
+
+    process->start(program, arguments);
+
+    // Conectar para ver salida si quieres
+    connect(process, &QProcess::readyReadStandardOutput, [=]() {
+        qDebug() << "Salida:" << process->readAllStandardOutput();
+    });
+
+    connect(process, &QProcess::readyReadStandardError, [=]() {
+        qDebug() << "Error:" << process->readAllStandardError();
+    });
+}

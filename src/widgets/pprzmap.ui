@@ -19,7 +19,7 @@
      <item>
       <widget class="QPushButton" name="srtm_button">
        <property name="text">
-        <string>SRTM</string>
+        <string>Planner Window</string>
        </property>
       </widget>
      </item>
@@ -80,11 +80,48 @@
     <widget class="MapWidget" name="map"/>
    </item>
    <item>
-    <widget class="QPushButton" name="config_button">
-     <property name="text">
-      <string>Planner Window</string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="config_button">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Planner</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Muestreo_button">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Muestreo</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Fin_button">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Fin misión</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="Transmision_button">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Transmisión</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

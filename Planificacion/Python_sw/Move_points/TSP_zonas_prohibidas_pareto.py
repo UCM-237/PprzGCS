@@ -1,60 +1,35 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
+#Basicas
 import pandas as pd
-
 import numpy as np
-
 import matplotlib
 matplotlib.use('Qt5Agg')  # Cambia el backend a Qt5Agg para mostrar ventanas gráficas
 import matplotlib.pyplot as plt
 
+#Scipy
 from scipy.spatial.distance import cdist
-from pymoo.core.problem import ElementwiseProblem
+from scipy.special import comb
 
-
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import scale
-from sklearn.metrics import silhouette_score
-
-from matplotlib import style
-
-#Para que el primer punto sea el inicial
+#Pymoo
 from pymoo.core.repair import Repair 
-
-#Diferentes funciones de la biblioteca para optimizar (pymoo)
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.optimize import minimize
 from pymoo.problems.single.traveling_salesman import create_random_tsp_problem
-from pymoo.operators.sampling.rnd import PermutationRandomSampling
+from pymoo.core.problem import ElementwiseProblem
 from pymoo.operators.crossover.ox import OrderCrossover
 from pymoo.operators.mutation.inversion import InversionMutation
-from pymoo.termination.default import DefaultSingleObjectiveTermination
-from pymoo.operators.mutation.bitflip import BitflipMutation
 from pymoo.config import Config
+
 Config.warnings['not_compiled'] = False
 
-import logging
-
-from shapely.geometry import LineString, Polygon, Point
-import numpy as np
-import matplotlib.pyplot as plt
-import math
-
+#Varias
 from shapely.geometry import Point, LineString, Polygon, MultiPoint, GeometryCollection
-
-
-# In[2]:
-
-
 from lxml import etree
-import os
-
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from pyproj import CRS, Transformer
+import os
+
+
 home_dir = os.path.expanduser("~")
 
 #Leemos los archivos sacados del boton de planificación
@@ -121,18 +96,13 @@ home = []
 # Almacenar los waypoints existentes en una lista
 for waypoint in way_points.findall('waypoint'):
     name = waypoint.get('name')
-    #print(name)
     if name.startswith('BZ'):
         #lat = float(waypoint.get('lat'))
         #lon = float(waypoint.get('lon'))
         x = float(waypoint.get('x'))
         y = float(waypoint.get('y'))
-        #print(waypoint.get('lon'))
-        #print(lon)
-        #print(type(lat))
         waypoint_list.append((name, x, y))
         #waypoint_list.append((name, lat, lon))
-        #print("Punto", x, y)
     else:
         x = float(waypoint.get('x'))
         y = float(waypoint.get('y'))
@@ -141,8 +111,7 @@ for waypoint in way_points.findall('waypoint'):
     if name == "HOME":
         home.append((name, x, y))
         waypoint_list.append((name, x, y))
-        #print(unchanged_points)
-#print("Unchanged:", unchanged_points)
+
 
 sectors = {}
 zonas_prohibidas = {}
@@ -163,7 +132,6 @@ if sectors_node is not None:
         corners = []
         for corner in sector.findall('corner'):
             corner_name = corner.attrib['name']
-            #print("Corner name: ", corner_name)
             
             # Comprobar si corner_name está en unchanged_points
             for name, x, y in unchanged_points:
@@ -175,7 +143,6 @@ if sectors_node is not None:
         if sector_name.startswith("Zona_prohibida"):
             zonas_prohibidas[sector_name] = corners
             zonas_prohibidas_names.append(sector_name)
-#print("Sectors: ", sectors)
 
 
 #Limpiamos way_points
@@ -272,13 +239,6 @@ def calcular_intersecciones(p1, p2, poligono_vertices):
     
     return []
 
-import matplotlib
-matplotlib.use('Qt5Agg')  # Cambia el backend a TkAgg para mostrar ventanas gráficas
-import matplotlib.pyplot as plt
-import numpy as np
-from scipy.spatial.distance import cdist
-from pymoo.visualization.scatter import Scatter
-from pymoo.core.problem import ElementwiseProblem
 
 #Definimos una función para ver si el segmento pasa por una zona prohibida.
 def segmento_atraviesa_poligono(p1, p2, vertices_poligono):
@@ -292,7 +252,6 @@ class RUTA (ElementwiseProblem):
     def __init__(self, **kwargs):
 
         n_stops, _ = stops.shape #Aquí coge las filas (Por tanto el número de paradas)
-        #n_stops=n_stops-1
         self.stops = stops
         self.D = D
         super(RUTA, self).__init__(
@@ -300,7 +259,6 @@ class RUTA (ElementwiseProblem):
             n_obj=2,
             n_constr=0,
             xl=0,
-            #xu=n_stops - len(navigation_sectors) + np.sum(b),
             xu=n_stops,
             vtype=int,
             **kwargs
@@ -316,7 +274,6 @@ class RUTA (ElementwiseProblem):
                 if len(intersecciones) >= 2:  # Se cruza la zona prohibida
                     dist_entrada_salida = np.linalg.norm(np.array(intersecciones[0]) - np.array(intersecciones[-1]))
                     zonas_prohibidas_penalizacion += dist_entrada_salida * 1000  # F
-        #out['F'] = [distancia, tiempo]
         out['F'] = [distancia, zonas_prohibidas_penalizacion]
         
     def get_route_length(self, x):
@@ -333,22 +290,12 @@ def visualize_3(problem, x, sectors, j, fig=None, ax=None, show=True, label=True
     x = x[j]
     if fig is None or ax is None:
         fig, ax = plt.subplots()
-
-    # Cambiar el color de fondo de la figura y los ejes
-    # fig.patch.set_facecolor('white')
-    # ax.set_facecolor('gray')
     
     # plot cities using scatter plot
     ax.scatter(problem.stops[:, 0], problem.stops[:, 1], color="black", s=150, label = "Waypoints")
     if label:
         for i, c in enumerate(problem.stops):
             ax.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
-
-    # plot the line on the path
-    # for i in range(len(x)-1):
-    #     current = x[i]
-    #     next_ = x[(i + 1)]
-    #     ax.plot(problem.stops[[current, next_], 0], problem.stops[[current, next_], 1], 'black', label="Final route")
     ax.plot(problem.stops[:,0], problem.stops[:, 1], 'black', label="Final route")
 
     # Ploteamos los sectores
@@ -392,15 +339,6 @@ waypoint_list = [(x, y) for (_,x, y) in waypoint_list]
 waypoint_list, closest_index = closest_point_and_reorder(home_coord, paradas)
 paradas = waypoint_list
 
-from pymoo.algorithms.moo.nsga2 import NSGA2
-from pymoo.optimize import minimize
-from pymoo.problems.single.traveling_salesman import create_random_tsp_problem
-from pymoo.operators.sampling.rnd import PermutationRandomSampling
-from pymoo.operators.crossover.ox import OrderCrossover
-from pymoo.operators.mutation.inversion import InversionMutation
-from pymoo.termination.default import DefaultSingleObjectiveTermination
-from pymoo.operators.mutation.bitflip import BitflipMutation
-
 #Creamos un diccionario para almacenar cada ruta
 rutas={}
 waypoint_list = np.array(waypoint_list, dtype=object)
@@ -436,12 +374,10 @@ algorithm = NSGA2(
     pop_size=20,
     sampling=sampling,
     mutation=InversionMutation(),
-    #mutation=BitflipMutation(),
     crossover=OrderCrossover(),
     repair=StartFromZeroRepair(),
     eliminate_duplicates=True,
     save_history=True,
-    #verbose=True
 )
 
 
@@ -453,11 +389,12 @@ res = minimize(
     verbose=False,
 )
 
-#PARA VISUALIZAR TODAS LAS SOLUCIONES DEL FRENTE
+###############################PARA VISUALIZAR TODAS LAS SOLUCIONES DEL FRENTE############################################
 
 # if sectores_navegacion == 0 and num_zonas_prohibidas == 0 and TipoTrayectoria == "Point to point": 
 #     print("Ploteando con visualize")
 #     visualize_3(problem, res.X, sectors, j=0)
+#########################################################################################################################
 
 resultado_rutas = []
 for j in range(len(res.X)):
@@ -473,21 +410,15 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
     min_x, min_y, max_x, max_y = polygon.bounds
     waypoints = []
     punto_final=(x_fin, y_fin)
-    #waypoints.append((x_inicio, y_inicio))
     if estrategia.startswith("ZigZag"):  
         x_paso = np.abs(min_x-max_x)/(np.sqrt(Pnts_total)+1)
         y_paso = np.abs(min_y - max_y)/(np.sqrt(Pnts_total)+1)
         Pnts_total=(Pnts_total)
-        #x_paso = int(Pnts_total)
-        #y_paso = int(Pnts_total)
         y_vals = np.arange(min_y, max_y, y_paso)
         x_vals = np.arange(min_x, max_x, x_paso)
         area=polygon.area
-        #pasos=100
 
         centroide_i = Point(centroide[0], centroide[1])
-        # Asegurarse de que los puntos de inicio son flotantes
-        #waypoints.append((float(x_inicio), float(y_inicio)))
     
         # Calcular las distancias a los vértices
         dists = []
@@ -536,24 +467,23 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
         
         #Añadir un warning de que si no caben los puntos introducidos por el usuario el algoritmo va a recorrer la region con menos puntos
 
-        #OPCIÓN CON SEPARACIÓN FIJA DMIN POR VUELTA
+        #######################################OPCIÓN CON SEPARACIÓN FIJA DMIN POR VUELTA#####################################################
         #D_min = 0.05 #Tamaño para que el barco pueda moverse correctamente/error de la sonda
         #vueltas_totales = (radio_minimo-radio_inicial)/D_min 
         #print("Total de puntos", Pnts_total)
         #Pnts_total = Pnts_total
         #Pnts_1vuelta = Pnts_total/vueltas_totales
         #incremento_radio = D_min/(Pnts_1vuelta)
+        ######################################################################################################################################
 
-        #OPCIÓN CON SEPARACIÓN DMIN EN LA PRIMERA VUELTA
+        ######################################OPCIÓN CON SEPARACIÓN DMIN EN LA PRIMERA VUELTA#################################################
         D_min = radio_minimo/Pnts_total #Tamaño para que el barco pueda moverse correctamente/error de la sonda
         Pnts_1vuelta = 2*np.pi*radio_inicial*0.35/D_min #Ponemos como ajuste de error el 50% del radio inicial
         vueltas_totales = Pnts_total/Pnts_1vuelta
         incremento_radio = (radio_minimo/vueltas_totales)/(Pnts_1vuelta)
-        
-        # Asegurarse de que los puntos de inicio son flotantes
-        #waypoints.append((float(x_inicio), float(y_inicio)))
-        #waypoints.insert(0,centroide)
+        ######################################################################################################################################
 
+        # Asegurarse de que los puntos de inicio son flotantes
         punto_final = (float(x_fin), float(y_fin))
         punto_inicial=(float(x_ini),float(y_ini))
         
@@ -573,16 +503,8 @@ def generar_waypoints_area(polygon, centroide, vertices, Pnts_total, x_inicio, y
             punto = Point(x, y)
             if polygon.contains(punto):  # Solo añade el punto si está dentro del polígono
                 waypoints.append((float(x), float(y)))
-            #waypoints.reverse()  # Invertir el orden una vez al final si es necesario
-        #waypoints.insert(0, punto_inicial)
-
-    #Ahora añadimos un punto final
-    #waypoints.append(punto_final)
 
     return waypoints
-
-
-# In[16]:
 
 
 def encontrar_centroide_idx(centroides, centroide_objetivo):
@@ -645,7 +567,6 @@ for j in range(len(resultado_rutas)):
     resultados_sectores_rutas.append(resultado)
     resultado = np.vstack(resultado)
 
-from scipy.special import comb
 
 def get_bezier_parameters(X, Y, smooth_factor, degree=12):
     """ Least square qbezier fit using penrose pseudoinverse.
@@ -734,12 +655,7 @@ def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenad
     Detecta todos los cruces de la ruta con zonas prohibidas.
     Devuelve una lista de tuplas (índice de cruce, índice de zona).
     """
-
-    # print("Estrategia = ", estrategia)
-    # print("Ruta = ", ruta)
-    # print("Coordenadas =", coordenadas)
     if estrategia == "Point to point":
-        #print("En PtP")
         cruces = []
         for i in range(len(ruta) - 1):
             p1, p2 = coordenadas[i], coordenadas[i + 1]
@@ -747,7 +663,6 @@ def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenad
                 if segmento_atraviesa_poligono(p1, p2, zonas_prohibidas[zona]):
                     cruces.append((i, idx))  # Añadir todos los cruces encontrados
     elif estrategia == "Continuous":
-        #print("En cruce continous")
         cruces = []
         xpoints = coordenadas[:,0]
         ypoints = coordenadas[:,1]
@@ -764,18 +679,8 @@ def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenad
                 if segmento.intersects(zona_prohibida_poligono):
                      cruces_bz.append((i, name))
             if cruces_bz:
-                #print("Ha cruzado")
                 i_start = cruces_bz[0][0]
                 i_end = cruces_bz[-1][0] + 1
-                p_start = coords[i_start]
-                p_end = coords[i_end]
-
-                zona_cruce = cruces_bz[0][1]
-
-                # if zona_actual != zona_cruce:
-                #     desplazamiento = None  # reset desplazamiento para nueva zona
-                #     zona_actual = zona_cruce
-
                 # Map Puntos_paso to closest coords index
                 map_p_to_c = []
                 for p_idx, p_waypoint in enumerate(Puntos_paso):
@@ -822,32 +727,6 @@ def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenad
                 
 
                 cruces.append((idx_p_start, idx))
-                #print("Ploteo en cruce")
-                # #Ploteamos los sectores
-                # for i, c in enumerate(zip(xpoints, ypoints)):
-                #     plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
-                # if sectores_navegacion > 0 :
-                #     for sector_name, points in sectors.items():
-                #         sector_points = np.array(points)
-                #         color = "blue"
-                #         if not sector_name.startswith("Net") and not sector_name.startswith("Zona_prohibida"):
-                #             plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
-                # if num_zonas_prohibidas > 0:
-                #     for sector_name, points in sectors.items():
-                #         sector_points = np.array(points)
-                #         color = "red"
-                #         if sector_name.startswith("Zona_prohibida"):
-                #             plt.fill(sector_points[:, 0], sector_points[:, 1], alpha=0.2, color=color, label=f'Sector {sector_name}')
-                            
-                # # Plot the resulting Bezier curve
-                # plt.scatter(xpoints, ypoints, color = "black")
-                # plt.plot(xvals, yvals, 'black', label='Curve')
-                # plt.title("Final route continuous")
-                # plt.legend()
-                # plt.grid(True)
-                # plt.show()
-
-                #print("Cruces Continous = ", cruces)
                             
     return cruces
 
@@ -857,10 +736,8 @@ def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coorde
     Si la ruta cruza una zona prohibida, se inserta un punto de desvío.
     """
     n_zonas_prohibidas_cruzadas = 0
-    #print("Ejecutando deteccion de cruces 1")
     cruces = detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenadas, TipoTrayectoria)
     if cruces != []:
-        #print("He salido de la función detecta_cruce_ruta")
         puntos_extra = 0
         puntos_añadidos = 0
         flag = 0
@@ -870,9 +747,7 @@ def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coorde
                 cruce_idx = cruces[i][0]
                 zona_idx = cruces[i][1]
                 nueva_ruta = ruta
-                #print("Voy a calcular el punto de rodeo")
                 punto_de_rodeo = calcular_punto_rodeo(coordenadas[cruce_idx+puntos_añadidos], coordenadas[cruce_idx+1+puntos_añadidos], zonas_prohibidas[zonas_prohibidas_names[zona_idx]], zonas_prohibidas, zonas_prohibidas_names, coordenadas = coordenadas)
-                #print("Punto de rodeo = ", punto_de_rodeo)
                 if punto_de_rodeo != []:
                     # Si punto_de_rodeo es un solo punto, asegúrate de que sea un array 2D de forma (1, 2)
                     if isinstance(punto_de_rodeo, (np.ndarray, tuple)) and punto_de_rodeo.ndim == 1:
@@ -896,7 +771,6 @@ def rodear_zona_prohibida(ruta, zonas_prohibidas, zonas_prohibidas_names, coorde
                     # Convertimos de nuevo la lista a `numpy.ndarray` para mantener el formato
                     problem_stops = np.array(problem_stops_list)
                     problem.stops = problem_stops
-                    #problem.stops = np.append(problem.stops, [punto_de_rodeo_str], axis = 0)
                     
                     ruta=nueva_ruta
                     n_zonas_prohibidas_cruzadas += 1
@@ -959,8 +833,6 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
     :param margen: Distancia de separación del polígono para el punto de rodeo.
     :return: Punto de rodeo (x, y).
     """
-   # print("Dentro de la función calcular punto rodeo")
-    puntos_ajustados=[]
     puntos_ajustados_horarios=[]
     puntos_ajustados_antihorarios=[]
     ruta_horario=[]
@@ -972,9 +844,7 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
     # 1. Encontrar el punto de intersección con la zona prohibida
     if TipoTrayectoria == "Point to point":
         interseccion = poligono.boundary.intersection(linea)
-       # print("Interseccion = ", interseccion)
     if TipoTrayectoria == "Continuous":
-        #print("Punto de rodeo con trayectorio continuous")
         xpoints = coordenadas [:,0]
         ypoints = coordenadas [:,1]
         data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2)
@@ -1018,17 +888,11 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
             interseccion = puntos_interseccion[0]
         else:
             interseccion = GeometryCollection()
-
-        #print("Interseccion = ", interseccion)
     if interseccion.is_empty:
-        #print("Return empty interseccion")
         return []  # No hay intersección, camino directo
 
     if interseccion.geom_type == "MultiPoint":
         interseccion = min(interseccion.geoms, key=lambda p: Point(punto_inicial).distance(p))
-
-    punto_interseccion = (interseccion.x, interseccion.y)
-    # print(f"Punto de intersección: {punto_interseccion}")
 
     # 2. Calcular el centroide del polígono
     centroide = poligono.centroid
@@ -1036,10 +900,8 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
 
     # 3. Buscar el primer vértice con visibilidad desde punto_final recorriendo ambos sentidos del polígono
     vertices = list(poligono.exterior.coords[:-1])
-    #idx_interseccion = min(range(len(vertices)), key=lambda i: Point(vertices[i]).distance(interseccion))
     idx_interseccion = min(range(len(vertices)), key=lambda i: Point(vertices[i]).distance(Point(punto_inicial)))
     i = 0
-    #print(f"len vertices = {len(vertices)}")
     while i < len(vertices):
         idx_horario = (idx_interseccion - i) % len(vertices)
         idx_antihorario = (idx_interseccion + i) % len(vertices)
@@ -1057,10 +919,6 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
         # 5. Desplazar el punto en la dirección contraria al centroide
         punto_ajustado_horario = desplazar_punto(punto_candidato_horario, direccion_normal_horario, margen)
         punto_ajustado_antihorario = desplazar_punto(punto_candidato_antihorario, direccion_normal_antihorario, margen)
-        # print("punto_ajustado")
-        # Calcular las distancias al punto final
-        dist_horario = Point(punto_ajustado_horario).distance(Point(punto_final)) + Point(punto_ajustado_horario).distance(Point(punto_inicial))
-        dist_antihorario = Point(punto_ajustado_antihorario).distance(Point(punto_final)) + Point(punto_ajustado_antihorario).distance(Point(punto_inicial))
 
         # Si no se encuentra un punto válido, continuar al siguiente vértice
         i += 1
@@ -1097,8 +955,6 @@ def calcular_punto_rodeo(punto_inicial, punto_final, vertices_zona_prohibida, zo
         return ruta_ajustada_horario
     else:
         return ruta_ajustada_antihorario
-
-    return ruta_ajustada_horario
 
 dist_mas_corta = 1000000000
 if len(resultados_sectores_rutas) >= 1:
@@ -1190,8 +1046,6 @@ unchanged_array = np.zeros(len(unchangedpoints), dtype=dtype)
 resultados_sectores = resultados_sectores[1:] #Como se ha añadido el home en el TSP como el primer punto, ahora hay que quitarlo
 for i in range(len(resultados_sectores)):
         ruta[i]['nombre']=f'L{i}'
-#print(resultado)
-
 # Rellenamos este array
 for i, (nombre, x_str, y_str) in enumerate(unchangedpoints):
     unchanged_array[i] = (nombre, float(x_str), float(y_str)) 
@@ -1222,7 +1076,6 @@ Archivo_sin_extension = os.path.splitext(Archivo)[0]
 # Guardar los cambios en el archivo XML
 ruta_archivo_opt = os.path.join(home_dir, "paparazzi", "conf", "flight_plans", f"{Archivo_sin_extension}_opt.xml")
 with open(ruta_archivo_opt, 'w', encoding='utf-8') as f:
-    #print("Archivo actualizado")
     f.write('<!DOCTYPE flight_plan SYSTEM "../flight_plan.dtd">\n')
     xml_pretty = prettify(root)
     xml_sin_version = '\n'.join(xml_pretty.splitlines()[1:])  
@@ -1247,17 +1100,8 @@ for module in root.iter('module'):
         for define in module.findall('define'):
             if define.get('name') == 'GVF_PARAMETRIC_BARE_2D_BEZIER_N_SEG':
                 define.set('value', n_segmentos)
-               # print("Nuevo valor asignado a GVF_PARAMETRIC_BARE_2D_BEZIER_N_SEG:", define.get('value'))
                 cambio_realizado = True  # Marcar el cambio como realizado
 
-#if not cambio_realizado:
-   #Puede saltar cambio no realizado si el controlador no tiene el módulo gvf bezier bare
-   #print("No se encontró el módulo o define especificado. Esto no significa que la optimización no se haya realizado correctamente, sino que el controlador no tiene el módulo gvf_Bezier_bare.")
-
-from pyproj import CRS, Transformer
-import os
-
-from pyproj import CRS, Transformer
 
 # Definir el CRS de tu sistema de coordenadas personalizado (ejemplo ficticio)
 crs_personal = CRS(proj='tmerc', lat_0=lat0, lon_0=lon0, k=1.0, x_0=0, y_0=0, datum='WGS84')  # Ejemplo de un sistema transversal mercator
@@ -1281,12 +1125,8 @@ def guardar_puntos_en_txt(puntos, archivo_salida):
                 lon_str = str(lon)
                 lat_coma = lat_str.replace(".", ",")
                 lon_coma = lon_str.replace(".", ",")
-                #print(lat_coma, lon_coma)
 
                 f.write(f"{punto['nombre']}\t{lat_coma}\t{lon_coma}\n")
-        
-        #print(f"Los puntos han sido guardados exitosamente en '{archivo_salida}'")
-    
     except Exception as e:
         print(f"Error al guardar los puntos: {e}")
 
@@ -1362,7 +1202,6 @@ puntos_en_recta = calcular_puntos_en_recta(punto1, punto2, valores_x)
 curve = LineString(np.column_stack((xvals, yvals)))
 coords = list(curve.coords)[::-1]
 cruces = []
-#print(f"Len puntos paso = {len(Puntos_paso)}\n len points = {len(xPoints)}")
 for name in zonas_prohibidas_names:
     zona_prohibida_poligono = Polygon(zonas_prohibidas[name])
     for i in range(len(coords) - 1):
