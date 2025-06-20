@@ -43,7 +43,6 @@ private slots:
     void VentanaPlanificacion();
     void ShowMuestreoWindow();
     void ShowTransmisionWindow();
-    void on_button_fin_clicked();
 
 private:
     void setEditorMode();
@@ -51,7 +50,6 @@ private:
     QMap<Waypoint*, int> combo_indexes;
     QProcess *process;
     QString current_ac;
-    QString homeDir;
     //CoordinatesTransform ct_wgs84_utm;
 };
 

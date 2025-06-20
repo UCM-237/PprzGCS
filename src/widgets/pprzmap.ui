@@ -102,16 +102,6 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="Fin_button">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Fin misión</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="Transmision_button">
        <property name="enabled">
         <bool>true</bool>

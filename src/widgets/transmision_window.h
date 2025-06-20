@@ -2,6 +2,7 @@
 #define TRANSMISION_WINDOW_H
 
 #include <QWidget>
+#include <QStringListModel>
 
 //Declara la clase .ui
 namespace Ui {
@@ -21,11 +22,15 @@ public:
 
 private slots:
     void on_button_send_clicked();
-
+    void on_button_datos_clicked();
 
 private:
     Ui::transmision_window *ui;
+    QStringListModel *model;
+    QString homeDir;
 
+    void loadFilesFromDirectory(const QString &path, QStringListModel *model, const QStringList &filters = QStringList());
 };
+
 
 #endif // TRANSMISION_WINDOW_H

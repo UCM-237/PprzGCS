@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>895</width>
-    <height>473</height>
+    <width>599</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,41 +16,41 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>31</x>
-     <y>41</y>
-     <width>841</width>
-     <height>311</height>
+     <x>20</x>
+     <y>30</y>
+     <width>561</width>
+     <height>211</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="3" column="2">
+     <widget class="QPushButton" name="button_transmitir">
       <property name="text">
-       <string>Referencia/ID</string>
+       <string>Transmitir</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_5">
-      <property name="text">
-       <string>Contraseña</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLineEdit" name="label_URL">
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
+    <item row="2" column="1" colspan="2">
      <widget class="QLineEdit" name="label_contrasena">
       <property name="text">
        <string/>
       </property>
       <property name="echoMode">
        <enum>QLineEdit::Password</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="button_datos">
+      <property name="text">
+       <string>Ver datos</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" colspan="2">
+     <widget class="QListView" name="listView_ID">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
       </property>
      </widget>
     </item>
@@ -61,17 +61,24 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="label_ID">
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Contraseña</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1" colspan="2">
+     <widget class="QLineEdit" name="label_URL">
       <property name="text">
        <string/>
       </property>
      </widget>
     </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="button_transmitir">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>Transmitir</string>
+       <string>Referencia/ID</string>
       </property>
      </widget>
     </item>

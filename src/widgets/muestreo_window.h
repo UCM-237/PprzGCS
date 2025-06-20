@@ -2,6 +2,7 @@
 #define MUESTREO_WINDOW_H
 
 #include <QWidget>
+#include <QStringListModel>
 
 //Declara la clase .ui
 namespace Ui {
@@ -20,6 +21,11 @@ public:
 
 private slots:
     void on_button_save_clicked();
+    void on_button_explorer_referencia_clicked();
+    void on_button_ver_datos_mision_clicked();
+    void extraccion_datos(bool mostrarDespues, const QString &jsonFilePath = nullptr, const QString &csvFilePath = nullptr);
+    void mostrar_datos_mision();
+    void guardarVentanaYCsvEnJson(const QString &jsonFilePath, const QString &csvFilePath);
 
 private:
     Ui::muestreo_window *ui;
@@ -29,6 +35,7 @@ private:
     QString Responsable;
     QString Lugar;
     QString Referencia;
+    QString Mision;
     QString h_inicio_ficocianina;
     QString h_fin_ficocianina;
     QString h_inicio_clorofila;
@@ -37,6 +44,10 @@ private:
     QString archivo_medidas;
     QString periodo_medidas;
     QString incidencias;
+
+    QStringListModel *model;
+
+    void loadFilesFromDirectory(const QString &path, QStringListModel *model, const QStringList &filters = QStringList());
 };
 
 #endif // MUESTREO_WINDOW_H

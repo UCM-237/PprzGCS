@@ -1,0 +1,14 @@
+Responsable: {Armando}
+Lugar: {UCM}
+Referencia: {Prueba_20_06_25}
+Mision: {25_05_16__11_42_15.data}
+Hora inicio ficocianina: {12:00:23}
+Hora fin ficocianina: {12:30:23}
+Hora inicio clorofila: {13:00:23}
+Hora fin clorofila: {14:00:23}
+Ruta archivo calibracion: {Calibracion.csv}
+Ruta archivo medidas: {Mediodas.csv}
+Periodo medidas: {5}
+Incidencias: {Prueba.
+
+No incidencias.}
