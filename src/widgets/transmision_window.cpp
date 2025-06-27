@@ -6,6 +6,8 @@
 #include <QMessageBox>
 #include <QTextStream>
 #include <QApplication>
+#include <QProcess>
+#include <QDebug>
 
 
 
@@ -41,14 +43,37 @@ void transmision_window::on_button_send_clicked()
     
     if (input == "1234"){
 
-        QMessageBox::information(this, "Contraseña", "Contraseña correcta");
+        QModelIndexList selectedIndexes = ui->listView_ID->selectionModel()->selectedIndexes();
 
+        if (selectedIndexes.isEmpty()) {
+            QMessageBox::warning(this, "Aviso", "Por favor, selecciona un archivo de la lista de IDs.");
+            return;
+        }
+
+        QString archivoSeleccionado = selectedIndexes.first().data().toString();
+        QString pythonExecutable = "python3";
+        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Subida_datos/post_request.py";
+
+        QProcess *process = new QProcess(this);
+
+        connect(process, &QProcess::readyReadStandardOutput, [process]() {
+            QByteArray output = process->readAllStandardOutput();
+            qDebug() << "Output:" << output;
+        });
+
+        connect(process, &QProcess::readyReadStandardError, [process]() {
+            QByteArray error = process->readAllStandardError();
+            qDebug() << "Error:" << error;
+        });
+
+
+        process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado);
     }
+
     else{
-
         QMessageBox::critical(this, "Contraseña", "Contraseña incorrecta");
-
     }
+    
 }
 
 

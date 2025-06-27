@@ -56,7 +56,6 @@ void muestreo_window::loadFilesFromDirectory(const QString &path, QStringListMod
         model->setStringList(QStringList() << "Directorio no encontrado");
     }
 }
-
 void muestreo_window::on_button_save_clicked()
 {
     disconnect(ui->button_save, &QPushButton::clicked, this, &muestreo_window::on_button_save_clicked);
@@ -64,55 +63,75 @@ void muestreo_window::on_button_save_clicked()
     Responsable = ui->label_responsable->text();
     Lugar = ui->label_lugar->text();
     Referencia = ui->label_referencia->text();
-    QModelIndexList seleccion = ui->listView_mision->selectionModel()->selectedIndexes();
-    if (!seleccion.isEmpty()) {
-        Mision = seleccion.first().data().toString();
+
+    // Validación de referencia
+    if (Referencia.trimmed().isEmpty()) {
+        QMessageBox::warning(this, "Error", "Por favor, introduce una referencia.");
+        return;
     }
+
+    // Validación de selección de misión
+    QModelIndexList seleccion = ui->listView_mision->selectionModel()->selectedIndexes();
+    if (seleccion.isEmpty()) {
+        QMessageBox::warning(this, "Error", "Por favor, selecciona una misión.");
+        return;
+    }
+    Mision = seleccion.first().data().toString();
+
     h_inicio_ficocianina = ui->label_h_inicio_ficocianina->text();
     h_fin_ficocianina = ui->label_h_fin_ficocianina->text();
     h_inicio_clorofila = ui->label_h_inicio_clorofila->text();
     h_fin_clorofila = ui->label_h_fin_clorofila->text();
+
+    // Validación de los campos de horas
+    if (h_inicio_ficocianina.trimmed().isEmpty() ||
+        h_fin_ficocianina.trimmed().isEmpty() ||
+        h_inicio_clorofila.trimmed().isEmpty() ||
+        h_fin_clorofila.trimmed().isEmpty()) {
+        QMessageBox::warning(this, "Error", "Por favor, rellena todos los campos de horas.");
+        return;
+    }
+ 
+
     archivo_calibracion = ui->label_archivo_calibracion->text();
     archivo_medidas = ui->label_archivo_medidas->text();
     periodo_medidas = ui->label_periodo_medidas->text();
     incidencias = ui->label_incidencias->toPlainText();
 
-    QFile file( homeDir + "/PprzGCS/Planificacion/Muestreo/" + Referencia + ".txt");
+    QFile file(homeDir + "/PprzGCS/Planificacion/Muestreo/" + Referencia + ".txt");
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream out(&file);
-        out << "Responsable: " << "{" + Responsable + "}"<< "\n";
-        out << "Lugar: " << "{" + Lugar + "}"<< "\n";
-        out << "Referencia: " << "{" + Referencia + "}"<< "\n";
+        out << "Responsable: " << "{" + Responsable + "}" << "\n";
+        out << "Lugar: " << "{" + Lugar + "}" << "\n";
+        out << "Referencia: " << "{" + Referencia + "}" << "\n";
         out << "Mision: " << "{" + Mision + "}" << "\n";
-        out << "Hora inicio ficocianina: " << "{" + h_inicio_ficocianina + "}"<< "\n";
-        out << "Hora fin ficocianina: " << "{" + h_fin_ficocianina + "}"<< "\n";
-        out << "Hora inicio clorofila: " << "{" + h_inicio_clorofila + "}"<< "\n";
-        out << "Hora fin clorofila: " << "{" + h_fin_clorofila + "}"<< "\n";
-        out << "Ruta archivo calibracion: " << "{" + archivo_calibracion + "}"<< "\n";
-        out << "Ruta archivo medidas: " << "{" + archivo_medidas + "}"<< "\n";
-        out << "Periodo medidas: " << "{" + periodo_medidas + "}"<< "\n";
-        out << "Incidencias: " << "{" + incidencias + "}"<< "\n";
+        out << "Hora inicio ficocianina: " << "{" + h_inicio_ficocianina + "}" << "\n";
+        out << "Hora fin ficocianina: " << "{" + h_fin_ficocianina + "}" << "\n";
+        out << "Hora inicio clorofila: " << "{" + h_inicio_clorofila + "}" << "\n";
+        out << "Hora fin clorofila: " << "{" + h_fin_clorofila + "}" << "\n";
+        out << "Ruta archivo calibracion: " << "{" + archivo_calibracion + "}" << "\n";
+        out << "Ruta archivo medidas: " << "{" + archivo_medidas + "}" << "\n";
+        out << "Periodo medidas: " << "{" + periodo_medidas + "}" << "\n";
+        out << "Incidencias: " << "{" + incidencias + "}" << "\n";
 
         file.close();
 
-        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " +  Referencia + ".txt");
-        // Reemplaza ".data" por ".csv" en Mision
+        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".txt");
+
         QString nombre_csv = Mision;
         if (nombre_csv.endsWith(".data")) {
-            nombre_csv.chop(5);  // elimina ".data"
+            nombre_csv.chop(5);
             nombre_csv += ".csv";
         }
 
-        const QString jsonFilePath = homeDir + "/PprzGCS/Planificacion/JSON/" + Referencia + ".JSON";
+        const QString jsonFilePath = homeDir + "/PprzGCS/Planificacion/JSON/" + Referencia + ".geojson";
         const QString csvFilePath = homeDir + "/PprzGCS/Planificacion/Extraccion_datos/" + nombre_csv;
 
         qDebug() << "Ruta CSV: " << csvFilePath;
         extraccion_datos(false, jsonFilePath, csvFilePath);
-
     }
 }
-
 
 void muestreo_window::on_button_explorer_referencia_clicked()
 {
@@ -301,62 +320,106 @@ void muestreo_window::mostrar_datos_mision()
 }
 
 
-void muestreo_window::guardarVentanaYCsvEnJson(const QString &jsonFilePath, const QString &csvFilePath)
+void muestreo_window::guardarVentanaYCsvEnJson(const QString &geoJsonFilePath, const QString &csvFilePath)
 {
-    QJsonObject jsonRoot;
-    // Leer CSV y meterlo en JSON
+    QJsonObject geoJsonRoot;
+    geoJsonRoot["type"] = "FeatureCollection";
+    QJsonArray featuresArray;
+
     QFile csvFile(csvFilePath);
     if (csvFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QTextStream in(&csvFile);
-        QString headerLine = in.readLine();  // Leer cabecera
+        QString headerLine = in.readLine();
         QStringList headers = headerLine.split(',');
 
-        QJsonArray csvArray;
+        int latIndex = headers.indexOf("lat");
+        int lonIndex = headers.indexOf("lon");
+
+        if (latIndex == -1 || lonIndex == -1) {
+            qWarning("No se encontraron columnas 'x' y 'y' en el CSV");
+            return;
+        }
+
         while (!in.atEnd()) {
             QString line = in.readLine();
             QStringList values = line.split(',');
 
-            QJsonObject rowObj;
+            if (values.size() <= qMax(latIndex, lonIndex))
+                continue;
+
+            double lat = values[latIndex].toDouble();
+            double lon = values[lonIndex].toDouble();
+
+            // Crear geometría GeoJSON
+            QJsonObject geometry;
+            geometry["type"] = "Point";
+            QJsonArray coordinates;
+            coordinates.append(lon);  // x = longitud (en este caso asumiendo coordenadas locales)
+            coordinates.append(lat);  // y = latitud
+            geometry["coordinates"] = coordinates;
+
+            // Propiedades
+            QJsonObject properties;
             for (int i = 0; i < headers.size() && i < values.size(); ++i) {
-                rowObj[headers[i].trimmed()] = values[i].trimmed();
+                if (i == latIndex || i == lonIndex)
+                    continue; // No añadir x ni y a las propiedades
+
+                QString val = values[i].trimmed();
+                bool isNumber;
+                double num = val.toDouble(&isNumber);
+                if (isNumber)
+                    properties[headers[i].trimmed()] = num;
+                else
+                    properties[headers[i].trimmed()] = val;
             }
-            csvArray.append(rowObj);
+
+
+            QJsonObject feature;
+            feature["type"] = "Feature";
+            feature["geometry"] = geometry;
+            feature["properties"] = properties;
+
+            featuresArray.append(feature);
         }
-        jsonRoot["DatosCSV"] = csvArray;
+
         csvFile.close();
     } else {
         qWarning("No se pudo abrir el archivo CSV");
+        return;
     }
-    // Guardar datos desde widgets de la ventana:
-    jsonRoot["Responsable"] = ui->label_responsable->text();
-    jsonRoot["Lugar"] = ui->label_lugar->text();
-    jsonRoot["Referencia"] = ui->label_referencia->text();
 
-    // Mision desde QListView y modelo QStringListModel
+    geoJsonRoot["features"] = featuresArray;
+
+    // Añadir metadatos de la interfaz gráfica
+    QJsonObject metadata;
+    metadata["Responsable"] = ui->label_responsable->text();
+    metadata["Lugar"] = ui->label_lugar->text();
+    metadata["Referencia"] = ui->label_referencia->text();
+    metadata["Hora inicio ficocianina"] = ui->label_h_inicio_ficocianina->text();
+    metadata["Hora fin ficocianina"] = ui->label_h_fin_ficocianina->text();
+    metadata["Hora inicio clorofila"] = ui->label_h_inicio_clorofila->text();
+    metadata["Hora fin clorofila"] = ui->label_h_fin_clorofila->text();
+    metadata["Ruta archivo calibracion"] = ui->label_archivo_calibracion->text();
+    metadata["Ruta archivo medidas"] = ui->label_archivo_medidas->text();
+    metadata["Periodo medidas"] = ui->label_periodo_medidas->text();
+    metadata["Incidencias"] = ui->label_incidencias->toPlainText();
+
     QJsonArray misionesArray;
-    for (int i = 0; i < model->rowCount(); ++i) {
-        QModelIndex idx = model->index(i);
+    QModelIndexList selectedIndexes = ui->listView_mision->selectionModel()->selectedIndexes();
+    for (const QModelIndex &idx : selectedIndexes) {
         misionesArray.append(model->data(idx).toString());
     }
-    jsonRoot["Mision"] = misionesArray;
+    metadata["Mision"] = misionesArray;
 
-    jsonRoot["Hora inicio ficocianina"] = ui->label_h_inicio_ficocianina->text();
-    jsonRoot["Hora fin ficocianina"] = ui->label_h_fin_ficocianina->text();
-    jsonRoot["Hora inicio clorofila"] = ui->label_h_inicio_clorofila->text();
-    jsonRoot["Hora fin clorofila"] = ui->label_h_fin_clorofila->text();
+    geoJsonRoot["metadata"] = metadata;
 
-    jsonRoot["Ruta archivo calibracion"] = ui->label_archivo_calibracion->text();
-    jsonRoot["Ruta archivo medidas"] = ui->label_archivo_medidas->text();
-    jsonRoot["Periodo medidas"] = ui->label_periodo_medidas->text();
-    jsonRoot["Incidencias"] = ui->label_incidencias->toPlainText();
-
-    // Guardar JSON
-    QJsonDocument doc(jsonRoot);
-    QFile jsonFile(jsonFilePath);
-    if (jsonFile.open(QIODevice::WriteOnly)) {
-        jsonFile.write(doc.toJson());
-        jsonFile.close();
+    // Guardar GeoJSON
+    QJsonDocument doc(geoJsonRoot);
+    QFile geoJsonFile(geoJsonFilePath);
+    if (geoJsonFile.open(QIODevice::WriteOnly)) {
+        geoJsonFile.write(doc.toJson());
+        geoJsonFile.close();
     } else {
-        qWarning("No se pudo abrir archivo para guardar JSON");
+        qWarning("No se pudo abrir archivo para guardar GeoJSON");
     }
 }

@@ -1,0 +1,12 @@
+Responsable: {}
+Lugar: {}
+Referencia: {}
+Mision: {}
+Hora inicio ficocianina: {}
+Hora fin ficocianina: {}
+Hora inicio clorofila: {}
+Hora fin clorofila: {}
+Ruta archivo calibracion: {}
+Ruta archivo medidas: {}
+Periodo medidas: {}
+Incidencias: {}

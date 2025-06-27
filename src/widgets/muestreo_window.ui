@@ -83,7 +83,7 @@
       <item row="0" column="2">
        <widget class="QPushButton" name="button_explorer_referencia">
         <property name="text">
-         <string>Explorador</string>
+         <string>Cargar referencia</string>
         </property>
        </widget>
       </item>

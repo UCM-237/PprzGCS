@@ -26,30 +26,6 @@ def gps_to_datetime_local(week, tow_ms):
     local_time = utc_time + timedelta(hours=2)
     return local_time
 
-def llevar_a_t_comun(t_comun, t_var, var, check=False):
-    var_interp = []
-    t_var_interp = []
-
-    i = 0  # índice en t_var
-    last_value = var[0]
-    last_time = t_var[0]
-
-    for t in t_comun:
-        while i < len(t_var) and t_var[i] <= t:
-            last_value = var[i]
-            last_time = t_var[i]
-            i += 1
-        var_interp.append(last_value)
-        t_var_interp.append(last_time)
-
-    if check:
-        print(f"len t_comun      = {len(t_comun)}")
-        print(f"len t_var_interp = {len(t_var_interp)}")
-        print(f"len var_interp   = {len(var_interp)}")
-
-    return np.array(var_interp), np.array(t_var_interp)
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Error: falta el nombre del archivo como parámetro")
@@ -79,6 +55,8 @@ if __name__ == "__main__":
     v_raw, t_v = extraccion_datos("INS", 7, ruta_datos)
     u = u_raw * 0.0000019 #Factor de conversión
     v = v_raw * 0.0000019 #Factor de conversión
+    theta = np.degrees(np.arctan2(u_raw, v_raw))
+    # theta = np.arctan2(u_raw, v_raw)
     du_raw, t_du = extraccion_datos("INS", 9, ruta_datos)
     dv_raw, t_dv = extraccion_datos("INS", 10, ruta_datos)
     du = du_raw * 0.0009766 #Factor de conversión
@@ -90,24 +68,6 @@ if __name__ == "__main__":
     week, t_week = extraccion_datos("GPS", 10, ruta_datos) #Semana desde 6 de Enero de 1980
     tow, t_tow = extraccion_datos("GPS", 11, ruta_datos) #tow = time on week
     utm_zone, t_utm_zone = extraccion_datos("GPS", 12, ruta_datos) #tow = time on week
-
-    # Llevamos todos los vectores a un tiempo común
-    x, t_x = llevar_a_t_comun(t_lat, t_x, x)
-    y_raw, t_y = llevar_a_t_comun(t_lat, t_y, y)
-    u, t_u = llevar_a_t_comun(t_lat, t_u, u)
-    v, t_v = llevar_a_t_comun(t_lat, t_v, v)
-    du, t_du = llevar_a_t_comun(t_lat, t_du, du)
-    dv, t_dv = llevar_a_t_comun(t_lat, t_dv, dv)
-    orientacion_raw, t_orientacion = llevar_a_t_comun(t_lat, t_orientacion, orientacion_raw)
-    throttle_L, t_T_L = llevar_a_t_comun(t_lat, t_T_L, throttle_L)
-    throttle_R, t_T_R = llevar_a_t_comun(t_lat, t_T_R, throttle_R)
-    #print(f"len Ah = {len(Ah) }\nlen t_comun = {len(t_lat)}")
-    Ah, t_Ah = llevar_a_t_comun(t_lat, t_Ah, Ah, 1)
-    week, t_week = llevar_a_t_comun(t_lat, t_week, week)
-    tow, t_tow = llevar_a_t_comun(t_lat, t_tow, tow)
-    utm_zone, t_utm_zone = llevar_a_t_comun(t_lat, t_utm_zone, utm_zone) #tow = time on week
-
-    theta = np.degrees(np.arctan2(u_raw, v_raw))
 
     # Vectoriza para usar con arrays
     vectorized_gps_to_datetime_local = np.vectorize(gps_to_datetime_local)
@@ -136,7 +96,7 @@ if __name__ == "__main__":
 
     # Guardar en csv
     with open(ruta_salida, "w", encoding="utf-8") as f:
-        f.write("fecha,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah\n")
+        f.write("fecha,t_x,x,t_y,y,t_lat,lat,l_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah\n")
         for i in range(N):
             fila = [
                 result_local_time[i],

@@ -1,0 +1,14 @@
+Responsable: {Armando}
+Lugar: {UCM}
+Referencia: {Prueba_geojson}
+Mision: {25_05_28__16_27_03.data}
+Hora inicio ficocianina: {12:00:00}
+Hora fin ficocianina: {12:00:00}
+Hora inicio clorofila: {12:00:00}
+Hora fin clorofila: {12:00:00}
+Ruta archivo calibracion: {Calibracion.csv}
+Ruta archivo medidas: {Medidas.csv}
+Periodo medidas: {5}
+Incidencias: {Probando creación geojson.
+
+Ninguna incidencia.}
