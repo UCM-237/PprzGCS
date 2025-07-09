@@ -43,6 +43,7 @@ int i=0;
 Q_DECLARE_METATYPE(pprzlink::Message)
 
 
+
 PlanificacionWindow::PlanificacionWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::PlanificacionWindow)
@@ -216,7 +217,6 @@ void PlanificacionWindow::on_button_optimizacion_clicked()
                     QJsonObject jsonObj = jsonResponse.object();
                     QString status = jsonObj.value("status").toString();
                     QString message = QString::fromUtf8(jsonObj.value("message").toString().toUtf8());
-
                     if (status == "success") {
                         emit infoSignal("Ejecución exitosa", "El script de Python se ejecutó correctamente:\n" + message);
                     } else {
@@ -781,46 +781,75 @@ void PlanificacionWindow::sendwp(double latitud, double longitud, bool aux_reset
 
 }
 
-//ENVÍO CON CÓDIGO DE PYTHON
-//void PlanificacionWindow::sendNumwp(quint8 numWpMoved){
-//    // Ruta al script de Python
-//    QString scriptPath_num_wp_moved = homeDir + "/paparazzi/sw/ground_segment/python/send_num_wp_moved.py";
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonParseError>
 
-//    // Argumentos para pasar al script
-//    QStringList arguments;
-//    arguments << QString::number(numWpMoved);
+QVector<int> leerVectorDesdeTxt(const QString& rutaArchivo)
+{
+     QVector<int> vector;
 
-//    // Crear un proceso
-//    QProcess process_num_wp_moved;
+    QFile file(rutaArchivo);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qWarning() << "No se pudo abrir el archivo:" << rutaArchivo;
+            return vector;
+    }
 
-//    // Ejecutar el script con argumentos
-//    process_num_wp_moved.start("python3", QStringList() << scriptPath_num_wp_moved << arguments);
-//    //process_num_wp_moved.start("python3", QStringList() << scriptPath_num_wp_moved);
+    QByteArray raw = file.readAll().trimmed();   // leemos todo el fichero
+    file.close();
 
-//    // Esperar a que el script termine
-//    if (!process_num_wp_moved.waitForFinished()) {
-//            qDebug() << "Error al ejecutar el script:" << process_num_wp_moved.errorString();
-//            return;
-//    }
+    /* ---------- 1) Intenta parsear como JSON ---------- */
+    QJsonParseError err;
+    QJsonDocument doc = QJsonDocument::fromJson(raw, &err);
+    if (err.error == QJsonParseError::NoError && doc.isArray()) {
+            QJsonArray arr = doc.array();
+            vector.reserve(arr.size());
+            for (const QJsonValue& v : arr)
+                vector.append(v.toInt());
+            return vector;
+    }
 
-//    // Capturar salida estándar y errores
-//    QString output_num_wp_moved = process_num_wp_moved.readAllStandardOutput();
-//    QString error_num_wp_moved = process_num_wp_moved.readAllStandardError();
+    /* ---------- 2) Fallback manual por si alguien edita el fichero ---------- */
+    QString linea = QString::fromUtf8(raw);
+    linea.remove('[').remove(']');               // quitamos corchetes
+    // quitamos espacios, separador = ","
+    const QStringList elems = linea.split(',', QString::SkipEmptyParts);
 
-//    qDebug() << "Salida estándar:" << output_num_wp_moved;
-//        qDebug() << "Salida de error:" << error_num_wp_moved;
-//}
+    vector.reserve(elems.size());
+    for (const QString& elem : elems) {
+            bool ok;
+            int val = elem.trimmed().toInt(&ok);
+            if (ok && (val == 0 || val == 1))
+                vector.append(val);
+            else
+                qWarning() << "Valor inválido:" << elem;
+    }
+    return vector;
+}
+
+
 
 //ENVÍO CON LOS MENSAJES DE LA GCS
 void PlanificacionWindow::sendNumwp(quint8 numWpMoved){
-        // Recorrer los puntos leídos y enviar un mensaje para cada par de coordenadas
-        auto messages = appConfig()->value("MESSAGES").toString();
-        dict = new pprzlink::MessageDictionary(messages);
+    // Recorrer los puntos leídos y enviar un mensaje para cada par de coordenadas
+    static pprzlink::MessageDictionary* dict = nullptr;
+    if (!dict) {
+            auto messages = appConfig()->value("MESSAGES").toString();
+            dict = new pprzlink::MessageDictionary(messages);
+    }
+    PprzDispatcher::get()->setStart(true);
+    pprzlink::Message msg(dict->getDefinition("NUM_WAYPOINT_MOVED_DATALINK"));
+    msg.setSenderId(pprzlink_id);
 
-        PprzDispatcher::get()->setStart(true);
-        pprzlink::Message msg(dict->getDefinition("NUM_WAYPOINT_MOVED_DATALINK"));
-        msg.setSenderId(pprzlink_id);
-        msg.addField("num", numWpMoved);
+    QString name_flight_plan = ui->label_mapa->text();
+    QFileInfo fileInfo(name_flight_plan);
+    const QString ruta = homeDir + "/PprzGCS/Planificacion/Resources/flag_stop/" + fileInfo.baseName() + "_flag_stop.txt";
+    QVector<int> flag_stop (150, 0);
 
-        PprzDispatcher::get()->sendMessage(msg);
+    flag_stop = leerVectorDesdeTxt(ruta);
+
+    msg.addField("num", numWpMoved);
+    msg.addField("flag", flag_stop);
+
+    PprzDispatcher::get()->sendMessage(msg);
 }

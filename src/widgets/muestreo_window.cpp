@@ -26,6 +26,9 @@ muestreo_window::muestreo_window(QWidget *parent) :
     homeDir = QDir::homePath(); //Directorio home
     connect(ui->button_save, &QPushButton::clicked, this, &muestreo_window::on_button_save_clicked);  //Botón para guardar
     connect(ui->button_explorer_referencia, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_referencia_clicked);  //Explorador de archivos
+    connect(ui->button_explorer_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_flight_plan_clicked);
+    connect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
+    connect(ui->button_ver_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_open_flight_plan_clicked);
     connect(ui->button_ver_datos_mision, &QPushButton::clicked, this, &muestreo_window::on_button_ver_datos_mision_clicked);  
     //Para que la lista de misiones salga cargado con las misiones que hay en el directorio
     ui->listView_mision->setModel(model);
@@ -78,26 +81,16 @@ void muestreo_window::on_button_save_clicked()
     }
     Mision = seleccion.first().data().toString();
 
-    h_inicio_ficocianina = ui->label_h_inicio_ficocianina->text();
-    h_fin_ficocianina = ui->label_h_fin_ficocianina->text();
-    h_inicio_clorofila = ui->label_h_inicio_clorofila->text();
-    h_fin_clorofila = ui->label_h_fin_clorofila->text();
-
-    // Validación de los campos de horas
-    if (h_inicio_ficocianina.trimmed().isEmpty() ||
-        h_fin_ficocianina.trimmed().isEmpty() ||
-        h_inicio_clorofila.trimmed().isEmpty() ||
-        h_fin_clorofila.trimmed().isEmpty()) {
-        QMessageBox::warning(this, "Error", "Por favor, rellena todos los campos de horas.");
-        return;
-    }
- 
-
-    archivo_calibracion = ui->label_archivo_calibracion->text();
+    valor_ficocianina = ui->label_valor_ficocianina->text();
+    std_ficocianina = ui->label_std_ficocianina->text();
+    N_ficocianina = ui->label_N_ficocianina->text();
+    valor_clorofila = ui->label_valor_clorofila->text();
+    std_clorofila = ui->label_std_clorofila->text();
+    N_clorofila = ui->label_N_clorofila->text();
     archivo_medidas = ui->label_archivo_medidas->text();
     periodo_medidas = ui->label_periodo_medidas->text();
     incidencias = ui->label_incidencias->toPlainText();
-
+    flight_plan = ui->label_flight_plan->text();
     QFile file(homeDir + "/PprzGCS/Planificacion/Muestreo/" + Referencia + ".txt");
 
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -105,12 +98,14 @@ void muestreo_window::on_button_save_clicked()
         out << "Responsable: " << "{" + Responsable + "}" << "\n";
         out << "Lugar: " << "{" + Lugar + "}" << "\n";
         out << "Referencia: " << "{" + Referencia + "}" << "\n";
+        out << "Flight_plan: " << "{" + flight_plan + "}" << "\n";
         out << "Mision: " << "{" + Mision + "}" << "\n";
-        out << "Hora inicio ficocianina: " << "{" + h_inicio_ficocianina + "}" << "\n";
-        out << "Hora fin ficocianina: " << "{" + h_fin_ficocianina + "}" << "\n";
-        out << "Hora inicio clorofila: " << "{" + h_inicio_clorofila + "}" << "\n";
-        out << "Hora fin clorofila: " << "{" + h_fin_clorofila + "}" << "\n";
-        out << "Ruta archivo calibracion: " << "{" + archivo_calibracion + "}" << "\n";
+        out << "Valor ficocianina: " << "{" + valor_ficocianina + "}" << "\n";
+        out << "std ficocianina: " << "{" + std_ficocianina + "}" << "\n";
+        out << "Numero medidas ficocianina: " << "{" + N_ficocianina + "}" << "\n";
+        out << "Valor clorofila: " << "{" + valor_clorofila + "}" << "\n";
+        out << "std clorofila: " << "{" + std_clorofila + "}" << "\n";
+        out << "Numero medidas clorofila: " << "{" + N_clorofila + "}" << "\n";
         out << "Ruta archivo medidas: " << "{" + archivo_medidas + "}" << "\n";
         out << "Periodo medidas: " << "{" + periodo_medidas + "}" << "\n";
         out << "Incidencias: " << "{" + incidencias + "}" << "\n";
@@ -131,6 +126,67 @@ void muestreo_window::on_button_save_clicked()
         qDebug() << "Ruta CSV: " << csvFilePath;
         extraccion_datos(false, jsonFilePath, csvFilePath);
     }
+}
+void muestreo_window::on_button_explorer_flight_plan_clicked()
+{
+    disconnect(ui->button_explorer_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_flight_plan_clicked);
+
+    QString basePath = QDir::homePath() + "/paparazzi/conf/flight_plans";
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de muestreo"), basePath);
+
+    if (!filePath.isEmpty()) {
+        QDir baseDir(basePath);
+        QString relativePath = baseDir.relativeFilePath(filePath);  // Esto te da "UCM/flight_plan.xml"
+        ui->label_flight_plan->setText(relativePath);  // Esto es lo que luego usas
+    }
+
+}
+
+void muestreo_window::on_button_explorer_medidas_clicked()
+{
+    disconnect(ui->button_explorer_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_flight_plan_clicked);
+
+    QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/resources/Medidas_sonda";
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de muestreo"), basePath);
+
+    if (!filePath.isEmpty()) {
+        QDir baseDir(basePath);
+        QString relativePath = baseDir.relativeFilePath(filePath);  // Esto te da "UCM/flight_plan.xml"
+        ui->label_flight_plan->setText(relativePath);  // Esto es lo que luego usas
+    }
+
+}
+
+void muestreo_window::on_button_open_flight_plan_clicked()
+{
+
+    QString Ruta_flight_plan = ui->label_flight_plan->text();
+
+    // Crear un proceso para ejecutar el script Python
+    QProcess *process_editor = new QProcess(this);
+
+    // Obtener la ruta del directorio home del usuario
+
+    QString scriptPath_editor= homeDir + "/PprzGCS/Planificacion/Python_sw/build_flight_plan/open_flight_plan_editor_muestreo.py";
+
+    // Usa la ruta completa al ejecutable de Python
+    process_editor->start("python", QStringList() << scriptPath_editor << Ruta_flight_plan);
+
+    if (!process_editor->waitForStarted()) {
+        qDebug() << "Error al iniciar el script Python:" << process_editor->errorString();
+        return;
+    }
+
+    // Esperar a que el proceso termine
+    process_editor->waitForFinished(3000);
+    int exitCode = process_editor->exitCode();
+    QString output = process_editor->readAllStandardOutput();
+    QString errorOutput = process_editor->readAllStandardError();  // Capturar errores
+
+    // Mostrar la salida y los errores en la consola de depuración
+    qDebug() << "Salida del script Python:" << output;
+    qDebug() << "Error del script Python:" << errorOutput;
+    process_editor ->deleteLater(); // Eliminar el proceso después de ejecutarse
 }
 
 void muestreo_window::on_button_explorer_referencia_clicked()
@@ -187,6 +243,9 @@ void muestreo_window::on_button_explorer_referencia_clicked()
                     else if (key == "Referencia") {
                         ui->label_referencia->setText(value);
                     }
+                    else if (key == "Flight_plan") {
+                        ui->label_flight_plan->setText(value);
+                    }
                     else if (key == "Mision") {
                         QString misionCargada = value;
                         QStringList misionesDisponibles;
@@ -214,16 +273,18 @@ void muestreo_window::on_button_explorer_referencia_clicked()
                         }
                     }
 
-                    else if (key == "Hora inicio ficocianina")
-                        ui->label_h_inicio_ficocianina->setText(value);
-                    else if (key == "Hora fin ficocianina")
-                        ui->label_h_fin_ficocianina->setText(value);
-                    else if (key == "Hora inicio clorofila")
-                        ui->label_h_inicio_clorofila->setText(value);
-                    else if (key == "Hora fin clorofila")
-                        ui->label_h_fin_clorofila->setText(value);
-                    else if (key == "Ruta archivo calibracion")
-                        ui->label_archivo_calibracion->setText(value);
+                    else if (key == "Valor ficocianina")
+                        ui->label_valor_ficocianina->setText(value);
+                    else if (key == "std ficocianina")
+                        ui->label_std_ficocianina->setText(value);
+                    else if (key == "Numero medidas ficocianina")
+                        ui->label_N_ficocianina->setText(value);
+                    else if (key == "Valor clorofila")
+                        ui->label_valor_clorofila->setText(value);
+                    else if (key == "std clorofila")
+                        ui->label_std_clorofila->setText(value);
+                    else if (key == "Numero medidas clorofila")
+                        ui->label_N_clorofila->setText(value);
                     else if (key == "Ruta archivo medidas")
                         ui->label_archivo_medidas->setText(value);
                      else if (key == "Periodo medidas")
@@ -395,11 +456,12 @@ void muestreo_window::guardarVentanaYCsvEnJson(const QString &geoJsonFilePath, c
     metadata["Responsable"] = ui->label_responsable->text();
     metadata["Lugar"] = ui->label_lugar->text();
     metadata["Referencia"] = ui->label_referencia->text();
-    metadata["Hora inicio ficocianina"] = ui->label_h_inicio_ficocianina->text();
-    metadata["Hora fin ficocianina"] = ui->label_h_fin_ficocianina->text();
-    metadata["Hora inicio clorofila"] = ui->label_h_inicio_clorofila->text();
-    metadata["Hora fin clorofila"] = ui->label_h_fin_clorofila->text();
-    metadata["Ruta archivo calibracion"] = ui->label_archivo_calibracion->text();
+    metadata["Valor ficocianina"] = ui->label_valor_ficocianina->text();
+    metadata["std ficocianina"] = ui->label_std_ficocianina->text();
+    metadata["Numero medidas ficocianina"] = ui->label_N_ficocianina->text();
+    metadata["Valor clorofila"] = ui->label_valor_clorofila->text();
+    metadata["std clorofila"] = ui->label_std_clorofila->text();
+    metadata["Numero medidas clorofila"] = ui->label_N_clorofila->text();
     metadata["Ruta archivo medidas"] = ui->label_archivo_medidas->text();
     metadata["Periodo medidas"] = ui->label_periodo_medidas->text();
     metadata["Incidencias"] = ui->label_incidencias->toPlainText();
@@ -409,8 +471,9 @@ void muestreo_window::guardarVentanaYCsvEnJson(const QString &geoJsonFilePath, c
     for (const QModelIndex &idx : selectedIndexes) {
         misionesArray.append(model->data(idx).toString());
     }
-    metadata["Mision"] = misionesArray;
 
+    metadata["Mision"] = misionesArray;
+    metadata["Flight_plan"] = ui->label_flight_plan->text();
     geoJsonRoot["metadata"] = metadata;
 
     // Guardar GeoJSON

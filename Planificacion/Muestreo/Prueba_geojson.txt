@@ -1,12 +1,14 @@
 Responsable: {Armando}
 Lugar: {UCM}
 Referencia: {Prueba_geojson}
+Flight_plan: {UCM/Prueba_2_simulacion.xml}
 Mision: {25_05_28__16_27_03.data}
-Hora inicio ficocianina: {12:00:00}
-Hora fin ficocianina: {12:00:00}
-Hora inicio clorofila: {12:00:00}
-Hora fin clorofila: {12:00:00}
-Ruta archivo calibracion: {Calibracion.csv}
+Valor ficocianina: {2}
+std ficocianina: {1}
+Numero medidas ficocianina: {4}
+Valor clorofila: {2}
+std clorofila: {1}
+Numero medidas clorofila: {4}
 Ruta archivo medidas: {Medidas.csv}
 Periodo medidas: {5}
 Incidencias: {Probando creación geojson.

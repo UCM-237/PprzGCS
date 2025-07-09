@@ -22,6 +22,9 @@ public:
 private slots:
     void on_button_save_clicked();
     void on_button_explorer_referencia_clicked();
+    void on_button_explorer_flight_plan_clicked();
+    void on_button_explorer_medidas_clicked();
+    void on_button_open_flight_plan_clicked();
     void on_button_ver_datos_mision_clicked();
     void extraccion_datos(bool mostrarDespues, const QString &jsonFilePath = nullptr, const QString &csvFilePath = nullptr);
     void mostrar_datos_mision();
@@ -36,14 +39,17 @@ private:
     QString Lugar;
     QString Referencia;
     QString Mision;
-    QString h_inicio_ficocianina;
-    QString h_fin_ficocianina;
-    QString h_inicio_clorofila;
-    QString h_fin_clorofila;
+    QString valor_ficocianina;
+    QString std_ficocianina;
+    QString N_ficocianina;
+    QString valor_clorofila;
+    QString std_clorofila;
+    QString N_clorofila;
     QString archivo_calibracion; 
     QString archivo_medidas;
     QString periodo_medidas;
     QString incidencias;
+    QString flight_plan;
 
     QStringListModel *model;
 

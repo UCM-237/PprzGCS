@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>605</width>
-    <height>578</height>
+    <width>597</width>
+    <height>649</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>540</y>
+     <y>600</y>
      <width>89</width>
      <height>25</height>
     </rect>
@@ -26,48 +26,20 @@
     <string>Guardar</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>10</y>
      <width>549</width>
-     <height>521</height>
+     <height>584</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Referencia</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Lugar</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Responsable</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="label_referencia">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="label_lugar">
         <property name="text">
          <string/>
         </property>
@@ -80,10 +52,38 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Responsable</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Lugar</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="label_lugar">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="button_explorer_referencia">
         <property name="text">
          <string>Cargar referencia</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Referencia</string>
         </property>
        </widget>
       </item>
@@ -94,7 +94,7 @@
       <item>
        <widget class="QLabel" name="label_17">
         <property name="text">
-         <string>Misión</string>
+         <string>Misión            </string>
         </property>
        </widget>
       </item>
@@ -115,7 +115,99 @@
      </widget>
     </item>
     <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <item>
+       <widget class="QLabel" name="label_18">
+        <property name="text">
+         <string>Flight plan</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="label_flight_plan">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="button_explorer_flight_plan">
+        <property name="text">
+         <string>Explorar</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="gridLayout_5"/>
+    </item>
+    <item>
+     <widget class="QPushButton" name="button_ver_flight_plan">
+      <property name="text">
+       <string>Ver flight plan</string>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="2" column="5">
+       <widget class="QLineEdit" name="label_std_clorofila">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="readOnly">
+         <bool>false</bool>
+        </property>
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="7">
+       <widget class="QLineEdit" name="label_N_ficocianina">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="6">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>N medidas</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="label_valor_clorofila">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLineEdit" name="label_valor_ficocianina">
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Valor</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="label">
         <property name="text">
@@ -123,34 +215,24 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1" colspan="3">
-       <widget class="QLineEdit" name="label_archivo_calibracion">
+      <item row="1" column="2">
+       <widget class="QLabel" name="label_7">
         <property name="text">
-         <string/>
+         <string>Valor</string>
         </property>
-        <property name="placeholderText">
-         <string>.csv</string>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>std valor</string>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
        <widget class="QLabel" name="label_11">
         <property name="text">
-         <string>Hora fin</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Clorofila-a           </string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Hora inicio</string>
+         <string>std valor</string>
         </property>
        </widget>
       </item>
@@ -161,67 +243,37 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="3">
-       <widget class="QLineEdit" name="label_h_inicio_ficocianina">
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="label_9">
+        <property name="text">
+         <string>Clorofila-a           </string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="7">
+       <widget class="QLineEdit" name="label_N_clorofila">
         <property name="text">
          <string/>
         </property>
         <property name="placeholderText">
-         <string>hh:mm:ss</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Hora inicio</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="5">
-       <widget class="QLineEdit" name="label_h_fin_clorofila">
-        <property name="text">
          <string/>
         </property>
-        <property name="readOnly">
-         <bool>false</bool>
-        </property>
-        <property name="placeholderText">
-         <string>hh:mm:ss</string>
-        </property>
        </widget>
       </item>
-      <item row="1" column="4">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Hora fin</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
+      <item row="2" column="6">
        <widget class="QLabel" name="label_12">
         <property name="text">
-         <string>Archivo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QLineEdit" name="label_h_inicio_clorofila">
-        <property name="text">
-         <string/>
-        </property>
-        <property name="placeholderText">
-         <string>hh:mm:ss</string>
+         <string>N medidas</string>
         </property>
        </widget>
       </item>
       <item row="1" column="5">
-       <widget class="QLineEdit" name="label_h_fin_ficocianina">
+       <widget class="QLineEdit" name="label_std_ficocianina">
         <property name="text">
          <string/>
         </property>
         <property name="placeholderText">
-         <string>hh:mm:ss</string>
+         <string/>
         </property>
        </widget>
       </item>
@@ -229,6 +281,20 @@
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout_3">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_16">
+        <property name="text">
+         <string>Periodo</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="label_periodo_medidas">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_13">
         <property name="text">
@@ -254,16 +320,9 @@
        </widget>
       </item>
       <item row="1" column="2">
-       <widget class="QLabel" name="label_16">
+       <widget class="QPushButton" name="button_explorer_medidas">
         <property name="text">
-         <string>Periodo</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QLineEdit" name="label_periodo_medidas">
-        <property name="text">
-         <string/>
+         <string>Explorar</string>
         </property>
        </widget>
       </item>

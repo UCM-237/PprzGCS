@@ -71,7 +71,9 @@ with open(xml_file, 'r') as xml_f:
 # Validar el XML contra el DTD
 try:
     xml_doc = etree.fromstring(xml_content)
-    if not dtd.validate(xml_doc):
+    if dtd.validate(xml_doc):
+        print("El archivo XML es válido.")
+    else:
         print("El archivo XML no es válido.")
         print("Errores:")
         for error in dtd.error_log:
@@ -307,7 +309,7 @@ def visualize_3(problem, x, sectors, j, fig=None, ax=None, show=True, label=True
     fig.suptitle("Final route PtP")
     
     ax.legend()
-    plt.legend(loc="upper right")
+    plt.legend(loc="upper left")
     if show:
         ax.grid(True)
         plt.show()  # Muestra el gráfico en una ventana emergente
@@ -989,7 +991,7 @@ if TipoTrayectoria == "Point to point":
         plt.plot(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', linestyle='-', label='Camino final')
         
         #Dibujar los puntos de rodeo (superponiendo sobre el camino)
-        plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Waypoints', s=150)
+        plt.scatter(resultados_sectores_ruta_mas_corta[:, 0], resultados_sectores_ruta_mas_corta[:, 1], color='black', label='Puntos', s=150)
         for i, c in enumerate(resultados_sectores_ruta_mas_corta):
                 plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
         #Dibujar las regiones (sectores)
@@ -1011,14 +1013,15 @@ if TipoTrayectoria == "Point to point":
         #Evitar duplicados en la leyenda
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = dict(zip(labels, handles))  # Eliminar duplicados en la leyenda
-        plt.legend(by_label.values(), by_label.keys(), loc='center left', bbox_to_anchor=(1.0, 0.5))
+        plt.legend(by_label.values(), by_label.keys())
     
         plt.grid(True)
-        plt.tight_layout() 
+    
         #Mostrar el gráfico
         plt.show()
         
     else:
+            print("Ploteando con visualize")
             visualize_3(problem, res.X, sectors, j=0)
 # Ahora hay que meter estos puntos en el xml
 
@@ -1130,12 +1133,10 @@ def guardar_puntos_en_txt(puntos, archivo_salida):
 Archivo_basename = os.path.splitext(os.path.basename(Archivo))[0]
 
 if TipoTrayectoria == "Point to point":
-    #Creamos el vector para identificar que puntos son de rodeo y cuales de medida
-    flag_stop = [0 if point in resultados_sectores_antes_ruta_mas_corta else 1 for point in resultados_sectores_ruta_mas_corta]
-    #Necesitamos que flag_stop tenga 150 elementos, asique rellenamos con ceros hasta que esto se cumpla
-    flag_stop += [0] * (150 - len(flag_stop))
     ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
     guardar_puntos_en_txt(ruta, ruta_waypoints_finales)
+    print("Optimización exitosa.")
+
 
 #Añadimos los puntos
 points = []
@@ -1173,7 +1174,7 @@ def calcular_puntos_en_recta(punto1, punto2, x_values):
 
 import matplotlib.pyplot as plt
 # Plot the original points
-plt.scatter(xpoints, ypoints, s=150, c="black", edgecolors="white", label="Waypoints")
+plt.scatter(xpoints, ypoints, s=150, c="black", edgecolors="white", label="Original Points")
 
 # Get the Bezier parameters based on a degree.
 data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2) #BZ0 BZ5 BZ8 BZ11 son los de paso, por tanto habrá 4*2 + 1 puntos de contol ya que el algoritmo te pone 1 pnt cntrl en el 1 punto y en el último
@@ -1241,13 +1242,9 @@ if TipoTrayectoria == "Continuous":
     plt.plot(xvals, yvals, 'black', label='Camino final')
     
     plt.title("Final route continuous sin cruce")
-    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.legend()
     plt.grid(True)
-    plt.xlabel("x")
-    plt.ylabel("y")
-    plt.tight_layout()  # Ajusta para que no se corte nada dentro de la figura
     plt.show()
-
 
 #Para añadir los puntos de paso y de control en el txt para mandarselo a paparazzi desde la GCS. Guarda 1 paso, 2 control, 1 paso, 2 control...
 #Añadimos en primer lugar BZ0 y los 4 puntos de control (si es con continuidad C2)
@@ -1276,12 +1273,11 @@ while idx_paso < len(Puntos_paso) and idx_control + 1 < len(Puntos_control):
 # Convertir a un array NumPy si es necesario
 Puntos_Bezier = np.array(Puntos_Bezier)
 
-
 #En caso de que se quiera guardar la ruta con curvas de Bézier en vez de point-to-point
 print("TipoTrayectoria: ", TipoTrayectoria)
 if TipoTrayectoria == "Continuous":
-    
     puntos_control=[x_val, y_val]
+
     # Concatenar la columna de nombres y Puntos
     columna_nombres_bz = np.zeros(len(Puntos_Bezier))
     ruta_bz = np.empty(len(Puntos_Bezier), dtype=dtype)  # Crear un array vacío del tipo correcto
@@ -1289,55 +1285,19 @@ if TipoTrayectoria == "Continuous":
     ruta_bz['x'] = Puntos_Bezier[:, 0]  # Asignar la columna x
     ruta_bz['y'] = Puntos_Bezier[:, 1]  # Asignar la columna y
 
-    for i in range(len(Puntos_Bezier)):
+    for i in range(len(resultados_sectores)):
             ruta_bz[i]['nombre']=f'BZ{i}'
 
-    #Vamos a crear flag stop para ver que puntos son de rodeo y cuales de medida
-    ruta_bz_arr = np.stack((ruta_bz["x"], ruta_bz["y"]), axis = 1)
-    ruta_bz_arr_rounded = np.round(ruta_bz_arr.astype(np.float64), 2)
-    resultados_sectores_antes_ruta_mas_corta_rounded = np.round(resultados_sectores_antes_ruta_mas_corta.astype(np.float64),2)
-    #Para poder hacer bien la comparación, ya que estaba teniendo errores de redondeo, vuelvo a sacar los puntos de control de ruta_bz
-    puntos_control_rounded = []
-    for i in range(0, len(ruta_bz_arr), 3):
-        puntos_control_rounded.append(ruta_bz_arr_rounded[i+1])
-        puntos_control_rounded.append(ruta_bz_arr_rounded[i+2])
-    flag_stop = []
-    for i in range(len(ruta_bz_arr_rounded)):
-        point = ruta_bz_arr_rounded[i]
-        is_in = np.any(np.all(resultados_sectores_antes_ruta_mas_corta_rounded == point, axis=1))
-        is_in_control = np.any(np.all(puntos_control_rounded == point, axis=1))
-        if is_in:
-            flag_stop.append(0)
-        elif is_in_control:
-            flag_stop.append(2)
-        else:
-            #print("Punto = ", point)
-            flag_stop.append(1)
-
-    #Necesitamos que flag_stop tenga 150 elementos, asique rellenamos con ceros hasta que tenga esta longitud
-    flag_stop += [0] * (150 - len(flag_stop))
     ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
     guardar_puntos_en_txt(ruta_bz, ruta_waypoints_finales)
+    
+    import json
+    resultado = {
+        "status":"success",
+        "message":"optimización exitosa",
+        "valor_extraido": n_puntos_rodeo
+    }
 
-#Guardamos el flag_stop en un txt
-# salida_flag = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_flag_stop.txt")
-# with open(salida_flag, 'w') as f:
-#     f.write(flag_stop)
+    print(json.dumps(resultado))
 
-import json
-
-home_dir = os.path.expanduser("~")
-salida_flag = os.path.join(
-    home_dir, "PprzGCS", "Planificacion", "Resources", "flag_stop",
-    f"{Archivo_basename}_flag_stop.txt"
-)
-
-with open(salida_flag, "w") as f:
-    json.dump(flag_stop, f)          # <‑‑ convierte la lista en texto válido
-
-
-# import json
-# resultado = {"status": "success", "flag_stop": flag_stop, "Message": "Optimización exitosa"}
-# print(json.dumps(resultado), flush=True)   # <-- flush=True garantiza que se vacíe el búfer
-
-print("Optimización exitosa.")
+    print("Optimización exitosa.")

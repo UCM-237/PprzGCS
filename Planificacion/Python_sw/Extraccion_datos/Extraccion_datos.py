@@ -23,7 +23,7 @@ def gps_to_datetime_local(week, tow_ms):
     # Ajuste a UTC (restando los 19 segundos de diferencia GPS–UTC)
     utc_time = gps_time - timedelta(seconds=19)
     # Ajuste a hora local española (CEST: UTC+2 en verano)
-    local_time = utc_time + timedelta(hours=2)
+    local_time = utc_time
     return local_time
 
 def llevar_a_t_comun(t_comun, t_var, var, check=False):
@@ -129,6 +129,7 @@ if __name__ == "__main__":
         len(t_T_L), len(throttle_L),
         len(t_T_R), len(throttle_R),
         len(t_Ah), len(Ah),
+        len(theta),
         len(t_week), len(week),
         len(t_tow), len(tow),
         len(t_utm_zone), len(utm_zone)
@@ -136,7 +137,7 @@ if __name__ == "__main__":
 
     # Guardar en csv
     with open(ruta_salida, "w", encoding="utf-8") as f:
-        f.write("fecha,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah\n")
+        f.write("fecha utc,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_theta,theta,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah\n")
         for i in range(N):
             fila = [
                 result_local_time[i],
@@ -150,6 +151,7 @@ if __name__ == "__main__":
                 t_du[i], du[i],
                 t_dv[i], dv[i],
                 t_orientacion[i], orientacion_raw[i],
+                t_du[i], theta[i],
                 t_T_L[i], throttle_L[i],
                 t_T_R[i], throttle_R[i],
                 t_Ah[i], Ah[i]             
