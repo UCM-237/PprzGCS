@@ -13,6 +13,10 @@
         "variant": "cpp",
         "string": "cpp",
         "string_view": "cpp",
-        "fstream": "cpp"
-    }
+        "fstream": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "valarray": "cpp"
+    },
+    "workbench.colorTheme": "Default Light+"
 }

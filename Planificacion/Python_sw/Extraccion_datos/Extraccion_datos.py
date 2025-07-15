@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy as np
-
+import pandas as pd
 def extraccion_datos(var, pos, ruta_datos):
     dato = []
     tiempo = []
@@ -42,12 +42,15 @@ def llevar_a_t_comun(t_comun, t_var, var, check=False):
         var_interp.append(last_value)
         t_var_interp.append(last_time)
 
-    if check:
-        print(f"len t_comun      = {len(t_comun)}")
-        print(f"len t_var_interp = {len(t_var_interp)}")
-        print(f"len var_interp   = {len(var_interp)}")
-
     return np.array(var_interp), np.array(t_var_interp)
+
+def extraccion_datos_sonda(ruta):
+    try:
+        df_datos_sonda = pd.read_csv(ruta, encoding='utf-8', engine='python', on_bad_lines='skip')
+        return df_datos_sonda
+    except Exception as e:
+        print(f"Error al cargar el archivo: {e}")
+        return None
 
 
 if __name__ == "__main__":
@@ -64,7 +67,8 @@ if __name__ == "__main__":
     if ext != ".data":
         print("Advertencia: el archivo no termina en .data")
 
-    ruta_salida = os.path.join(home_dir, "PprzGCS", "Planificacion", "Extraccion_datos", nombre_sin_ext + ".csv")
+    ruta_salida = os.path.join(home_dir, "PprzGCS", "Planificacion", "Extraccion_datos", "Barco", nombre_sin_ext + ".csv")
+    ruta_datos_sonda = os.path.join(home_dir, "PprzGCS", "Planificacion", "Medidas_sonda", "datos_sensor - datos_sensor"  + ".csv")
 
     # Extraer datos
     x_raw, t_x = extraccion_datos("INS", 3, ruta_datos)
@@ -90,7 +94,8 @@ if __name__ == "__main__":
     week, t_week = extraccion_datos("GPS", 10, ruta_datos) #Semana desde 6 de Enero de 1980
     tow, t_tow = extraccion_datos("GPS", 11, ruta_datos) #tow = time on week
     utm_zone, t_utm_zone = extraccion_datos("GPS", 12, ruta_datos) #tow = time on week
-
+    static_control, t_static_control = extraccion_datos("STATIC_CONTROL", 3, ruta_datos) #Esto nos va a decir cuándo está activo el static control y por tanto cuándo está bajando la sonda
+    
     # Llevamos todos los vectores a un tiempo común
     x, t_x = llevar_a_t_comun(t_lat, t_x, x)
     y_raw, t_y = llevar_a_t_comun(t_lat, t_y, y)
@@ -106,7 +111,7 @@ if __name__ == "__main__":
     week, t_week = llevar_a_t_comun(t_lat, t_week, week)
     tow, t_tow = llevar_a_t_comun(t_lat, t_tow, tow)
     utm_zone, t_utm_zone = llevar_a_t_comun(t_lat, t_utm_zone, utm_zone) #tow = time on week
-
+    static_control, t_static_control  = llevar_a_t_comun(t_lat, t_static_control, static_control)
     theta = np.degrees(np.arctan2(u_raw, v_raw))
 
     # Vectoriza para usar con arrays
@@ -115,6 +120,8 @@ if __name__ == "__main__":
     # Aplica a tus arrays
     result_local_time = vectorized_gps_to_datetime_local(week, tow)
 
+######### EXTRACCIÓN DATOS CSV SONDA. AHORAMISMO ES UN PROXI, CUANDO ESTÉ BIEN EL EXCEL MIRAR COMO HACERLO CON EL TIEMPO DE LA MEDIDA ############
+    df = extraccion_datos_sonda(ruta_datos_sonda)
     # Asegurar que todas las series tengan la misma longitud
     N = min(
         len(t_x), len(x),
@@ -132,29 +139,174 @@ if __name__ == "__main__":
         len(theta),
         len(t_week), len(week),
         len(t_tow), len(tow),
-        len(t_utm_zone), len(utm_zone)
+        len(t_utm_zone), len(utm_zone),
+        len(t_static_control), len(static_control)
     )
 
     # Guardar en csv
     with open(ruta_salida, "w", encoding="utf-8") as f:
-        f.write("fecha utc,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_theta,theta,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah\n")
+        f.write("fecha utc,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_theta,theta,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah,t_static_control,static_control,Profundidad,Temperatura,pH,DO_SAT,DO,Blue,Chl\n")
+        j = 0
         for i in range(N):
-            fila = [
-                result_local_time[i],
-                t_x[i], x[i],
-                t_y[i], y[i],
-                t_lat[i], lat[i],
-                t_lon[i], lon[i],
-                t_utm_zone[i], utm_zone[i],
-                t_u[i], u[i],
-                t_v[i], v[i],
-                t_du[i], du[i],
-                t_dv[i], dv[i],
-                t_orientacion[i], orientacion_raw[i],
-                t_du[i], theta[i],
-                t_T_L[i], throttle_L[i],
-                t_T_R[i], throttle_R[i],
-                t_Ah[i], Ah[i]             
-            ]
-
+            if static_control[i] == 0:
+                fila = [
+                    result_local_time[i],
+                    t_x[i], x[i],
+                    t_y[i], y[i],
+                    t_lat[i], lat[i],
+                    t_lon[i], lon[i],
+                    t_utm_zone[i], utm_zone[i],
+                    t_u[i], u[i],
+                    t_v[i], v[i],
+                    t_du[i], du[i],
+                    t_dv[i], dv[i],
+                    t_orientacion[i], orientacion_raw[i],
+                    t_du[i], theta[i],
+                    t_T_L[i], throttle_L[i],
+                    t_T_R[i], throttle_R[i],
+                    t_Ah[i], Ah[i],
+                    t_static_control[i], static_control[i],
+                    "Null","Null","Null","Null","Null","Null","Null"
+                ]
+            else:
+                fila = [
+                    result_local_time[i],
+                    t_x[i], x[i],
+                    t_y[i], y[i],
+                    t_lat[i], lat[i],
+                    t_lon[i], lon[i],
+                    t_utm_zone[i], utm_zone[i],
+                    t_u[i], u[i],
+                    t_v[i], v[i],
+                    t_du[i], du[i],
+                    t_dv[i], dv[i],
+                    t_orientacion[i], orientacion_raw[i],
+                    t_du[i], theta[i],
+                    t_T_L[i], throttle_L[i],
+                    t_T_R[i], throttle_R[i],
+                    t_Ah[i], Ah[i],
+                    t_static_control[i], static_control[i],
+                    df.loc[j, "Profundidad"],
+                    df.loc[j, "Temperatura"],
+                    df.loc[j, "pH"],
+                    df.loc[j, "DO_SAT"],
+                    df.loc[j, "DO"],
+                    df.loc[j, "Blue"],
+                    df.loc[j, "Chl"]
+                ]
+                j+=1
             f.write(",".join(str(valor) for valor in fila) + "\n")
+
+
+    df_sonda = pd.read_csv(ruta_salida)
+    #Ponemos cada columna como un vector
+    lat_df_sonda = df_sonda["lat"].tolist()
+    lon_df_sonda = df_sonda["lon"].tolist()
+    x_df_sonda = df_sonda["x"].tolist()
+    y_df_sonda = df_sonda["y"].tolist()
+    t_df_sonda = df_sonda["t_x"].tolist()
+    x_df_sonda = df_sonda["x"].tolist()
+    y_df_sonda = df_sonda["y"].tolist()
+    static_control_df_sonda = df_sonda["static_control"].tolist()
+    zona_utm_df_sonda = df_sonda["utm_zone"].tolist()
+    profundidad_df_sonda = df_sonda["Profundidad"].tolist()
+    temperatura_df_sonda = df_sonda["Temperatura"].tolist()
+    pH_df_sonda = df_sonda["pH"].tolist()
+    DO_SAT_df_sonda = df_sonda["DO_SAT"].tolist()
+    DO_df_sonda = df_sonda["DO"].tolist()
+    Blue_df_sonda = df_sonda["Blue"].tolist()
+    Chl_df_sonda = df_sonda["Chl"].tolist()
+    lat_sonda = []
+    lon_sonda = []
+    x_sonda = []
+    y_sonda = []
+    t_x_sonda_ini = []
+    t_x_sonda_fin = []
+    zona_utm_sonda = []
+    # profundidades_i = []
+    # tempteraturas_i = []
+    # pH_i = []
+    # DO_SAT_i = []
+    # DO_i = []
+    # Blue_i = []
+    # Chl_i = []
+    Profundidad_sonda = []
+    Temperatura_sonda = []
+    pH_sonda = []
+    DO_SAT_sonda = []
+    DO_sonda = []
+    Blue_sonda = []
+    Chl_sonda = []
+    perfiles = []
+    static_control_ant = 0
+    perfil = 0
+    contador = 0
+    for i in range(len(static_control_df_sonda)):
+        if static_control_df_sonda[i] == 1 and static_control_ant == 0:
+            perfil += 1
+            contador += 1
+            indice_inicial = i
+            lat_sonda.append(lat_df_sonda[indice_inicial])
+            lon_sonda.append(lon_df_sonda[indice_inicial])
+            x_sonda.append(x_df_sonda[indice_inicial])
+            y_sonda.append(y_df_sonda[indice_inicial])
+            t_x_sonda_ini.append(t_df_sonda[indice_inicial])
+            zona_utm_sonda.append(zona_utm_df_sonda[i])
+            Profundidad_sonda.append(profundidad_df_sonda[i])
+            Temperatura_sonda.append(temperatura_df_sonda[i])
+            pH_sonda.append(pH_df_sonda[i])
+            DO_SAT_sonda.append(DO_SAT_df_sonda[i])
+            DO_sonda.append(DO_df_sonda[i])
+            Blue_sonda.append(Blue_df_sonda[i])
+            Chl_sonda.append(Chl_df_sonda[i])
+            perfiles.append(perfil)
+            
+        elif static_control[i] == 1 and static_control_ant == 1:
+            contador += 1
+            lat_sonda.append(lat_df_sonda[indice_inicial])
+            lon_sonda.append(lon_df_sonda[indice_inicial])
+            x_sonda.append(x_df_sonda[indice_inicial])
+            y_sonda.append(y_df_sonda[indice_inicial])
+            t_x_sonda_ini.append(t_df_sonda[indice_inicial])
+            zona_utm_sonda.append(zona_utm_df_sonda[i])
+            Profundidad_sonda.append(profundidad_df_sonda[i])
+            Temperatura_sonda.append(temperatura_df_sonda[i])
+            pH_sonda.append(pH_df_sonda[i])
+            DO_SAT_sonda.append(DO_SAT_df_sonda[i])
+            DO_sonda.append(DO_df_sonda[i])
+            Blue_sonda.append(Blue_df_sonda[i])
+            Chl_sonda.append(Chl_df_sonda[i])
+            perfiles.append(perfil)
+
+        elif static_control[i] == 0 and static_control_ant == 1:
+            t_fin = np.full(contador, t_df_sonda[i])
+            t_x_sonda_fin.extend(t_fin)  # para añadir los valores uno a uno, igual que los otros vectores
+
+            
+            contador = 0
+        static_control_ant = static_control[i]
+        
+    ruta_csv_sonda = os.path.join(home_dir, "PprzGCS", "Planificacion", "Extraccion_datos", "Sonda", nombre_sin_ext + "_sonda.csv")   
+    
+    data = {
+        "perfil": perfiles,
+        "lat": lat_sonda,
+        "lon": lon_sonda,
+        "x": x_sonda,
+        "y": y_sonda,
+        "t_ini": t_x_sonda_ini,  # Si quieres unir en una sola celda
+        "t_fin": t_x_sonda_fin,
+        "zona_utm": zona_utm_sonda,
+        "profundidad": Profundidad_sonda,
+        "temperatura": Temperatura_sonda,
+        "pH": pH_sonda,
+        "DO_SAT": DO_SAT_sonda,
+        "DO": DO_sonda,
+        "Blue": Blue_sonda,
+        "Chl": Chl_sonda
+    }
+    
+    df = pd.DataFrame(data)
+    
+    # Guardar a CSV
+    df.to_csv(ruta_csv_sonda, index=False, encoding="utf-8", na_rep="NaN")

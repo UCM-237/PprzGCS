@@ -2,7 +2,7 @@ Responsable: {Armando}
 Lugar: {UCM}
 Referencia: {Prueba_geojson}
 Flight_plan: {UCM/Prueba_2_simulacion.xml}
-Mision: {25_05_28__16_27_03.data}
+Mision: {25_07_10__12_24_52.data}
 Valor ficocianina: {2}
 std ficocianina: {1}
 Numero medidas ficocianina: {4}

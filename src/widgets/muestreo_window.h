@@ -26,9 +26,10 @@ private slots:
     void on_button_explorer_medidas_clicked();
     void on_button_open_flight_plan_clicked();
     void on_button_ver_datos_mision_clicked();
-    void extraccion_datos(bool mostrarDespues, const QString &jsonFilePath = nullptr, const QString &csvFilePath = nullptr);
+    void extraccion_datos(bool mostrarDespues, const QString &jsonFilePath = nullptr, const QString &csvFilePath = nullptr, const QString &jsonFilePath_sonda = nullptr, const QString &csvFilePath_sonda = nullptr);
     void mostrar_datos_mision();
     void guardarVentanaYCsvEnJson(const QString &jsonFilePath, const QString &csvFilePath);
+    void guardarVentanaYCsvEnJson_sonda(const QString &jsonFilePath, const QString &csvFilePath);
 
 private:
     Ui::muestreo_window *ui;
