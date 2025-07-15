@@ -372,7 +372,7 @@ void muestreo_window::mostrar_datos_mision()
         nombre_csv += ".csv";
     }
 
-    QString ruta = QDir::homePath() + "/PprzGCS/Planificacion/Extraccion_datos/" + nombre_csv;
+    QString ruta = QDir::homePath() + "/PprzGCS/Planificacion/Extraccion_datos/Barco/" + nombre_csv;
 
     QFileInfo archivo(ruta);
     if (archivo.exists()) {
