@@ -112,7 +112,7 @@ void muestreo_window::on_button_save_clicked()
 
         file.close();
 
-        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".txt");
+        //QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".txt");
 
         QString nombre_csv = Mision;
         if (nombre_csv.endsWith(".data")) {
@@ -356,6 +356,15 @@ void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonF
                     guardarVentanaYCsvEnJson_sonda(jsonFilePath_sonda, csvFilePath_sonda);
                 }
             });
+
+    QString ruta_archivo_medidas = homeDir + "/PprzGCS/Planificacion/Medidas_sonda/" + archivo_medidas;
+    if (!QFile::exists(ruta_archivo_medidas)) {
+        QMessageBox::critical(this, "Error", "No hay ningún archivo de medidas con el nombre " + archivo_medidas + " en ~/PprzGCS/Planificacion/Medidas_sonda");
+            return;
+    }
+    else{
+        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".geojson");
+    }
 
     process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado << archivo_medidas);
 }
