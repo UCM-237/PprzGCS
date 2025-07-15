@@ -315,6 +315,7 @@ void muestreo_window::on_button_ver_datos_mision_clicked()
 void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonFilePath, const QString &csvFilePath, const QString &jsonFilePath_sonda, const QString &csvFilePath_sonda)
 {
 
+    //Se le pasa al código de python el nombre del log de la misión
     QModelIndexList selectedIndexes = ui->listView_mision->selectionModel()->selectedIndexes();
 
     if (selectedIndexes.isEmpty()) {
@@ -324,6 +325,10 @@ void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonF
 
     QString archivoSeleccionado = selectedIndexes.first().data().toString();
     QString pythonExecutable = "python3";
+
+    //También le tengo que pasar cuál es el archivo de medidas de la sonda -> archivo_medidas
+    
+
     QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Extraccion_datos/Extraccion_datos.py";
 
     QProcess *process = new QProcess(this);
@@ -352,7 +357,7 @@ void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonF
                 }
             });
 
-    process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado);
+    process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado << archivo_medidas);
 }
 
 

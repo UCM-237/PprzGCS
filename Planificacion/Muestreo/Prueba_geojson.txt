@@ -1,16 +1,16 @@
-Responsable: {Armando}
-Lugar: {UCM}
+Responsable: {UCM}
+Lugar: {Fac. Ciencias Físicas}
 Referencia: {Prueba_geojson}
 Flight_plan: {UCM/Prueba_2_simulacion.xml}
-Mision: {25_05_19__10_12_19.data}
+Mision: {25_05_16__11_42_15.data}
 Valor ficocianina: {2}
 std ficocianina: {1}
-Numero medidas ficocianina: {4}
+Numero medidas ficocianina: {12}
 Valor clorofila: {2}
 std clorofila: {1}
-Numero medidas clorofila: {4}
-Ruta archivo medidas: {Medidas.csv}
-Periodo medidas: {5}
-Incidencias: {Probando creación geojson.
+Numero medidas clorofila: {12}
+Ruta archivo medidas: {datos_sensor - datos_sensor.csv}
+Periodo medidas: {4}
+Incidencias: {Prueba
 
-Ninguna incidencia.}
+No incidencias}

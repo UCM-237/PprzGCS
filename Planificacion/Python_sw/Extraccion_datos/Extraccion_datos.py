@@ -58,7 +58,8 @@ if __name__ == "__main__":
         print("Error: falta el nombre del archivo como parámetro")
         sys.exit(1)
 
-    nombre_archivo = sys.argv[1]  # nombre que recibes desde Qt
+    nombre_archivo = sys.argv[1]  #Nombre del archivo de la misión
+    archivo_medidas = sys.argv[2]
     home_dir = os.path.expanduser("~")
     ruta_datos = os.path.join(home_dir, "paparazzi", "var", "logs", nombre_archivo)
 
@@ -68,7 +69,7 @@ if __name__ == "__main__":
         print("Advertencia: el archivo no termina en .data")
 
     ruta_salida = os.path.join(home_dir, "PprzGCS", "Planificacion", "Extraccion_datos", "Barco", nombre_sin_ext + ".csv")
-    ruta_datos_sonda = os.path.join(home_dir, "PprzGCS", "Planificacion", "Medidas_sonda", "datos_sensor - datos_sensor"  + ".csv")
+    ruta_datos_sonda = os.path.join(home_dir, "PprzGCS", "Planificacion", "Medidas_sonda", archivo_medidas)
 
     # Extraer datos
     x_raw, t_x = extraccion_datos("INS", 3, ruta_datos)

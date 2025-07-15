@@ -27,7 +27,7 @@ transmision_window::transmision_window(QWidget *parent) :
     ui->listView_ID->setModel(model);
 
     // Para que se abra directamnete la Qlist con los archivos del directorio
-    loadFilesFromDirectory(homeDir + "/PprzGCS/Planificacion/JSON", model);
+    loadFilesFromDirectory(homeDir + "/PprzGCS/Planificacion/JSON/Barco/", model);
 
 }
 
@@ -91,7 +91,7 @@ void transmision_window::on_button_datos_clicked()
     }
 
     QString nombreArchivo = seleccion.first().data().toString();
-    QString rutaCompleta = homeDir + "/PprzGCS/Planificacion/JSON/" + nombreArchivo;
+    QString rutaCompleta = homeDir + "/PprzGCS/Planificacion/JSON/Barco/" + nombreArchivo;
 
     if (!QFile::exists(rutaCompleta)) {
         QMessageBox::warning(this, "Error", "El archivo no existe:\n" + rutaCompleta);
