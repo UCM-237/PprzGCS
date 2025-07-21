@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     # Guardar en csv
     with open(ruta_salida, "w", encoding="utf-8") as f:
-        f.write("fecha utc,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_theta,theta,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah,t_static_control,static_control,Profundidad,Temperatura,pH,DO_SAT,DO,Blue,Chl\n")
+        f.write("fecha_utc,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_theta,theta,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah,t_static_control,static_control,Profundidad,Temperatura,pH,DO_SAT,DO,Blue,Chl\n")
         j = 0
         for i in range(N):
             if static_control[i] == 0:
@@ -240,6 +240,7 @@ if __name__ == "__main__":
     Blue_sonda = []
     Chl_sonda = []
     perfiles = []
+    fecha_sonda = []
     static_control_ant = 0
     perfil = 0
     contador = 0
@@ -248,6 +249,7 @@ if __name__ == "__main__":
             perfil += 1
             contador += 1
             indice_inicial = i
+            fecha_sonda.append(result_local_time[indice_inicial])
             lat_sonda.append(lat_df_sonda[indice_inicial])
             lon_sonda.append(lon_df_sonda[indice_inicial])
             x_sonda.append(x_df_sonda[indice_inicial])
@@ -265,6 +267,7 @@ if __name__ == "__main__":
             
         elif static_control[i] == 1 and static_control_ant == 1:
             contador += 1
+            fecha_sonda.append(result_local_time[indice_inicial])
             lat_sonda.append(lat_df_sonda[indice_inicial])
             lon_sonda.append(lon_df_sonda[indice_inicial])
             x_sonda.append(x_df_sonda[indice_inicial])
@@ -291,6 +294,7 @@ if __name__ == "__main__":
     ruta_csv_sonda = os.path.join(home_dir, "PprzGCS", "Planificacion", "Extraccion_datos", "Sonda", nombre_sin_ext + "_sonda.csv")   
     
     data = {
+        "fecha_utc": fecha_sonda,
         "perfil": perfiles,
         "lat": lat_sonda,
         "lon": lon_sonda,

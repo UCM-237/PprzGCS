@@ -10,6 +10,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 09:49:28.000",
                     "name": "Punto_1",
                     "perfil": "1",
                     "t_fin": "493.795",
@@ -1244,6 +1245,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 09:51:24.750",
                     "name": "Punto_2",
                     "perfil": "2",
                     "t_fin": "610.726",
@@ -2478,6 +2480,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 09:54:28.000",
                     "name": "Punto_3",
                     "perfil": "3",
                     "t_fin": "793.896",
@@ -3705,6 +3708,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 09:59:31.500",
                     "name": "Punto_4",
                     "perfil": "4",
                     "t_fin": "1096.71",
@@ -4897,6 +4901,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 10:09:18.750",
                     "name": "Punto_5",
                     "perfil": "5",
                     "t_fin": "1684.639",
@@ -6131,6 +6136,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 10:10:53.500",
                     "name": "Punto_6",
                     "perfil": "6",
                     "t_fin": "1778.193",
@@ -7337,6 +7343,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 10:13:31.750",
                     "name": "Punto_7",
                     "perfil": "7",
                     "t_fin": "1937.47",
@@ -8536,6 +8543,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 10:18:49.250",
                     "name": "Punto_8",
                     "perfil": "8",
                     "t_fin": "2255.532",
@@ -9686,6 +9694,7 @@
             },
             "properties": {
                 "navegacion": {
+                    "fecha_ini_utc": "2025-05-16 10:25:58.000",
                     "name": "Punto_9",
                     "perfil": "9",
                     "t_fin": "2683.838",
