@@ -28,7 +28,7 @@ private:
     Ui::transmision_window *ui;
     QStringListModel *model;
     QString homeDir;
-
+    QMap<QString, QString> filePathMap;
     void loadFilesFromDirectory(const QString &path, QStringListModel *model, const QStringList &filters = QStringList());
 };
 

@@ -145,15 +145,15 @@ void muestreo_window::on_button_explorer_flight_plan_clicked()
 
 void muestreo_window::on_button_explorer_medidas_clicked()
 {
-    disconnect(ui->button_explorer_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_flight_plan_clicked);
+    disconnect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
 
-    QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/resources/Medidas_sonda";
+    QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/Resources/Medidas_sonda";
     QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de muestreo"), basePath);
 
     if (!filePath.isEmpty()) {
         QDir baseDir(basePath);
         QString relativePath = baseDir.relativeFilePath(filePath);  // Esto te da "UCM/flight_plan.xml"
-        ui->label_flight_plan->setText(relativePath);  // Esto es lo que luego usas
+        ui->label_archivo_medidas->setText(filePath);  // Esto es lo que luego usas
     }
 
 }
@@ -357,15 +357,21 @@ void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonF
                 }
             });
 
-    QString ruta_archivo_medidas = homeDir + "/PprzGCS/Planificacion/Medidas_sonda/" + archivo_medidas;
+
+    QString ruta_archivo_medidas = archivo_medidas;
     if (!QFile::exists(ruta_archivo_medidas)) {
         QMessageBox::critical(this, "Error", "No hay ningún archivo de medidas con el nombre " + archivo_medidas + " en ~/PprzGCS/Planificacion/Medidas_sonda");
             return;
     }
     else{
-        QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".geojson");
-    }
+        if(!mostrarDespues){
+            QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".geojson");
 
+        }
+    }
+    if (archivo_medidas == ""){
+        archivo_medidas = "empty.csv";
+    }
     process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado << archivo_medidas);
 }
 

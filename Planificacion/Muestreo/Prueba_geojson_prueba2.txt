@@ -1,6 +1,6 @@
 Responsable: {UCM}
 Lugar: {Fac. Ciencias Físicas}
-Referencia: {Prueba_geojson}
+Referencia: {Prueba_geojson_prueba2}
 Flight_plan: {UCM/Prueba_2_simulacion.xml}
 Mision: {25_05_16__11_42_15.data}
 Valor ficocianina: {2}
@@ -9,7 +9,7 @@ Numero medidas ficocianina: {12}
 Valor clorofila: {2}
 std clorofila: {1}
 Numero medidas clorofila: {12}
-Ruta archivo medidas: {/home/dacya-iagesbloom/PprzGCS/Planificacion/Resources/Medidas_sonda/datos_sensor.csv}
+Ruta archivo medidas: {/home/dacya-iagesbloom/PprzGCS/Planificacion/Resources/Medidas_sonda}
 Periodo medidas: {4}
 Incidencias: {Prueba
 

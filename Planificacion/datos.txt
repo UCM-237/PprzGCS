@@ -1,4 +1,4 @@
-Estrategia seleccionada:Point to point
+Estrategia seleccionada:Continuous
 Ruta mapa:UCM/Prueba_2_simulacion.xml
 Ruta controlador:UCM/boat_f405_v2.xml
 Ruta conf:UCM/conf.xml

@@ -756,7 +756,15 @@ void PlanificacionWindow::sendwp(double latitud, double longitud, bool aux_reset
     if (aux_reset == 1){
             i=0;
     }
-    quint8 wp_id = i+8; // Puedes usar el índice para asignar un ID de waypoint único
+    quint8 wp_id;
+    //Aqui añado que si la trayectoria es PtP mande desde el principio y si es de Bézier desde el principio + numúmero de puntos L que haya en el fliht plan (es decir,
+    //que mande desde el primer id de los puntos BZ
+    if (EstrategiaSeleccionada == "Point to point"){
+        wp_id = i+8; // Puedes usar el índice para asignar un ID de waypoint único
+    }
+    else if (EstrategiaSeleccionada == "Continuous"){
+        wp_id = i+8+21; //El 20 es porque en el flight plan los puntos de Bz empiezan 20 posiciones después que los de PtP
+    }
     lat = latitud; // Convertir a formato de latitud/longitud
     lon = longitud; // Convertir a formato de latitud/longitud
     alt = 660.7;
@@ -772,9 +780,12 @@ void PlanificacionWindow::sendwp(double latitud, double longitud, bool aux_reset
 
 
     // Enviar el mensaje para este waypoint
-
+    if (EstrategiaSeleccionada == "Point to point" && wp_id <=28){
     PprzDispatcher::get()->sendMessage(msg);
-
+    }
+    else if (EstrategiaSeleccionada == "Continuous"&& wp_id <=42){
+    PprzDispatcher::get()->sendMessage(msg);
+    }
     qDebug() << "Enviado waypoint " << wp_id << ": " << lat << ", " << lon << "," << alt << "," << i;
     //printf("Latitud enviada %11.8lf\n", lat);
     i++;
