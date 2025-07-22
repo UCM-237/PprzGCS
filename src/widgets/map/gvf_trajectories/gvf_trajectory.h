@@ -18,6 +18,7 @@ public:
     Point2DLatLon getCarrot();
     QuiverItem* getVField();
     PathItem* getTraj();
+    PathItem* getTrajMollified();
 
     void setVFiledVis(bool vis);
     void setTrajVis(bool vis);
@@ -38,6 +39,7 @@ protected:
     
     void createTrajItem(QList<QPointF> points);
     void createTrajItem(QList<QPointF> xy_points, QList<float> z_points);
+    void createTrajItem(QList<QPointF> xy_points, int color, int mollification);
     void createVFieldItem(QList<QPointF> points, QList<QPointF> vpoints, float ref_area = 500);
     QList<QPointF> meshGrid();
     QPointF getACpos();
@@ -53,7 +55,9 @@ protected:
 private:
     QuiverItem* field_item;
     PathItem* traj_item;
+    PathItem* traj_item_mollified;
     QList<WaypointItem*> traj_waypoints;
+    QList<WaypointItem*> traj_waypoints_mollified;
 
     // GVF viewer config
     bool field_item_vis;

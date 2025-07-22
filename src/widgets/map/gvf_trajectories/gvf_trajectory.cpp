@@ -14,6 +14,7 @@ GVF_trajectory::GVF_trajectory(QString id, QVector<int> *gvf_settings)
     field_ypts = gvfV_settings[4];  
 
     traj_item = new PathItem(ac_id, Qt::green);
+    traj_item_mollified = new PathItem(ac_id, Qt::yellow);
     field_item = new QuiverItem(ac_id, Qt::red, 0.5, this);
 
     // If you're alive, please update your map items when gvf_viewer request it 
@@ -35,6 +36,10 @@ PathItem* GVF_trajectory::getTraj() {
     return traj_item;
 }
 
+PathItem* GVF_trajectory::getTrajMollified() {
+    return traj_item_mollified;
+}
+
 QuiverItem* GVF_trajectory::getVField() {
     return field_item;
 }
@@ -42,11 +47,14 @@ QuiverItem* GVF_trajectory::getVField() {
 void GVF_trajectory::setTrajVis(bool vis) {
     traj_item_vis = vis;
     traj_item->setVisible(traj_item_vis);
+    traj_item_mollified->setVisible(traj_item_vis);
     
     if(vis) {
         traj_item->setText("AC " + ac_id + " GVF");
+        traj_item_mollified->setText("AC" + ac_id + "GVF_M");
     } else {
         traj_item->setText("");
+        traj_item_mollified->setText("");
     }
 }
 
@@ -61,6 +69,11 @@ void GVF_trajectory::purge_trajectory() {
     disconnect(DispatcherUi::get(), &DispatcherUi::gvf_settingUpdated, this, 0); 
 
     foreach (WaypointItem* wp, traj_waypoints) {
+        assert(wp != nullptr);
+        delete wp;
+    }
+
+    foreach (WaypointItem* wp, traj_waypoints_mollified) {
         assert(wp != nullptr);
         delete wp;
     }
@@ -100,7 +113,7 @@ void GVF_trajectory::createTrajItem(QList<QPointF> points)
 
     for(auto point: points) {
         auto pos = CoordinatesTransform::get()->relative_utm_to_wgs84(ltp_origin, point.x(), point.y());
-        auto wp =  new WaypointItem(pos, ac_id, Qt::green); 
+        auto wp =  new WaypointItem(pos, ac_id, Qt::green);
         traj_item->addPoint(wp);
         traj_waypoints.append(wp);
     }
@@ -117,7 +130,7 @@ void GVF_trajectory::createTrajItem(QList<QPointF> xy_points, QList<float> z_poi
     emit DispatcherUi::get()->gvf_zlimits(ac_id, zmin, zmax);
 
     for(int i = 0; i < xy_points.size(); i++) {
-        auto traj_color = QColor(Qt::green);
+        auto traj_color = QColor(Qt::yellow);
 
         if (!(zmax == zmin)) {
             int g = round((z_points[i] - zmin)/(zmax - zmin) * 255);
@@ -131,6 +144,46 @@ void GVF_trajectory::createTrajItem(QList<QPointF> xy_points, QList<float> z_poi
         traj_waypoints.append(wp);
     }
 
+    setTrajVis(traj_item_vis);
+}
+
+// GVF parametric 2D trajectory choose color
+void GVF_trajectory::createTrajItem(QList<QPointF> xy_points, int color, int mollification)
+{
+
+    for(int i = 0; i < xy_points.size(); i++)
+    {
+        auto traj_color = QColor(Qt::yellow);
+        switch(color)
+        {
+        case 0:
+          traj_color = QColor(Qt::yellow);
+          break;
+        case 1:
+          traj_color = QColor(Qt::green);
+          break;
+        case 2:
+          traj_color = QColor(Qt::red);
+          break;
+        case 3:
+          traj_color = QColor(Qt::blue);
+          break;
+        default:
+          traj_color = QColor(Qt::yellow);
+        }
+        auto pos = CoordinatesTransform::get()->relative_utm_to_wgs84(ltp_origin, xy_points[i].x(), xy_points[i].y());
+        auto wp =  new WaypointItem(pos, ac_id, traj_color);
+        if(mollification)
+        {
+          traj_item_mollified->addPoint(wp, traj_color);
+          traj_waypoints_mollified.append(wp);
+        }
+        else
+        {
+          traj_item->addPoint(wp, traj_color);
+          traj_waypoints.append(wp);
+        }
+    }
     setTrajVis(traj_item_vis);
 }
 

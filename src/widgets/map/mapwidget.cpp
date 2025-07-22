@@ -41,6 +41,7 @@
 #include "gvf_traj_3D_ellipse.h"
 #include "gvf_traj_3D_lissajous.h"
 #include "gvf_traj_bezier.h"
+#include "gvf_traj_lines_param.h"
 
 
 MapWidget::MapWidget(QWidget *parent) : Map2D(parent),
@@ -1244,6 +1245,7 @@ void MapWidget::onGVF(QString sender, pprzlink::Message msg) {
     if(gvf_trajectories.contains(sender)) {
         //TODO: checksum??... if it is the same trayectory do not delete the previous one
         removeItem(gvf_trajectories[sender]->getTraj());
+        removeItem(gvf_trajectories[sender]->getTrajMollified());
         removeItem(gvf_trajectories[sender]->getVField());
 
         gvf_trajectories[sender]->purge_trajectory();
@@ -1333,6 +1335,10 @@ void MapWidget::onGVF(QString sender, pprzlink::Message msg) {
                 gvf_traj = new GVF_traj_bezier(sender, param, phi, wb, 5, gvf_trajectories_config[sender]);
                 break;
             }
+            case 5: { // Mollified array
+                gvf_traj = new GVF_traj_lines_param(sender, param, phi, wb, gvf_trajectories_config[sender]);
+                break;
+            }
             default:
                 qDebug() << "GVF: GVF_PARAMETRIC message parser received an unknown trajectory id.";
                 return;
@@ -1342,6 +1348,10 @@ void MapWidget::onGVF(QString sender, pprzlink::Message msg) {
     }
     
     addItem(gvf_traj->getTraj());
+    if(traj == 5)
+    {
+      addItem(gvf_traj->getTrajMollified());
+    }
     addItem(gvf_traj->getVField());
     ac_items_managers[sender]->setCurrentGVF(gvf_traj);
     gvf_trajectories[sender] = gvf_traj;
