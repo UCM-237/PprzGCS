@@ -13,7 +13,6 @@ GVF_traj_lines_param::GVF_traj_lines_param(QString id, QList<float> param, QList
   generate_trajectory();
 }
 
-// 2D bezier trajectory (parametric representation)
 void GVF_traj_lines_param::genTraj()
 {
 
@@ -32,7 +31,6 @@ void GVF_traj_lines_param::genTraj()
   createTrajItem(points_conv, COLOR_YELLOW, MOLLIFIED_TRAJ);
 }
 
-// 2D bezier GVF
 void GVF_traj_lines_param::genVField()
 {
   FILE *file_x; FILE *file_y; FILE *file_ks;
@@ -52,6 +50,7 @@ void GVF_traj_lines_param::genVField()
     fclose(file_ks);
   }
 
+  // TODO: Replace magic number
   if (cont == 3) {
     QList<QPointF> vxy_mesh;
     float xmin, xmax, ymin, ymax;
@@ -76,24 +75,26 @@ void GVF_traj_lines_param::genVField()
     foreach (const QPointF &point, xy_mesh)
     {
       // Evaluate only the smoothed trajectory
-      float phix = point.x() - eval_traj(w, MOLLIFIED_TRAJ).x(); // Normal component
-      float phiy = point.y() - eval_traj(w, MOLLIFIED_TRAJ).y(); // Normal Component
-      float sigx = beta * eval_traj_der(w).x();              // Tangential Component
-      float sigy = beta * eval_traj_der(w).y();              // Tangential Component
+      float phix = point.x() - eval_traj(w, MOLLIFIED_TRAJ).x(); // Normal component X
+      float phiy = point.y() - eval_traj(w, MOLLIFIED_TRAJ).y(); // Normal Component Y
+      float sigx = beta * eval_traj_der(w).x();                  // Tangential Component X
+      float sigy = beta * eval_traj_der(w).y();                  // Tangential Component Y
       float vx = sigx - kx * phix;
       float vy = sigy - ky * phiy;
       float norm = sqrt(pow(vx, 2) + pow(vy, 2));
-      norm = (norm > 0) ? norm : 1; // Avoid division by zero
+      // Avoid division by zero
+      norm = (norm > 0) ? norm : 1;
       vxy_mesh.append(QPointF(vx / norm, vy / norm));
     }
     createVFieldItem(xy_mesh, vxy_mesh);
-  } else {
+  }
+  else
+  {
     fprintf(stderr, "Field cannot be created yet, waiting for complete data...\n");
-
   }
 }
 
-/////////////// PRIVATE FUNCTIONS ///////////////
+/***************************** PRIVATE FUNCTIONS ******************************/
 void GVF_traj_lines_param::set_param(QList<float> param, QList<float> _phi, float wb)
 {
 
@@ -177,7 +178,6 @@ void GVF_traj_lines_param::set_param(QList<float> param, QList<float> _phi, floa
   w = (beta > 0) ? wb / beta : wb;   // gvf_parametric_w = wb/beta (wb = w*beta)
 }
 
-// Just in one dimension
 float GVF_traj_lines_param::function_one_dimension(float *points, float lambda)
 {
   float integer_part_float;
@@ -224,7 +224,7 @@ float GVF_traj_lines_param::mollifier_one_dimension(float x, float epsilon)
 
   if(fabsf(y) < 1)
   {
-    // Avoid divisions by zero
+    // Avoid divisions by zero by comparing with MACHINE EPSILON
     if(fabsf(1-powf(y,2)) <= FLT_EPSILON)
     {
       return 0.0;
@@ -236,7 +236,7 @@ float GVF_traj_lines_param::mollifier_one_dimension(float x, float epsilon)
 
 float GVF_traj_lines_param::mollifier_one_dimension_derivative(float x, float epsilon)
 {
-  // Avoid divisions by zero. TODO Remove magic number
+  // Avoid divisions by zero by comparing with MACHINE EPSILON
   if(fabsf(powf(epsilon,2) - powf(x,2)) <= FLT_EPSILON)
   {
     return 0;
@@ -245,7 +245,6 @@ float GVF_traj_lines_param::mollifier_one_dimension_derivative(float x, float ep
   return mollifier_one_dimension(x, epsilon) * fun_dot_f;
 }
 
-// Convolution in one dimension
 float GVF_traj_lines_param::convolution_one_dimension(float lambda, float *points,
                                                       float epsilon, int order)
 {
@@ -266,9 +265,7 @@ float GVF_traj_lines_param::convolution_one_dimension(float lambda, float *point
    * */
   float lower_integration_value = -epsilon;
   float upper_integration_value = epsilon;
-
   float step_of_integration = (upper_integration_value - lower_integration_value) / NUM_POINTS_OF_INTEGRATION;
-
   float convolution_at_lambda = 0;
   float step = 0;
 
@@ -325,7 +322,8 @@ QPointF GVF_traj_lines_param::eval_traj(float lambda, int which_traj)
   return QPointF(fx, fy);
 }
 
-QPointF GVF_traj_lines_param::eval_traj_der(float lambda){
+QPointF GVF_traj_lines_param::eval_traj_der(float lambda)
+{
   // Just in case w from telemetry is not between bounds
   if (lambda < 0.0)
   {
