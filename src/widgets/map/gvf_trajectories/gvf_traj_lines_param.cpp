@@ -5,32 +5,6 @@
 #include <cmath>
 #include "gvf_traj_lines_param.h"
 
-// Color of trajectories
-#define COLOR_YELLOW 0
-#define COLOR_GREEN  1
-#define COLOR_RED    2
-#define COLOR_BLUE   3
-
-/*
- * Reparametrization factor: adjusts the parameter range from [0, N_SEG]
- * to [0, FACTOR * N_SEG] to achieve finer control over the curve.
- *
- * Each segment between two points x, y ∈ \R^2 is linearly interpolated by:
- *
- *     λx + (1 - λ)y,   where λ ∈ [0, 1].
- *
- * The issue arises when ε = 0.5 — half of the final segment is excluded
- * due to the convolution's support. By increasing the parameter range
- * with a factor (e.g., FACTOR = 10), the effective resolution improves.
- * For example, with ε = 0.5 and FACTOR = 10, only 1/20 of the curve is cut.
- */
-#define FACTOR       1.0 // TODO: Not used
-
-// Path to files where data is saved. Choose the path you like.
-const char x_val[]  = "var/conf/gvf_parametric_curve_x_values.data";
-const char y_val[]  = "var/conf/gvf_parametric_curve_y_values.data";
-const char ks_val[] = "var/conf/gvf_parametric_curve_ctrl_values.data";
-
 GVF_traj_lines_param::GVF_traj_lines_param(QString id, QList<float> param, QList<float> _phi,
                                            float wb, QVector<int> *gvf_settings) :
   GVF_trajectory(id, gvf_settings)
@@ -45,18 +19,17 @@ void GVF_traj_lines_param::genTraj()
 
   QList<QPointF> points;
   QList<QPointF> points_conv;
-  // Normal: 0; Mollified: 1
   float max_t = n_seg * FACTOR;
-  float num_pts = n_seg  * FACTOR * 50;
+  float num_pts = n_seg  * FACTOR * NUM_POINTS_CURVE_DRAWING;
   float dt = max_t / num_pts;
 
-  for (float t = 0; t < max_t; t += dt)
+  for (float t = 0; t <= max_t; t += dt)
   {
-    points.append(eval_traj(t, 0));
-    points_conv.append(eval_traj(t, 1));
+    points.append(eval_traj(t, NORMAL_TRAJ));
+    points_conv.append(eval_traj(t, MOLLIFIED_TRAJ));
   }
-  createTrajItem(points, COLOR_BLUE, 0);
-  createTrajItem(points_conv, COLOR_YELLOW, 1);
+  createTrajItem(points, COLOR_BLUE, NORMAL_TRAJ);
+  createTrajItem(points_conv, COLOR_YELLOW, MOLLIFIED_TRAJ);
 }
 
 // 2D bezier GVF
@@ -100,13 +73,11 @@ void GVF_traj_lines_param::genVField()
     emit DispatcherUi::get()->gvf_defaultFieldSettings(ac_id, round(bound_area), 30, 30);
     xy_mesh = meshGrid();
 
-    const int molli_flag = 1;
-
     foreach (const QPointF &point, xy_mesh)
     {
       // Evaluate only the smoothed trajectory
-      float phix = point.x() - eval_traj(w, molli_flag).x(); // Normal component
-      float phiy = point.y() - eval_traj(w, molli_flag).y(); // Normal Component
+      float phix = point.x() - eval_traj(w, MOLLIFIED_TRAJ).x(); // Normal component
+      float phiy = point.y() - eval_traj(w, MOLLIFIED_TRAJ).y(); // Normal Component
       float sigx = beta * eval_traj_der(w).x();              // Tangential Component
       float sigy = beta * eval_traj_der(w).y();              // Tangential Component
       float vx = sigx - kx * phix;
@@ -215,36 +186,50 @@ float GVF_traj_lines_param::function_one_dimension(float *points, float lambda)
   float lambda_factor = lambda / FACTOR;
   fractional_part = modff(lambda_factor, &integer_part_float);
   integer_part = (int)(integer_part_float);
-  // If the convolution parameter falls below the valid range,repeat the first segment.
+
+  /*
+   * IT IS NECESSARY TO EXTEND THE DOMAIN OF THE FUNCTION.
+   *
+   * This extension is required to ensure the convolution of the trajectory
+   * is properly carried out. Each component of the trajectory
+   * is given by a function f : [0, N_SEG] → ℝ. When convolving with a mollifier
+   * whose support is [-ε, ε], the convolution requires evaluating f outside its
+   * original domain, specifically, over the extended interval [-ε, N_SEG + ε].
+   *
+   * For this reason, the trajectory must be defined beyond its original bounds.
+   * Values of the curve parameter below 0 and above N_SEG are handled by extending
+   * the line segment.
+   */
+
   if(lambda_factor <= 1)
   {
-    return (1 - lambda_factor) * points[0] +  lambda_factor * points[1];
+    // If the convolution parameter falls below the valid range,repeat the first segment.
+    return (1 - fractional_part) * points[0] +  fractional_part * points[1];
   }
   else if(integer_part < n_seg)
   {
-    return (1 - fractional_part) * points[integer_part] + fractional_part * points[integer_part+1];
+    return (1 - fractional_part) * points[integer_part] + fractional_part * points[integer_part + 1];
   }
   else
   {
-    // If the convolution parameter is above the valid range,repeat the last segment.
-    return (1 - fractional_part) * points[n_seg - 1] + fractional_part * points[n_seg];
+    /* If the convolution parameter is above the valid range,repeat the last segment extending it
+     * to arbitrary values of lambda */
+    return (1 - (lambda_factor - n_seg + 1)) * points[n_seg - 1] + (lambda_factor - n_seg + 1) * points[n_seg];
   }
 }
 
 float GVF_traj_lines_param::mollifier_one_dimension(float x, float epsilon)
 {
-  // TODO: Replace magic number
-  float integration_constant = 0.44399;
   float y = x / epsilon;
 
   if(fabsf(y) < 1)
   {
-    // Avoid divisions by zero. TODO Remove magic number
+    // Avoid divisions by zero
     if(fabsf(1-powf(y,2)) <= FLT_EPSILON)
     {
       return 0.0;
     }
-    return 1 / (integration_constant * epsilon) * expf(-1 / (1-powf(y,2)));
+    return 1 / (INTEGRATION_CONSTANT * epsilon) * expf(-1 / (1-powf(y,2)));
   }
   return 0.0;
 }
@@ -262,12 +247,8 @@ float GVF_traj_lines_param::mollifier_one_dimension_derivative(float x, float ep
 
 // Convolution in one dimension
 float GVF_traj_lines_param::convolution_one_dimension(float lambda, float *points,
-                                                      int n_segments, float epsilon,
-                                                      int order)
+                                                      float epsilon, int order)
 {
-  // TODO: Replace magic number
-  int n_points_of_integration = 100;
-
   /*
    * NOTE: The subtraction of epsilon is due to the definition of the function.
    *
@@ -286,12 +267,12 @@ float GVF_traj_lines_param::convolution_one_dimension(float lambda, float *point
   float lower_integration_value = -epsilon;
   float upper_integration_value = epsilon;
 
-  float step_of_integration = (upper_integration_value - lower_integration_value) / n_points_of_integration;
+  float step_of_integration = (upper_integration_value - lower_integration_value) / NUM_POINTS_OF_INTEGRATION;
 
   float convolution_at_lambda = 0;
   float step = 0;
 
-  for(int k_iter = 0; k_iter < n_points_of_integration; k_iter++)
+  for(int k_iter = 0; k_iter < NUM_POINTS_OF_INTEGRATION; k_iter++)
   {
     step = k_iter * step_of_integration + step_of_integration;
 
@@ -299,9 +280,11 @@ float GVF_traj_lines_param::convolution_one_dimension(float lambda, float *point
     // in each iteration
     if(order == 0)
     {
+
       convolution_at_lambda += mollifier_one_dimension(lower_integration_value +
       step, epsilon) * function_one_dimension(points, lambda -
       (lower_integration_value + step)) * step_of_integration;
+
     }
     else if(order == 1)
     {
@@ -317,15 +300,15 @@ float GVF_traj_lines_param::convolution_one_dimension(float lambda, float *point
 
 QPointF GVF_traj_lines_param::eval_traj(float lambda, int which_traj)
 {
-  // Just in case w from telemetry is not between bounds
   float fx, fy;
-  if (lambda < 0.0)
+  // Just in case lambda is not between bounds
+  if(lambda < 0.0)
   {
     lambda = 0.0;
   }
-  else if (lambda >= (float)(n_seg * FACTOR))
+  else if(lambda >= n_seg)
   {
-    lambda = (float)(n_seg * FACTOR);
+    lambda = n_seg;
   }
 
   if(which_traj == 0)
@@ -335,8 +318,8 @@ QPointF GVF_traj_lines_param::eval_traj(float lambda, int which_traj)
   }
   else if(which_traj == 1)
   {
-    fx = convolution_one_dimension(lambda, xx, n_seg, epsilon_x, 0);
-    fy = convolution_one_dimension(lambda, yy, n_seg, epsilon_y, 0);
+    fx = convolution_one_dimension(lambda, xx, epsilon_x, 0);
+    fy = convolution_one_dimension(lambda, yy, epsilon_y, 0);
   }
 
   return QPointF(fx, fy);
@@ -353,8 +336,8 @@ QPointF GVF_traj_lines_param::eval_traj_der(float lambda){
     lambda = (float)(n_seg * FACTOR);
   }
 
-  float fx = convolution_one_dimension(lambda, xx, n_seg, epsilon_x, 1);
-  float fy = convolution_one_dimension(lambda, yy, n_seg, epsilon_y, 1);
+  float fx = convolution_one_dimension(lambda, xx, epsilon_x, 1);
+  float fy = convolution_one_dimension(lambda, yy, epsilon_y, 1);
 
   return QPointF(fx, fy);
 }
