@@ -1,5 +1,5 @@
-Estrategia seleccionada:Point to point
-Ruta mapa:UCM/Prueba_2_simulacion.xml
+Estrategia seleccionada:Continuous
+Ruta mapa:UCM/Prueba2_bz.xml
 Ruta controlador:UCM/boat_f405_v2.xml
 Ruta conf:UCM/conf.xml
 Ruta aircraft:CYANOA

@@ -665,7 +665,7 @@ def detecta_cruce_ruta(ruta, zonas_prohibidas, zonas_prohibidas_names, coordenad
         xpoints = coordenadas[:,0]
         ypoints = coordenadas[:,1]
         Puntos_paso = list(zip(xpoints, ypoints))
-        data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2)
+        data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2-2)
         xvals, yvals = bezier_curve(data, nTimes=1000)
         curve = LineString(np.column_stack((xvals, yvals)))
         coords = list(curve.coords)[::-1]
@@ -1176,11 +1176,11 @@ import matplotlib.pyplot as plt
 plt.scatter(xpoints, ypoints, s=150, c="black", edgecolors="white", label="Waypoints")
 
 # Get the Bezier parameters based on a degree.
-data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2) #BZ0 BZ5 BZ8 BZ11 son los de paso, por tanto habrá 4*2 + 1 puntos de contol ya que el algoritmo te pone 1 pnt cntrl en el 1 punto y en el último
+data = get_bezier_parameters(xpoints, ypoints, 0.005, degree=len(xpoints)*2-2) #BZ0 BZ5 BZ8 BZ11 son los de paso, por tanto habrá 4*2 + 1 puntos de contol ya que el algoritmo te pone 1 pnt cntrl en el 1 punto y en el último
 xvals, yvals = bezier_curve(data, nTimes=1000)
 xpoints_antes = resultados_sectores_antes_ruta_mas_corta[:,0]
 ypoints_antes = resultados_sectores_antes_ruta_mas_corta[:,1]
-data_antes = get_bezier_parameters(xpoints_antes, ypoints_antes, 0.005, degree=len(xpoints)*2)
+data_antes = get_bezier_parameters(xpoints_antes, ypoints_antes, 0.005, degree=len(xpoints)*2-2)
 xvals_antes, yvals_antes = bezier_curve(data_antes, nTimes=1000)
 x_val = [x[0] for x in data]
 y_val = [x[1] for x in data]
@@ -1217,7 +1217,7 @@ y_val = np.insert(y_val, 1, puntos_en_recta[0][1])
 
 if TipoTrayectoria == "Continuous":
     # Plot the control points
-    #plt.scatter(x_val, y_val, s=150, c="blue", edgecolors="white", linewidths=1, label='Control Points')
+    plt.scatter(x_val, y_val, s=150, c="blue", edgecolors="white", linewidths=1, label='Control Points')
 
     for i, c in enumerate(zip(xpoints, ypoints)):
         plt.annotate(str(i), xy=c, fontsize=10, ha="center", va="center", color="white")
@@ -1257,14 +1257,12 @@ Puntos_paso = np.vstack((xpoints, ypoints)).T
 Puntos_control = np.array([x_val, y_val]).T
 Total_puntos = Puntos_control.shape[0] + Puntos_paso.shape[0]
 Puntos_Bezier = np.zeros((Total_puntos, Puntos_control.shape[1]))
-
 Puntos_Bezier = []
 
 
 
 idx_paso, idx_control = 0, 0
-
-while idx_paso < len(Puntos_paso) and idx_control + 1 < len(Puntos_control):
+while idx_paso < len(Puntos_paso):# and idx_control + 1 <= len(Puntos_control):
     # Agregar punto de paso (desempaquetado si es una lista)
     Puntos_Bezier.extend(Puntos_paso[idx_paso] if isinstance(Puntos_paso[idx_paso], list) else [Puntos_paso[idx_paso]])
     idx_paso += 1
@@ -1288,7 +1286,6 @@ if TipoTrayectoria == "Continuous":
     ruta_bz['nombre'] = columna_nombres_bz[:]  # Asignar la columna de nombres
     ruta_bz['x'] = Puntos_Bezier[:, 0]  # Asignar la columna x
     ruta_bz['y'] = Puntos_Bezier[:, 1]  # Asignar la columna y
-
     for i in range(len(Puntos_Bezier)):
             ruta_bz[i]['nombre']=f'BZ{i}'
 
@@ -1299,8 +1296,8 @@ if TipoTrayectoria == "Continuous":
     #Para poder hacer bien la comparación, ya que estaba teniendo errores de redondeo, vuelvo a sacar los puntos de control de ruta_bz
     puntos_control_rounded = []
     for i in range(0, len(ruta_bz_arr), 3):
-        puntos_control_rounded.append(ruta_bz_arr_rounded[i+1])
-        puntos_control_rounded.append(ruta_bz_arr_rounded[i+2])
+        puntos_control_rounded.append(ruta_bz_arr_rounded[i])
+        puntos_control_rounded.append(ruta_bz_arr_rounded[i])
     flag_stop = []
     for i in range(len(ruta_bz_arr_rounded)):
         point = ruta_bz_arr_rounded[i]

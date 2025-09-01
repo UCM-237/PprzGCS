@@ -80,7 +80,7 @@ void muestreo_window::on_button_save_clicked()
         return;
     }
     Mision = seleccion.first().data().toString();
-
+    id_sonda = ui->label_ID_sonda->text();
     valor_ficocianina = ui->label_valor_ficocianina->text();
     std_ficocianina = ui->label_std_ficocianina->text();
     N_ficocianina = ui->label_N_ficocianina->text();
@@ -100,6 +100,7 @@ void muestreo_window::on_button_save_clicked()
         out << "Referencia: " << "{" + Referencia + "}" << "\n";
         out << "Flight_plan: " << "{" + flight_plan + "}" << "\n";
         out << "Mision: " << "{" + Mision + "}" << "\n";
+        out << "ID_sonda: " << "{" + id_sonda + "}" << "\n";
         out << "Valor ficocianina: " << "{" + valor_ficocianina + "}" << "\n";
         out << "std ficocianina: " << "{" + std_ficocianina + "}" << "\n";
         out << "Numero medidas ficocianina: " << "{" + N_ficocianina + "}" << "\n";
@@ -273,7 +274,8 @@ void muestreo_window::on_button_explorer_referencia_clicked()
                             }
                         }
                     }
-
+                    else if (key == "ID_sonda")
+                        ui->label_ID_sonda->setText(value);
                     else if (key == "Valor ficocianina")
                         ui->label_valor_ficocianina->setText(value);
                     else if (key == "std ficocianina")
@@ -418,8 +420,7 @@ void muestreo_window::guardarVentanaYCsvEnJson(const QString &geoJsonFilePath, c
         int latIndex = headers.indexOf("lat");
         int lonIndex = headers.indexOf("lon");
 
-        int size_properties_nav = 31; // Número de datos correspondientes a la navegación
-        int size_sonda = 7; // Número de datos correspondientes a la sonda
+        int size_properties_nav = 19; // Número de datos correspondientes a la navegación
 
         if (latIndex == -1 || lonIndex == -1) {
             qWarning("No se encontraron columnas 'lat' y 'lon' en el CSV");
@@ -630,6 +631,7 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
     // Aquí los metadatos que quieras (los de tu UI)
     QJsonObject metadata;
     metadata["Referencia"] = ui->label_referencia->text();
+    metadata["ID_sonda"] = ui->label_ID_sonda->text();
     metadata["Valor ficocianina"] = ui->label_valor_ficocianina->text();
     metadata["std ficocianina"] = ui->label_std_ficocianina->text();
     metadata["Numero medidas ficocianina"] = ui->label_N_ficocianina->text();

@@ -40,6 +40,7 @@ private:
     QString Lugar;
     QString Referencia;
     QString Mision;
+    QString id_sonda;
     QString valor_ficocianina;
     QString std_ficocianina;
     QString N_ficocianina;

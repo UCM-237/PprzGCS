@@ -21,8 +21,10 @@ public:
 
 
 private slots:
-    void on_button_send_clicked();
+    void on_button_send_clicked_barco();
+    void on_button_send_clicked_sonda();
     void on_button_datos_clicked();
+    
 
 private:
     Ui::transmision_window *ui;

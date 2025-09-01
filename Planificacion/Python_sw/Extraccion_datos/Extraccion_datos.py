@@ -2,6 +2,8 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from datetime import datetime, timedelta
+
 def extraccion_datos(var, pos, ruta_datos):
     dato = []
     tiempo = []
@@ -13,8 +15,6 @@ def extraccion_datos(var, pos, ruta_datos):
                     dato.append(float(campos[pos]))
                     tiempo.append(float(campos[0]))
     return np.array(dato), np.array(tiempo)
-
-from datetime import datetime, timedelta
 
 def gps_to_datetime_local(week, tow_ms):
     gps_epoch = datetime(1980, 1, 6)
@@ -52,12 +52,12 @@ def extraccion_datos_sonda(ruta):
         print(f"Error al cargar el archivo: {e}")
         return None
 
-
+################################################################################################################
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Error: falta el nombre del archivo como parámetro")
         sys.exit(1)
-
+    #Para que coja los datos que se mandan desde QT
     nombre_archivo = sys.argv[1]  #Nombre del archivo de la misión
     archivo_medidas = sys.argv[2]
     home_dir = os.path.expanduser("~")
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     
     ruta_datos_sonda = archivo_medidas
     print("ruta datos sonda", ruta_datos_sonda)
-    # Extraer datos
+    ########## EXTRACCIÓN DE DATOS DE LOS MENSAJES ##########
     x_raw, t_x = extraccion_datos("INS", 3, ruta_datos)
     y_raw, t_y = extraccion_datos("INS", 4, ruta_datos)
     lat_raw, t_lat = extraccion_datos("GPS_INT", 6, ruta_datos)
@@ -96,24 +96,33 @@ if __name__ == "__main__":
     week, t_week = extraccion_datos("GPS", 10, ruta_datos) #Semana desde 6 de Enero de 1980
     tow, t_tow = extraccion_datos("GPS", 11, ruta_datos) #tow = time on week
     utm_zone, t_utm_zone = extraccion_datos("GPS", 12, ruta_datos) #tow = time on week
+    mode, t_mode = extraccion_datos("SERIAL_COM", 3, ruta_datos) #Si está en 2 -> Manual en 4->Auto
+    profile_id, t_profile_id = extraccion_datos("STATIC_CONTROL", 5, ruta_datos)
     static_control, t_static_control = extraccion_datos("STATIC_CONTROL", 3, ruta_datos) #Esto nos va a decir cuándo está activo el static control y por tanto cuándo está bajando la sonda
+    intervalo_tiempo = 30
+    N_tramos_5s = int(t_lat[-1]/intervalo_tiempo)
+    #Vamos a crear un vector de tiempos de 5s en 5s
+    tiempos_5s = np.linspace(0, t_lat[-1], N_tramos_5s)
+    t_comun = tiempos_5s
     
-    # Llevamos todos los vectores a un tiempo común
-    x, t_x = llevar_a_t_comun(t_lat, t_x, x)
-    y_raw, t_y = llevar_a_t_comun(t_lat, t_y, y)
-    u, t_u = llevar_a_t_comun(t_lat, t_u, u)
-    v, t_v = llevar_a_t_comun(t_lat, t_v, v)
-    du, t_du = llevar_a_t_comun(t_lat, t_du, du)
-    dv, t_dv = llevar_a_t_comun(t_lat, t_dv, dv)
-    orientacion_raw, t_orientacion = llevar_a_t_comun(t_lat, t_orientacion, orientacion_raw)
-    throttle_L, t_T_L = llevar_a_t_comun(t_lat, t_T_L, throttle_L)
-    throttle_R, t_T_R = llevar_a_t_comun(t_lat, t_T_R, throttle_R)
+    ########## LLEVAMOS TODOS LOS VECTORES A UN T COMÚN YA QUE CADA UNO TIENE DIFERENTES FRECUENCIA ##########
+    x, t_x = llevar_a_t_comun(tiempos_5s, t_x, x)
+    y_raw, t_y = llevar_a_t_comun(tiempos_5s, t_y, y)
+    u, t_u = llevar_a_t_comun(tiempos_5s, t_u, u)
+    v, t_v = llevar_a_t_comun(tiempos_5s, t_v, v)
+    du, t_du = llevar_a_t_comun(tiempos_5s, t_du, du)
+    dv, t_dv = llevar_a_t_comun(tiempos_5s, t_dv, dv)
+    orientacion_raw, t_orientacion = llevar_a_t_comun(tiempos_5s, t_orientacion, orientacion_raw)
+    throttle_L, t_T_L = llevar_a_t_comun(tiempos_5s, t_T_L, throttle_L)
+    throttle_R, t_T_R = llevar_a_t_comun(tiempos_5s, t_T_R, throttle_R)
     #print(f"len Ah = {len(Ah) }\nlen t_comun = {len(t_lat)}")
-    Ah, t_Ah = llevar_a_t_comun(t_lat, t_Ah, Ah, 1)
-    week, t_week = llevar_a_t_comun(t_lat, t_week, week)
-    tow, t_tow = llevar_a_t_comun(t_lat, t_tow, tow)
-    utm_zone, t_utm_zone = llevar_a_t_comun(t_lat, t_utm_zone, utm_zone) #tow = time on week
-    static_control, t_static_control  = llevar_a_t_comun(t_lat, t_static_control, static_control)
+    Ah, t_Ah = llevar_a_t_comun(tiempos_5s, t_Ah, Ah, 1)
+    week, t_week = llevar_a_t_comun(tiempos_5s, t_week, week)
+    tow, t_tow = llevar_a_t_comun(tiempos_5s, t_tow, tow)
+    utm_zone, t_utm_zone = llevar_a_t_comun(tiempos_5s, t_utm_zone, utm_zone) #tow = time on week
+    mode, t_mode  = llevar_a_t_comun(tiempos_5s, t_mode, mode)
+    profile_id, t_profile_id  = llevar_a_t_comun(tiempos_5s, t_profile_id, profile_id)
+    static_control, t_static_control  = llevar_a_t_comun(tiempos_5s, t_static_control, static_control)
     theta = np.degrees(np.arctan2(u_raw, v_raw))
 
     # Vectoriza para usar con arrays
@@ -122,10 +131,11 @@ if __name__ == "__main__":
     # Aplica a tus arrays
     result_local_time = vectorized_gps_to_datetime_local(week, tow)
 
-######### EXTRACCIÓN DATOS CSV SONDA. AHORAMISMO ES UN PROXI, CUANDO ESTÉ BIEN EL EXCEL MIRAR COMO HACERLO CON EL TIEMPO DE LA MEDIDA ############
+########## EXTRACCIÓN DATOS CSV DE LA RASP. AHORAMISMO ES UN PROXI, CUANDO ESTÉ BIEN EL EXCEL MIRAR COMO HACERLO CON EL TIEMPO DE LA MEDIDA ##########
     df = extraccion_datos_sonda(ruta_datos_sonda)
     # Asegurar que todas las series tengan la misma longitud
     N = min(
+        len(t_comun),
         len(t_x), len(x),
         len(t_y), len(y),
         len(t_lat), len(lat),
@@ -142,52 +152,61 @@ if __name__ == "__main__":
         len(t_week), len(week),
         len(t_tow), len(tow),
         len(t_utm_zone), len(utm_zone),
+        len(t_mode), len(mode),
+        len(t_profile_id), len(profile_id),
         len(t_static_control), len(static_control)
     )
 
-    # Guardar en csv
-    with open(ruta_salida, "w", encoding="utf-8") as f:
-        f.write("fecha_utc,t_x,x,t_y,y,t_lat,lat,t_lon,lon,t_utm_zone,utm_zone,t_u,u_raw,t_v,v_raw,t_du,du_raw,t_dv,dv_raw,t_orientacion,orientacion_raw,t_theta,theta,t_T_L,throttle_L,t_T_R,throttle_R,t_Ah,Ah,t_static_control,static_control,Profundidad,Temperatura,pH,DO_SAT,DO,Blue,Chl\n")
+    ########## GUARDAR CSV DE LOS DATOS DE NAVEGACIÓN ##########  
+    #Aqui tambien se añaden datos de la sonda que se cogeran y utilizarán después. Estos datos de la sonda no se ponen luego en el geojson. En el código de QT está capado el número de columnas que se cogen del csv para el geojson, en este caso son 19 columnas las que se cogen. Se puede cambiar en la función "guardarVentanaYCsvEnJson" de código ~PprzGCS/Planificacion/python_sw/muestreo_window.cpp
+    #### Aquí es donde falta adaptar y se tienen que relacionar los datos de paparazzi con los de la rasp de la sonda.
+    with open(ruta_salida, "w", encoding="utf-8") as f:    f.write("fecha_utc,t_comun,x,y,lat,lon,utm_zone,u_raw,v_raw,du_raw,dv_raw,orientacion_raw,theta,throttle_L,throttle_R,Ah,mode,profile_id,static_control,Profundidad,Temperatura,pH,DO_SAT,DO,Blue,Chl\n")
         j = 0
         for i in range(N):
             if static_control[i] == 0:
                 fila = [
                     result_local_time[i],
-                    t_x[i], x[i],
-                    t_y[i], y[i],
-                    t_lat[i], lat[i],
-                    t_lon[i], lon[i],
-                    t_utm_zone[i], utm_zone[i],
-                    t_u[i], u[i],
-                    t_v[i], v[i],
-                    t_du[i], du[i],
-                    t_dv[i], dv[i],
-                    t_orientacion[i], orientacion_raw[i],
-                    t_du[i], theta[i],
-                    t_T_L[i], throttle_L[i],
-                    t_T_R[i], throttle_R[i],
-                    t_Ah[i], Ah[i],
-                    t_static_control[i], static_control[i],
+                    t_comun[i],
+                    x[i],
+                    y[i],
+                    lat[i],
+                    lon[i],
+                    utm_zone[i],
+                    u[i],
+                    v[i],
+                    du[i],
+                    dv[i],
+                    orientacion_raw[i],
+                    theta[i],
+                    throttle_L[i],
+                    throttle_R[i],
+                    Ah[i],
+                    mode[i],
+                    profile_id[i],
+                    static_control[i],
                     "Null","Null","Null","Null","Null","Null","Null"
                 ]
             else:
                 fila = [
                     result_local_time[i],
-                    t_x[i], x[i],
-                    t_y[i], y[i],
-                    t_lat[i], lat[i],
-                    t_lon[i], lon[i],
-                    t_utm_zone[i], utm_zone[i],
-                    t_u[i], u[i],
-                    t_v[i], v[i],
-                    t_du[i], du[i],
-                    t_dv[i], dv[i],
-                    t_orientacion[i], orientacion_raw[i],
-                    t_du[i], theta[i],
-                    t_T_L[i], throttle_L[i],
-                    t_T_R[i], throttle_R[i],
-                    t_Ah[i], Ah[i],
-                    t_static_control[i], static_control[i],
+                    t_comun[i],
+                    x[i],
+                    y[i],
+                    lat[i],
+                    lon[i],
+                    utm_zone[i],
+                    u[i],
+                    v[i],
+                    du[i],
+                    dv[i],
+                    orientacion_raw[i],
+                    theta[i],
+                    throttle_L[i],
+                    throttle_R[i],
+                    Ah[i],
+                    mode[i],
+                    profile_id[i],
+                    static_control[i],
                     df.loc[j, "Profundidad"],
                     df.loc[j, "Temperatura"],
                     df.loc[j, "pH"],
@@ -199,16 +218,14 @@ if __name__ == "__main__":
                 j+=1
             f.write(",".join(str(valor) for valor in fila) + "\n")
 
-
+    ######## SE COGEN LOS DATOS DEL CSV CREANDO ANTES DE DATOS DE NAVEGACION ##########
     df_sonda = pd.read_csv(ruta_salida)
     #Ponemos cada columna como un vector
     lat_df_sonda = df_sonda["lat"].tolist()
     lon_df_sonda = df_sonda["lon"].tolist()
     x_df_sonda = df_sonda["x"].tolist()
     y_df_sonda = df_sonda["y"].tolist()
-    t_df_sonda = df_sonda["t_x"].tolist()
-    x_df_sonda = df_sonda["x"].tolist()
-    y_df_sonda = df_sonda["y"].tolist()
+    t_df_sonda = t_x.tolist()
     static_control_df_sonda = df_sonda["static_control"].tolist()
     zona_utm_df_sonda = df_sonda["utm_zone"].tolist()
     profundidad_df_sonda = df_sonda["Profundidad"].tolist()

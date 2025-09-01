@@ -21,7 +21,8 @@ transmision_window::transmision_window(QWidget *parent) :
     setWindowTitle("Transmision");
     homeDir = QDir::homePath(); //Directorio home
     // Conectar botón (tu código original)
-    connect(ui->button_transmitir, &QPushButton::clicked, this, &transmision_window::on_button_send_clicked);
+    connect(ui->button_transmitir_navegacion, &QPushButton::clicked, this, &transmision_window::on_button_send_clicked_barco);
+    connect(ui->button_transmitir_sonda, &QPushButton::clicked, this, &transmision_window::on_button_send_clicked_sonda);
     connect(ui->button_datos, &QPushButton::clicked, this, &transmision_window::on_button_datos_clicked);
 
     ui->listView_ID->setModel(model);
@@ -35,47 +36,80 @@ transmision_window::~transmision_window() {
     delete ui;
 }
 
-void transmision_window::on_button_send_clicked()
+void transmision_window::on_button_send_clicked_barco()
 {
     //disconnect(ui->button_transmitir, &QPushButton::clicked, this, &transmision_window::on_button_send_clicked);
-    
-    QString input = ui->label_contrasena->text();
-    
-    if (input == "1234"){
 
-        QModelIndexList selectedIndexes = ui->listView_ID->selectionModel()->selectedIndexes();
+    //Tengo que añadir que me coja las URLs de la ventana y las meta en el .py para hacer el post
 
-        if (selectedIndexes.isEmpty()) {
-            QMessageBox::warning(this, "Aviso", "Por favor, selecciona un archivo de la lista de IDs.");
-            return;
-        }
+    //Entonces hay que pasarle a código de post las dos URLs y el nombre de referencia
 
-        QString archivoSeleccionado = selectedIndexes.first().data().toString();
-        QString pythonExecutable = "python3";
-        QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Subida_datos/post_request.py";
+    QString URL_barco = ui->label_URL_barco->text();
+    QModelIndexList selectedIndexes = ui->listView_ID->selectionModel()->selectedIndexes();
 
-        QProcess *process = new QProcess(this);
-
-        connect(process, &QProcess::readyReadStandardOutput, [process]() {
-            QByteArray output = process->readAllStandardOutput();
-            qDebug() << "Output:" << output;
-        });
-
-        connect(process, &QProcess::readyReadStandardError, [process]() {
-            QByteArray error = process->readAllStandardError();
-            qDebug() << "Error:" << error;
-        });
-
-
-        process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado);
+    if (selectedIndexes.isEmpty()) {
+        QMessageBox::warning(this, "Aviso", "Por favor, selecciona un archivo de la lista de IDs.");
+        return;
     }
 
-    else{
-        QMessageBox::critical(this, "Contraseña", "Contraseña incorrecta");
-    }
-    
+    QString archivoSeleccionado = selectedIndexes.first().data().toString();
+    QString pythonExecutable = "python3";
+    QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Subida_datos/post_request_barco.py";
+
+    QProcess *process = new QProcess(this);
+
+    connect(process, &QProcess::readyReadStandardOutput, [process]() {
+        QByteArray output = process->readAllStandardOutput();
+        qDebug() << "Output:" << output;
+    });
+
+    connect(process, &QProcess::readyReadStandardError, [process]() {
+        QByteArray error = process->readAllStandardError();
+        qDebug() << "Error:" << error;
+    });
+
+
+    process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado << URL_barco);
+
 }
 
+
+void transmision_window::on_button_send_clicked_sonda()
+{
+    //disconnect(ui->button_transmitir, &QPushButton::clicked, this, &transmision_window::on_button_send_clicked);
+
+    //Tengo que añadir que me coja las URLs de la ventana y las meta en el .py para hacer el post
+
+    //Entonces hay que pasarle a código de post las dos URLs y el nombre de referencia
+
+    QString URL_sonda = ui->label_URL_sonda->text();
+    QModelIndexList selectedIndexes = ui->listView_ID->selectionModel()->selectedIndexes();
+
+    if (selectedIndexes.isEmpty()) {
+        QMessageBox::warning(this, "Aviso", "Por favor, selecciona un archivo de la lista de IDs.");
+        return;
+    }
+
+    QString archivoSeleccionado = selectedIndexes.first().data().toString();
+    QString pythonExecutable = "python3";
+    QString scriptPath = homeDir + "/PprzGCS/Planificacion/Python_sw/Subida_datos/post_request_sonda.py";
+
+    QProcess *process = new QProcess(this);
+
+    connect(process, &QProcess::readyReadStandardOutput, [process]() {
+        QByteArray output = process->readAllStandardOutput();
+        qDebug() << "Output:" << output;
+    });
+
+    connect(process, &QProcess::readyReadStandardError, [process]() {
+        QByteArray error = process->readAllStandardError();
+        qDebug() << "Error:" << error;
+    });
+
+
+    process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado << URL_sonda);
+
+}
 
 #include <QDesktopServices>
 #include <QUrl>
@@ -119,27 +153,6 @@ void transmision_window::on_button_datos_clicked()
 
 
 
-
-//void transmision_window::loadFilesFromDirectory(const QString &path, QStringListModel *model, const QStringList &filters) {
-//    QDir dir(path);
-//    if (dir.exists()) {
-//        QStringList archivos;
-//        if (filters.isEmpty()) {
-//            archivos = dir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-//        } else {
-//            archivos = dir.entryList(filters, QDir::Files | QDir::NoDotAndDotDot);
-//        }
-//        // Ordenar alfabéticamente (de más antiguo a más reciente)
-//        archivos.sort();
-
-//        // Si quieres invertir para que lo más reciente aparezca arriba
-//        std::reverse(archivos.begin(), archivos.end());
-
-//        model->setStringList(archivos);
-//    } else {
-//        model->setStringList(QStringList() << "Directorio no encontrado");
-//    }
-//}
 
 void transmision_window::loadFilesFromDirectory(const QString &path, QStringListModel *model, const QStringList &filters) {
     QDir dir(path);

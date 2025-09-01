@@ -38,27 +38,17 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="2">
-     <widget class="QPushButton" name="button_transmitir">
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_5">
       <property name="text">
-       <string>Transmitir</string>
+       <string>URL sonda</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1" colspan="2">
-     <widget class="QLineEdit" name="label_contrasena">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_3">
       <property name="text">
-       <string/>
-      </property>
-      <property name="echoMode">
-       <enum>QLineEdit::Password</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="button_datos">
-      <property name="text">
-       <string>Ver datos</string>
+       <string>Referencia</string>
       </property>
      </widget>
     </item>
@@ -72,28 +62,42 @@
     <item row="1" column="0">
      <widget class="QLabel" name="label_4">
       <property name="text">
-       <string>URL/IP</string>
+       <string>URL navegación</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_5">
+    <item row="2" column="1">
+     <widget class="QLineEdit" name="label_URL_sonda">
       <property name="text">
-       <string>Contraseña</string>
+       <string>https://test-cyanoa.grupogimeno.com/store-json-metadata/</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="1" colspan="2">
-     <widget class="QLineEdit" name="label_URL">
+    <item row="2" column="2">
+     <widget class="QPushButton" name="button_transmitir_sonda">
       <property name="text">
-       <string/>
+       <string>Transmitir</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="1" column="1">
+     <widget class="QLineEdit" name="label_URL_barco">
       <property name="text">
-       <string>Referencia/ID</string>
+       <string>https://test-cyanoa.grupogimeno.com/store-json-metrics/</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="button_transmitir_navegacion">
+      <property name="text">
+       <string>Transmitir</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" colspan="2">
+     <widget class="QPushButton" name="button_datos">
+      <property name="text">
+       <string>Ver datos</string>
       </property>
      </widget>
     </item>

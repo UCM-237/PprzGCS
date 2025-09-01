@@ -2,7 +2,8 @@ Responsable: {UCM}
 Lugar: {Fac. Ciencias Físicas}
 Referencia: {Prueba_geojson}
 Flight_plan: {UCM/Prueba_2_simulacion.xml}
-Mision: {25_05_16__11_42_15.data}
+Mision: {25_07_22__12_43_37.data}
+ID_sonda: {1}
 Valor ficocianina: {2}
 std ficocianina: {1}
 Numero medidas ficocianina: {12}
