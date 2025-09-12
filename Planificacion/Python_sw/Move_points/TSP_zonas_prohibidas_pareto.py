@@ -972,6 +972,7 @@ if len(resultados_sectores_rutas) >= 1:
             ruta_mas_corta = ruta_final
             dist_mas_corta = dist_ruta_actual
             resultados_sectores_ruta_mas_corta = resultados_sectores
+            print("Número de puntos finales (PtP):", len(resultados_sectores_ruta_mas_corta))
             resultados_sectores_antes_ruta_mas_corta = resultados_sectores_antes
         longitud_final = len(ruta_final)
         n_puntos_rodeo = longitud_final - longitud_inicial
@@ -1132,8 +1133,8 @@ Archivo_basename = os.path.splitext(os.path.basename(Archivo))[0]
 if TipoTrayectoria == "Point to point":
     #Creamos el vector para identificar que puntos son de rodeo y cuales de medida
     flag_stop = [0 if point in resultados_sectores_antes_ruta_mas_corta else 1 for point in resultados_sectores_ruta_mas_corta]
-    #Necesitamos que flag_stop tenga 150 elementos, asique rellenamos con ceros hasta que esto se cumpla
-    flag_stop += [0] * (150 - len(flag_stop))
+    #Necesitamos que flag_stop tenga 50 elementos, asique rellenamos con ceros hasta que esto se cumpla
+    flag_stop += [0] * (50 - len(flag_stop))
     ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
     guardar_puntos_en_txt(ruta, ruta_waypoints_finales)
 
@@ -1288,6 +1289,7 @@ if TipoTrayectoria == "Continuous":
     ruta_bz['y'] = Puntos_Bezier[:, 1]  # Asignar la columna y
     for i in range(len(Puntos_Bezier)):
             ruta_bz[i]['nombre']=f'BZ{i}'
+    print("Número de puntos finales (Continuous):", len(ruta_bz))
 
     #Vamos a crear flag stop para ver que puntos son de rodeo y cuales de medida
     ruta_bz_arr = np.stack((ruta_bz["x"], ruta_bz["y"]), axis = 1)
@@ -1311,8 +1313,8 @@ if TipoTrayectoria == "Continuous":
             #print("Punto = ", point)
             flag_stop.append(1)
 
-    #Necesitamos que flag_stop tenga 150 elementos, asique rellenamos con ceros hasta que tenga esta longitud
-    flag_stop += [0] * (150 - len(flag_stop))
+    #Necesitamos que flag_stop tenga 50 elementos, asique rellenamos con ceros hasta que tenga esta longitud
+    flag_stop += [0] * (50 - len(flag_stop))
     ruta_waypoints_finales = os.path.join(home_dir, "PprzGCS", "Planificacion", "Resources", "waypoints_opt", f"{Archivo_basename}_waypoints.txt")
     guardar_puntos_en_txt(ruta_bz, ruta_waypoints_finales)
 

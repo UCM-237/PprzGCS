@@ -489,6 +489,9 @@ void PlanificacionWindow::on_button_move_wp_clicked()
         if (!QFile::exists(filename)) {
             throw std::runtime_error("El archivo de waypoints no existe: " + filename.toStdString());
         }
+        else{
+            qDebug() << "El archivo de waypoints existe: " << filename;
+        }
 
         double latitudes[100];  // Asegúrate de que el tamaño sea suficiente
         double longitudes[100];
@@ -496,10 +499,13 @@ void PlanificacionWindow::on_button_move_wp_clicked()
 
         // Llamada a la función para leer los puntos del archivo
         int puntos_leidos = leerArchivo(filename.toStdString().c_str(), latitudes, longitudes, max_puntos);
-        sendNumwp(puntos_leidos);
+        sendNumwp(puntos_leidos);    // Demasiados puntos
         if (puntos_leidos <= 0) {
             throw std::runtime_error("No se pudieron leer puntos del archivo.");
         }
+        // else{
+        //     qDebug() << "Número de puntos leídos: " << puntos_leidos;
+        // }
 
         // Configurar el temporizador para enviar los puntos uno por uno
         currentIndex = 0;  // Reiniciar el índice de los puntos
@@ -580,6 +586,7 @@ void PlanificacionWindow::on_button_clear_clicked()
     this->setEnabled(false);  // Deshabilitar toda la ventana
     QMessageBox::information(this, "Clear", "Se va a ejecutar la limpieza de los waypoints, espere hasta que se haya completado.");
     bool estado_send_conf = 1;
+
     disconnect(ui->button_clear, &QPushButton::clicked, this, &PlanificacionWindow::on_button_clear_clicked);
 
     //Primero buscamos que flight_plan está cargado
@@ -796,9 +803,9 @@ void PlanificacionWindow::sendwp(double latitud, double longitud, bool aux_reset
 #include <QJsonArray>
 #include <QJsonParseError>
 
-QVector<int> leerVectorDesdeTxt(const QString& rutaArchivo)
+QVector<uint8_t> leerVectorDesdeTxt(const QString& rutaArchivo)
 {
-     QVector<int> vector;
+    QVector<uint8_t> vector;
 
     QFile file(rutaArchivo);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -817,6 +824,7 @@ QVector<int> leerVectorDesdeTxt(const QString& rutaArchivo)
             vector.reserve(arr.size());
             for (const QJsonValue& v : arr)
                 vector.append(v.toInt());
+                qDebug() << "Vector leído desde JSON:" << vector;
             return vector;
     }
 
@@ -855,10 +863,11 @@ void PlanificacionWindow::sendNumwp(quint8 numWpMoved){
     QString name_flight_plan = ui->label_mapa->text();
     QFileInfo fileInfo(name_flight_plan);
     const QString ruta = homeDir + "/PprzGCS/Planificacion/Resources/flag_stop/" + fileInfo.baseName() + "_flag_stop.txt";
-    QVector<int> flag_stop (150, 0);
+    QVector<uint8_t> flag_stop (50, 0);
 
     flag_stop = leerVectorDesdeTxt(ruta);
 
+    qDebug() << "flag_stop leido: " << flag_stop;
     msg.addField("num", numWpMoved);
     msg.addField("flag", flag_stop);
 
