@@ -87,6 +87,7 @@ void GVF_traj_bezier::genVField()
     createVFieldItem(xy_mesh, vxy_mesh);
   } else {
     fprintf(stderr, "Field cannot be created yet, waiting for complete data...\n");
+
   }
 
 }

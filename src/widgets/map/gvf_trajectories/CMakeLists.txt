@@ -12,6 +12,7 @@ set(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/gvf_traj_3D_ellipse.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gvf_traj_3D_lissajous.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/gvf_traj_bezier.cpp    
+    ${CMAKE_CURRENT_SOURCE_DIR}/gvf_traj_lines_param.cpp    
 )
 
 set(INC_DIRS ${INC_DIRS} ${CMAKE_CURRENT_SOURCE_DIR})

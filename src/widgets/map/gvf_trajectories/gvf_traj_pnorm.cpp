@@ -64,8 +64,14 @@ void GVF_traj_pnorm::genVField() {
 
         float nx, ny;
 
-        nx = powf( fabs(px-wx), lp_norm - 2.0) * (px - wx);
-        ny = powf( fabs(py-wy), lp_norm - 2.0) * (py - wy);
+        float xSign = (px - wx) >= 0 ? 1 : -1;
+        float ySign = (py - wy) >= 0 ? 1 : -1;
+
+        //nx = powf( fabs(px-wx), lp_norm - 2.0) * (px - wx);
+        //ny = powf( fabs(py-wy), lp_norm - 2.0) * (py - wy);
+        nx = powf( fabs(px-wx) / dr, lp_norm - 1) * xSign;
+        ny = powf( fabs(py-wy) / dr, lp_norm - 1) * ySign;
+
 
         float tx =  s*ny;
         float ty = -s*nx;
