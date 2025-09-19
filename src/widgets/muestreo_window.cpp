@@ -29,10 +29,12 @@ muestreo_window::muestreo_window(QWidget *parent) :
     connect(ui->button_explorer_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_flight_plan_clicked);
     connect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
     connect(ui->button_ver_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_open_flight_plan_clicked);
-    connect(ui->button_ver_datos_mision, &QPushButton::clicked, this, &muestreo_window::on_button_ver_datos_mision_clicked);  
+    connect(ui->button_ver_datos_mision, &QPushButton::clicked, this, &muestreo_window::on_button_ver_datos_mision_clicked);
+    connect(ui->button_update_csv, &QPushButton::clicked, this, &muestreo_window::on_button_update_csv_clicked);
+
     //Para que la lista de misiones salga cargado con las misiones que hay en el directorio
     ui->listView_mision->setModel(model);
-    loadFilesFromDirectory(homeDir + "/paparazzi/var/logs", model, QStringList() << "*.data");
+    loadFilesFromDirectory(homeDir + "/PprzGCS/Planificacion/Resources/logs/nav", model, QStringList() << "*.csv");
 }
 
 muestreo_window::~muestreo_window() {
@@ -119,12 +121,15 @@ void muestreo_window::on_button_save_clicked()
         if (nombre_csv.endsWith(".data")) {
             nombre_csv.chop(5);
         }
+        else if(nombre_csv.endsWith(".csv")){
+            nombre_csv.chop(4);
+        }
 
         const QString jsonFilePath = homeDir + "/PprzGCS/Planificacion/JSON/Barco/" + Referencia + ".geojson";
-        const QString csvFilePath = homeDir + "/PprzGCS/Planificacion/Extraccion_datos/Barco/" + nombre_csv + ".csv";
+        const QString csvFilePath = homeDir + "/PprzGCS/Planificacion/Resources/logs/nav/" + nombre_csv + ".csv";
 
         const QString jsonFilePath_sonda = homeDir + "/PprzGCS/Planificacion/JSON/Sonda/" + Referencia + "_sonda.geojson";
-        const QString csvFilePath_sonda = homeDir + "/PprzGCS/Planificacion/Extraccion_datos/Sonda/" + nombre_csv +"_sonda.csv";
+        const QString csvFilePath_sonda = homeDir + "/PprzGCS/Planificacion/Resources/logs/sonda/" + nombre_csv +"_sonda.csv";
 
         extraccion_datos(false, jsonFilePath, csvFilePath, jsonFilePath_sonda, csvFilePath_sonda);
     }
@@ -148,7 +153,7 @@ void muestreo_window::on_button_explorer_medidas_clicked()
 {
     disconnect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
 
-    QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/Resources/Medidas_sonda";
+    QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/Resources/logs/sonda";
     QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de muestreo"), basePath);
 
     if (!filePath.isEmpty()) {
@@ -253,10 +258,10 @@ void muestreo_window::on_button_explorer_referencia_clicked()
                         QStringList misionesDisponibles;
 
                         // Ruta al directorio donde están las misiones
-                        QString misionesPath = homeDir + "/paparazzi/var/logs";
+                        QString misionesPath = homeDir + "/PprzGCS/Planificacion/Resources/logs/nav";
                         QDir misionesDir(misionesPath);
                         QStringList filtros;
-                        filtros << "*.data";  // o la extensión real que usas para las misiones
+                        filtros << "*.csv";  // o la extensión real que usas para las misiones
                         misionesDisponibles = misionesDir.entryList(filtros, QDir::Files);
 
                         // Quitar la ruta para comparar solo por nombre
@@ -306,12 +311,70 @@ void muestreo_window::on_button_explorer_referencia_clicked()
 
 
 //Lee los datos de la misión y extrae el CSV
-
 void muestreo_window::on_button_ver_datos_mision_clicked()
 {
     disconnect(ui->button_ver_datos_mision, &QPushButton::clicked, this, &muestreo_window::on_button_ver_datos_mision_clicked);
     extraccion_datos(true);
 }
+
+
+void muestreo_window::on_button_update_csv_clicked() {
+
+    disconnect(ui->button_update_csv, &QPushButton::clicked, this, &muestreo_window::on_button_update_csv_clicked);
+
+    // Deshabilitar la UI mientras se descarga
+    this->setEnabled(false);
+
+    QString logsDir = QDir::homePath() + "/PprzGCS/Planificacion/Resources/logs";
+
+    // Asegurar que el directorio existe
+    QDir dir(logsDir);
+    if (!dir.exists()) {
+        dir.mkpath(".");
+    }
+
+    QProcess *wgetProcess = new QProcess(this);
+
+    // Comando wget
+    QStringList args;
+    args << "-r" << "-l1" << "-nd" << "-A" << "*.csv" << "--no-clobber"
+         << "http://192.168.50.1:8080/logs/" << "--timeout=10" << "--tries=1";
+    qDebug() << "Descargando archivos CSV desde la URL 192.168.50.1";
+
+    // Guardar en tu carpeta logs local
+    wgetProcess->setWorkingDirectory(logsDir);
+
+    connect(wgetProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+        this, [=](int exitCode, QProcess::ExitStatus) {
+        qDebug() << "Proceso wget terminado con código:" << exitCode;
+        QStringList files;
+        if (exitCode == 0) {
+            QMessageBox::information(this, "CSV", "Descarga completada.");
+        } else {
+            QMessageBox::warning(this, "CSV", "Error en la descarga.");
+        }
+        // Recargar la lista de misiones después de la descarga
+        QString misionesPath = logsDir + "/nav";
+        QDir misionesDir(misionesPath);
+        QStringList filters;
+        filters << "*.csv";
+        files = misionesDir.entryList(filters, QDir::Files);
+        model->setStringList(files);
+        wgetProcess->deleteLater();
+
+        // Volver a habilitar la UI
+        this->setEnabled(true);
+    });
+
+    wgetProcess->start("/usr/bin/wget", args);
+
+    if (!wgetProcess->waitForStarted()) {
+        qDebug() << "wget no arrancó:" << wgetProcess->errorString();
+        this->setEnabled(true); // Rehabilitar la UI si falla al arrancar
+    }
+}
+
+
 
 //Función para extraer los datos de la misión ejecutando el .py
 void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonFilePath, const QString &csvFilePath, const QString &jsonFilePath_sonda, const QString &csvFilePath_sonda)
@@ -362,7 +425,7 @@ void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonF
 
     QString ruta_archivo_medidas = archivo_medidas;
     if (!QFile::exists(ruta_archivo_medidas)) {
-        QMessageBox::critical(this, "Error", "No hay ningún archivo de medidas con el nombre " + archivo_medidas + " en ~/PprzGCS/Planificacion/Medidas_sonda");
+        QMessageBox::critical(this, "Error", "No hay ningún archivo de medidas con el nombre " + archivo_medidas + " en ~/PprzGCS/Planificacion/Resources/logs/sonda");
             return;
     }
     else{
@@ -394,7 +457,7 @@ void muestreo_window::mostrar_datos_mision()
         nombre_csv += ".csv";
     }
 
-    QString ruta = QDir::homePath() + "/PprzGCS/Planificacion/Extraccion_datos/Barco/" + nombre_csv;
+    QString ruta = QDir::homePath() + "/PprzGCS/Planificacion/Resources/logs/nav" + nombre_csv;
 
     QFileInfo archivo(ruta);
     if (archivo.exists()) {
@@ -473,10 +536,10 @@ void muestreo_window::guardarVentanaYCsvEnJson(const QString &geoJsonFilePath, c
 
             featuresArray.append(feature);
         }
-
+        qDebug () << "Número de features procesados:" << featuresArray.size();
         csvFile.close();
     } else {
-        qWarning("No se pudo abrir el archivo CSV");
+        qWarning().noquote().nospace() << "No se pudo abrir el archivo CSV, ruta = {" << csvFilePath << "}";
         return;
     }
 
@@ -517,7 +580,7 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
     QJsonArray featuresArray;
     QFile csvFile(csvFilePath_sonda);
     if (!csvFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning("No se pudo abrir el archivo CSV");
+        qWarning().noquote().nospace() << "No se pudo abrir el archivo CSV, ruta = {" << csvFilePath_sonda << "}";
         return;
     }
 

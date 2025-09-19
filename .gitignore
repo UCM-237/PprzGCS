@@ -77,3 +77,13 @@ build/
 
 *.run
 
+# Logs and data directories
+Planificacion/Resources/logs/nav/
+Planificacion/Resources/logs/sonda/
+Planificacion/Resources/flag_stop/
+Planificacion/Resources/waypoints_opt/
+Planificacion/JSON/Barco/
+Planificacion/JSON/Sonda/
+Planificacion/datos.txt/
+Planificacion/Muestreo/
+
