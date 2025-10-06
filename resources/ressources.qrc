@@ -52,5 +52,9 @@
         <file>pictures/pfd_rover_yaw.svg</file>
         <file>pictures/pfd_rover_pitch.svg</file>
         <file>pictures/pfd_rover_roll.svg</file>
+        <file>pictures/sonar_ok.png</file>
+        <file>pictures/sonar_warn.png</file>
+        <file>pictures/probe_ok.svg</file>
+        <file>pictures/probe_warn.svg</file>
     </qresource>
 </RCC>

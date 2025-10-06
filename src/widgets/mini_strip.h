@@ -46,6 +46,8 @@ private:
     void updateGps(QString gps_mode);
     void updateImu(QString state_filter_mode);
     void updateCurrentBlock(uint8_t cur_block);
+    void updateSonar(QString sender, pprzlink::Message msg);
+    void updateProbe(QString sender, pprzlink::Message msg);
 
     QString ac_id;
     QSize icons_size;
@@ -82,6 +84,12 @@ private:
     QLabel* throttle_label;
     QIcon throttle_on;
     QIcon throttle_killed;
+
+    QIcon probe_icon_ok, probe_icon_warn;
+    QLabel *probe_icon, *probe_label;
+
+    QIcon sonar_icon_ok, sonar_icon_warn;
+    QLabel *sonar_icon, *sonar_label;
 
     QPushButton* ap_mode_button;
 

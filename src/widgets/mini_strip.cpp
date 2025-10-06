@@ -180,6 +180,31 @@ MiniStrip::MiniStrip(QString ac_id, QWidget *parent) : QWidget(parent),
     th_lay->addWidget(throttle_label);
     gl->addLayout(th_lay, 2, 0);
 
+
+    ////////// sonar /////////////
+    auto sonar_lay = new QHBoxLayout();
+    sonar_icon_ok = QIcon(":/pictures/sonar_ok.png");
+    sonar_icon_warn = QIcon(":/pictures/sonar_warn.png");
+    sonar_icon = new QLabel(this);
+    sonar_icon->setPixmap(sonar_icon_ok.pixmap(icons_size));
+    sonar_label = new QLabel("-- m", this);
+    sonar_lay->addWidget(sonar_icon);
+    sonar_lay->addWidget(sonar_label);
+    gl->addLayout(sonar_lay, 3, 0);
+
+
+    ////////// probe /////////////
+    auto probe_lay = new QHBoxLayout();
+    probe_icon_ok = QIcon(":/pictures/probe_ok.svg");
+    probe_icon_warn = QIcon(":/pictures/probe_warn.svg");
+    probe_icon = new QLabel(this);
+    probe_icon->setPixmap(probe_icon_ok.pixmap(icons_size));
+    probe_label = new QLabel("-- m", this);
+    probe_lay->addWidget(probe_icon);
+    probe_lay->addWidget(probe_label);
+    gl->addLayout(probe_lay, 4, 0); 
+
+
     //////// mode //////////
     ap_mode_button = new QPushButton("MODE");
     ap_mode_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -242,6 +267,16 @@ MiniStrip::MiniStrip(QString ac_id, QWidget *parent) : QWidget(parent),
     connect(ac_status, &AircraftStatus::ap_status, this, &MiniStrip::updateData);
     connect(ac_status, &AircraftStatus::nav_status, this, &MiniStrip::updateData);
     connect(ac_status->getWatcher(), &AircraftWatcher::bat_status, this, &MiniStrip::handle_bat_status);
+
+    // For the sonar and probe
+    PprzDispatcher::get()->bind("BR_SONAR", this,
+        [=](QString sender, pprzlink::Message msg) {
+            updateSonar(sender, msg);
+        });
+    PprzDispatcher::get()->bind("SERIAL_COM", this,
+        [=](QString sender, pprzlink::Message msg) {
+            updateProbe(sender, msg);
+        });
 }
 
 void MiniStrip::handle_bat_status(AircraftWatcher::BatStatus bs) {
@@ -534,6 +569,43 @@ void MiniStrip::updateData() {
 
     emit updated();
 
+}
+
+void MiniStrip::updateProbe(QString /*sender*/, pprzlink::Message msg) {
+    uint8_t distance;
+    uint8_t status;
+    msg.getField("RECV_LENGTH", distance);
+    msg.getField("STATE", status);
+
+    float float_distance = static_cast<float>(distance)/100.0f;
+    // qDebug() << QString("Probe distance: %1 m").arg(float_distance, 0, 'f', 2);
+    probe_label->setText(QString("%1 m").arg(float_distance, 0, 'f', 2));
+    probe_icon->setToolTip(QString("Probe %1 m").arg(float_distance, 0, 'f', 2));
+
+    if(status == 1) {
+        probe_icon->setPixmap(probe_icon_ok.pixmap(icons_size));
+    } else {
+        probe_icon->setPixmap(probe_icon_warn.pixmap(icons_size));
+    }
+}
+
+void MiniStrip::updateSonar(QString /*sender*/, pprzlink::Message msg) {
+    uint32_t distance;
+    uint8_t status;
+    msg.getField("distance", distance);
+    msg.getField("status", status);
+
+    float float_distance = static_cast<float>(distance)/1000.0f;
+    sonar_label->setText(QString("%1 m").arg(float_distance, 0, 'f', 2));
+    sonar_icon->setToolTip(QString("Sonar %1 m").arg(float_distance, 0, 'f', 2));
+
+    // qDebug() << QString("Sonar distance: %1 m").arg(float_distance, 0, 'f', 2);
+
+    if(status == 0) {
+        sonar_icon->setPixmap(sonar_icon_ok.pixmap(icons_size));
+    } else {
+        sonar_icon->setPixmap(sonar_icon_warn.pixmap(icons_size));
+    }
 }
 
 bool MiniStrip::eventFilter(QObject *object, QEvent *event)
