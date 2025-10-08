@@ -337,9 +337,11 @@ void muestreo_window::on_button_update_csv_clicked() {
 
     // Comando wget
     QStringList args;
-    args << "-r" << "-l1" << "-nd" << "-A" << "*.csv" << "--no-clobber"
-         << "http://192.168.50.1:8080/logs/" << "--timeout=10" << "--tries=1";
+    args << "-r" << "-l2" << "-nH" << "-A" << "*.csv" << "--no-clobber"
+         << "--timeout=10" << "--tries=1"
+         << "http://192.168.50.1:8080/";
     qDebug() << "Descargando archivos CSV desde la URL 192.168.50.1";
+
 
     // Guardar en tu carpeta logs local
     wgetProcess->setWorkingDirectory(logsDir);
