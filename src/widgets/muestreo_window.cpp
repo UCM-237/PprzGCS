@@ -27,7 +27,7 @@ muestreo_window::muestreo_window(QWidget *parent) :
     connect(ui->button_save, &QPushButton::clicked, this, &muestreo_window::on_button_save_clicked);  //Botón para guardar
     connect(ui->button_explorer_referencia, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_referencia_clicked);  //Explorador de archivos
     connect(ui->button_explorer_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_flight_plan_clicked);
-    connect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
+    // connect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
     connect(ui->button_ver_flight_plan, &QPushButton::clicked, this, &muestreo_window::on_button_open_flight_plan_clicked);
     connect(ui->button_ver_datos_mision, &QPushButton::clicked, this, &muestreo_window::on_button_ver_datos_mision_clicked);
     connect(ui->button_update_csv, &QPushButton::clicked, this, &muestreo_window::on_button_update_csv_clicked);
@@ -89,8 +89,8 @@ void muestreo_window::on_button_save_clicked()
     valor_clorofila = ui->label_valor_clorofila->text();
     std_clorofila = ui->label_std_clorofila->text();
     N_clorofila = ui->label_N_clorofila->text();
-    archivo_medidas = ui->label_archivo_medidas->text();
-    periodo_medidas = ui->label_periodo_medidas->text();
+    // archivo_medidas = ui->label_archivo_medidas->text();    // Unused
+    // periodo_medidas = ui->label_periodo_medidas->text();    // Unused
     incidencias = ui->label_incidencias->toPlainText();
     flight_plan = ui->label_flight_plan->text();
     QFile file(homeDir + "/PprzGCS/Planificacion/Muestreo/" + Referencia + ".txt");
@@ -109,8 +109,8 @@ void muestreo_window::on_button_save_clicked()
         out << "Valor clorofila: " << "{" + valor_clorofila + "}" << "\n";
         out << "std clorofila: " << "{" + std_clorofila + "}" << "\n";
         out << "Numero medidas clorofila: " << "{" + N_clorofila + "}" << "\n";
-        out << "Ruta archivo medidas: " << "{" + archivo_medidas + "}" << "\n";
-        out << "Periodo medidas: " << "{" + periodo_medidas + "}" << "\n";
+        // out << "Ruta archivo medidas: " << "{" + archivo_medidas + "}" << "\n";
+        // out << "Periodo medidas: " << "{" + periodo_medidas + "}" << "\n";
         out << "Incidencias: " << "{" + incidencias + "}" << "\n";
 
         file.close();
@@ -124,12 +124,15 @@ void muestreo_window::on_button_save_clicked()
         else if(nombre_csv.endsWith(".csv")){
             nombre_csv.chop(4);
         }
+        if (nombre_csv.startsWith("log_")) {
+            nombre_csv = nombre_csv.mid(4);
+        }
 
         const QString jsonFilePath = homeDir + "/PprzGCS/Planificacion/JSON/Barco/" + Referencia + ".geojson";
-        const QString csvFilePath = homeDir + "/PprzGCS/Planificacion/Resources/logs/nav/" + nombre_csv + ".csv";
+        const QString csvFilePath = homeDir + "/PprzGCS/Planificacion/Resources/logs/nav/log_" + nombre_csv + ".csv";
 
         const QString jsonFilePath_sonda = homeDir + "/PprzGCS/Planificacion/JSON/Sonda/" + Referencia + "_sonda.geojson";
-        const QString csvFilePath_sonda = homeDir + "/PprzGCS/Planificacion/Resources/logs/sonda/" + nombre_csv +"_sonda.csv";
+        const QString csvFilePath_sonda = homeDir + "/PprzGCS/Planificacion/Resources/logs/sonda/sonda_" + nombre_csv + ".csv";
 
         extraccion_datos(false, jsonFilePath, csvFilePath, jsonFilePath_sonda, csvFilePath_sonda);
     }
@@ -149,20 +152,20 @@ void muestreo_window::on_button_explorer_flight_plan_clicked()
 
 }
 
-void muestreo_window::on_button_explorer_medidas_clicked()
-{
-    disconnect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
+// void muestreo_window::on_button_explorer_medidas_clicked()
+// {
+//     disconnect(ui->button_explorer_medidas, &QPushButton::clicked, this, &muestreo_window::on_button_explorer_medidas_clicked);
 
-    QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/Resources/logs/sonda";
-    QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de muestreo"), basePath);
+//     QString basePath = QDir::homePath() + "/PprzGCS/Planificacion/Resources/logs/sonda";
+//     QString filePath = QFileDialog::getOpenFileName(this, tr("Abrir archivo de muestreo"), basePath);
 
-    if (!filePath.isEmpty()) {
-        QDir baseDir(basePath);
-        QString relativePath = baseDir.relativeFilePath(filePath);  // Esto te da "UCM/flight_plan.xml"
-        ui->label_archivo_medidas->setText(filePath);  // Esto es lo que luego usas
-    }
+//     if (!filePath.isEmpty()) {
+//         QDir baseDir(basePath);
+//         QString relativePath = baseDir.relativeFilePath(filePath);  // Esto te da "UCM/flight_plan.xml"
+//         ui->label_archivo_medidas->setText(filePath);  // Esto es lo que luego usas
+//     }
 
-}
+// }
 
 void muestreo_window::on_button_open_flight_plan_clicked()
 {
@@ -293,10 +296,10 @@ void muestreo_window::on_button_explorer_referencia_clicked()
                         ui->label_std_clorofila->setText(value);
                     else if (key == "Numero medidas clorofila")
                         ui->label_N_clorofila->setText(value);
-                    else if (key == "Ruta archivo medidas")
-                        ui->label_archivo_medidas->setText(value);
-                     else if (key == "Periodo medidas")
-                        ui->label_periodo_medidas->setText(value);
+                    // else if (key == "Ruta archivo medidas")
+                    //     ui->label_archivo_medidas->setText(value);
+                    //  else if (key == "Periodo medidas")
+                    //     ui->label_periodo_medidas->setText(value);
                 }
             }
 
@@ -425,21 +428,21 @@ void muestreo_window::extraccion_datos(bool mostrarDespues, const QString &jsonF
             });
 
 
-    QString ruta_archivo_medidas = archivo_medidas;
-    if (!QFile::exists(ruta_archivo_medidas)) {
-        QMessageBox::critical(this, "Error", "No hay ningún archivo de medidas con el nombre " + archivo_medidas + " en ~/PprzGCS/Planificacion/Resources/logs/sonda");
-            return;
-    }
-    else{
-        if(!mostrarDespues){
-            QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".geojson");
+    // QString ruta_archivo_medidas = archivo_medidas;
+    // if (!QFile::exists(ruta_archivo_medidas)) {
+    //     QMessageBox::critical(this, "Error", "No hay ningún archivo de medidas con el nombre " + archivo_medidas + " en ~/PprzGCS/Planificacion/Resources/logs/sonda");
+    //         return;
+    // }
+    // else{
+    //     if(!mostrarDespues){
+    //         QMessageBox::information(this, "Guardar", "Datos guardados correctamente en " + Referencia + ".geojson");
 
-        }
-    }
-    if (archivo_medidas == ""){
-        archivo_medidas = "empty.csv";
-    }
-    process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado << archivo_medidas);
+    //     }
+    // }
+    // if (archivo_medidas == ""){
+    //     archivo_medidas = "empty.csv";
+    // }
+    process->start(pythonExecutable, QStringList() << scriptPath << archivoSeleccionado);
 }
 
 
@@ -476,74 +479,79 @@ void muestreo_window::guardarVentanaYCsvEnJson(const QString &geoJsonFilePath, c
     geoJsonRoot["type"] = "FeatureCollection";
     QJsonArray featuresArray;
 
-    QFile csvFile(csvFilePath);
-    if (csvFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&csvFile);
-        QString headerLine = in.readLine();
-        QStringList headers = headerLine.split(',');
+    QString nombre_archivo = QFileInfo(csvFilePath).fileName();  // Extrae solo el nombre del csv
+    QString home_dir = QDir::homePath();  // o el método que uses en tu proyecto
+    QString ruta_csv_procesado = QDir(home_dir + "/PprzGCS/Planificacion/Extraccion_datos/Barco/" + nombre_archivo).absolutePath();
 
-        int latIndex = headers.indexOf("lat");
-        int lonIndex = headers.indexOf("lon");
+    // Reemplazamos csvFilePath por la ruta corregida
+    QFile csvFile(ruta_csv_procesado);
 
-        int size_properties_nav = 19; // Número de datos correspondientes a la navegación
-
-        if (latIndex == -1 || lonIndex == -1) {
-            qWarning("No se encontraron columnas 'lat' y 'lon' en el CSV");
-            return;
-        }
-
-        while (!in.atEnd()) {
-            QString line = in.readLine();
-            QStringList values = line.split(',');
-
-            if (values.size() <= qMax(latIndex, lonIndex))
-                continue;
-
-            double lat = values[latIndex].toDouble();
-            double lon = values[lonIndex].toDouble();
-
-            // Crear geometría GeoJSON
-            QJsonObject geometry;
-            geometry["type"] = "Point";
-            QJsonArray coordinates;
-            coordinates.append(lon);  // x = longitud
-            coordinates.append(lat);  // y = latitud
-            geometry["coordinates"] = coordinates;
-
-            // Separar propiedades en bloques
-            QJsonObject properties_nav;
-            QJsonObject properties_sonda;
-
-            for (int i = 0; i < headers.size() && i < values.size(); ++i) {
-                if (i == latIndex || i == lonIndex)
-                    continue;
-
-                QString val = values[i].trimmed();
-                bool isNumber;
-                double num = val.toDouble(&isNumber);
-                QJsonValue value = isNumber ? QJsonValue(num) : QJsonValue(val);
-
-                if (i < size_properties_nav) {
-                    properties_nav[headers[i].trimmed()] = value;
-                }
-            }
-
-            QJsonObject properties;
-            properties["navegacion"] = properties_nav;
-
-            QJsonObject feature;
-            feature["type"] = "Feature";
-            feature["geometry"] = geometry;
-            feature["properties"] = properties;
-
-            featuresArray.append(feature);
-        }
-        qDebug () << "Número de features procesados:" << featuresArray.size();
-        csvFile.close();
-    } else {
-        qWarning().noquote().nospace() << "No se pudo abrir el archivo CSV, ruta = {" << csvFilePath << "}";
+    // qDebug () << "Leyendo CSV desde:" << ruta_csv_procesado;
+    if (!csvFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "No se pudo abrir el archivo CSV:" << ruta_csv_procesado;
         return;
     }
+
+    QTextStream in(&csvFile);
+    QString headerLine = in.readLine();
+    QStringList headers = headerLine.split(',');
+
+    int latIndex = headers.indexOf("lat");
+    int lonIndex = headers.indexOf("lon");
+    int perfilIndex = headers.indexOf("profile_id");
+    
+    // int size_properties_nav = 19; // Número de datos correspondientes a la navegación
+
+    if (latIndex == -1 || lonIndex == -1 || perfilIndex == -1) {
+        qWarning("No se encontraron columnas 'lat', 'lon' y 'profile_id' en el CSV");
+        return;
+    }
+
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList values = line.split(',');
+        if (values.size() != headers.size()) continue;
+
+        double lat = values[latIndex].toDouble();
+        double lon = values[lonIndex].toDouble();
+
+        // Crear geometría GeoJSON
+        QJsonObject geometry;
+        geometry["type"] = "Point";
+        QJsonArray coordinates;
+        coordinates.append(lon);  // x = longitud
+        coordinates.append(lat);  // y = latitud
+        geometry["coordinates"] = coordinates;
+
+        // Separar propiedades en bloques
+        QJsonObject properties_nav;
+        // QJsonObject properties_sonda;
+
+        for (int i = 0; i < headers.size(); ++i) {
+            if (i == latIndex || i == lonIndex)
+                continue;
+
+            QString val = values[i].trimmed();
+            bool isNumber;
+            double num = val.toDouble(&isNumber);
+            QJsonValue value = isNumber ? QJsonValue(num) : QJsonValue(val);
+            properties_nav[headers[i].trimmed()] = value;
+        }
+
+        QJsonObject properties;
+        properties["navegacion"] = properties_nav;
+
+        QJsonObject feature;
+        feature["type"] = "Feature";
+        feature["geometry"] = geometry;
+        feature["properties"] = properties;
+
+        featuresArray.append(feature);
+    }
+
+    qDebug () << "Número de features procesados:" << featuresArray.size();
+    csvFile.close();
+
 
     geoJsonRoot["features"] = featuresArray;
 
@@ -580,67 +588,109 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
     QJsonObject geoJsonRoot;
     geoJsonRoot["type"] = "FeatureCollection";
     QJsonArray featuresArray;
-    QFile csvFile(csvFilePath_sonda);
+
+    QString nombre_archivo = QFileInfo(csvFilePath_sonda).fileName();  // Extrae solo el nombre del csv
+    QString home_dir = QDir::homePath();
+    QString ruta_csv_procesado = QDir(home_dir + "/PprzGCS/Planificacion/Extraccion_datos/Sonda/" + nombre_archivo).absolutePath();
+
+    QFile csvFile(ruta_csv_procesado);
     if (!csvFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning().noquote().nospace() << "No se pudo abrir el archivo CSV, ruta = {" << csvFilePath_sonda << "}";
+        qWarning().noquote().nospace() << "No se pudo abrir el archivo CSV, ruta = {" << ruta_csv_procesado << "}";
         return;
     }
 
     QTextStream in(&csvFile);
     QString headerLine = in.readLine();
-    QStringList headers = headerLine.split(','); // tu csv parece tabulado
-
-    int fechaUTC = headers.indexOf("fecha_utc");
-    int perfilIndex = headers.indexOf("perfil");
-    int latIndex = headers.indexOf("lat");
-    int lonIndex = headers.indexOf("lon");
-    int xIndex = headers.indexOf("x");
-    int yIndex = headers.indexOf("y");
-    int tIniIndex = headers.indexOf("t_ini");
-    int tFinIndex = headers.indexOf("t_fin");
-    int tZonaUTMIndex = headers.indexOf("zona_utm");
-
-
-    if (perfilIndex == -1 || latIndex == -1 || lonIndex == -1) {
-        qWarning("Faltan columnas obligatorias (perfil, lat, lon)");
+    if (headerLine.trimmed().isEmpty()) {
+        qWarning("CSV vacío o sin cabecera");
+        csvFile.close();
         return;
     }
 
-    // Variables que guardaremos en arrays
-    QStringList variables = {"profundidad", "temperatura", "pH", "DO_SAT", "DO", "Blue", "Chl"};
+    QStringList headers = headerLine.split(',', Qt::KeepEmptyParts);
 
-    // Mapa para agrupar por perfil
+    // --- Normalización de cabeceras y helpers ---
+    auto normalizeKey = [](QString s) {
+        s = s.trimmed().toLower();
+        s.remove(' ');
+        return s;
+    };
+
+    QHash<QString,int> idx;              // key normalizada -> índice
+    QHash<QString,QString> normToOrig;   // key normalizada -> nombre original
+
+    for (int i = 0; i < headers.size(); ++i) {
+        QString orig = headers[i].trimmed();
+        QString key = normalizeKey(orig);
+        idx.insert(key, i);
+        normToOrig.insert(key, orig);
+    }
+
+    auto getIndex = [&](const QString &name)->int {
+        QString key = normalizeKey(name);
+        return idx.contains(key) ? idx.value(key) : -1;
+    };
+
+    auto getOrigName = [&](const QString &name)->QString {
+        QString key = normalizeKey(name);
+        return normToOrig.contains(key) ? normToOrig.value(key) : name;
+    };
+    // --- fin helpers ---
+
+    // índices relevantes (usando getIndex para tolerar mayúsculas/espacios)
+    int fechaUTCIndex = getIndex("fecha_utc");
+    int perfilIndex = getIndex("profile_id");
+    if (perfilIndex == -1) perfilIndex = getIndex("perfil"); // fallback
+    int latIndex = getIndex("lat");
+    int lonIndex = getIndex("lon");
+    int xIndex = getIndex("x");
+    int yIndex = getIndex("y");
+    int tIniIndex = getIndex("t_ini");
+    int tFinIndex = getIndex("t_fin");
+    int zonaUTMIndex = getIndex("utm_zone");
+
+    if (perfilIndex == -1 || latIndex == -1 || lonIndex == -1) {
+        qWarning("Faltan columnas obligatorias (profile_id/perfil, lat, lon) en el CSV de sonda");
+        csvFile.close();
+        return;
+    }
+
+    // variables de sonda que queremos agrupar (normalizadas)
+    QStringList variablesNorm = {"blue","chl","do","do_sat","ph","profundidad","temperatura"};
+
+    // Agrupar filas por perfil
     QMap<QString, QList<QStringList>> perfilesDatos;
-
-    // Leer todo el CSV agrupando por perfil
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QStringList values = line.split(',');
-        if (values.size() != headers.size()) continue;
-
-        QString perfil = values[perfilIndex];
+        if (line.trimmed().isEmpty()) continue;
+        QStringList values = line.split(',', Qt::KeepEmptyParts);
+        while (values.size() < headers.size()) values.append(QString());
+        QString perfil = values[perfilIndex].trimmed();
         perfilesDatos[perfil].append(values);
     }
     csvFile.close();
 
-    // Ahora procesamos cada perfil
+    // Procesar cada perfil
     for (auto it = perfilesDatos.begin(); it != perfilesDatos.end(); ++it) {
         QString perfil = it.key();
         QList<QStringList> filas = it.value();
-
         if (filas.isEmpty()) continue;
 
-        // Asumimos lat, lon, x, y, t_ini, t_fin constantes para todo el perfil (tomamos la primera fila)
-        double lat = filas[0][latIndex].toDouble();
-        double lon = filas[0][lonIndex].toDouble();
-        double x = (xIndex != -1) ? filas[0][xIndex].toDouble() : 0;
-        double y = (yIndex != -1) ? filas[0][yIndex].toDouble() : 0;
-        QString t_ini = (tIniIndex != -1) ? filas[0][tIniIndex] : "";
-        QString t_fin = (tFinIndex != -1) ? filas[0][tFinIndex] : "";
-        QString fecha_utc_ini = (fechaUTC != -1) ? filas[0][fechaUTC] : "";
-        QString zona_utm = (tZonaUTMIndex != -1) ? filas[0][tZonaUTMIndex] : "";
+        // Primera fila como referencia del perfil
+        const QStringList &first = filas.first();
 
-        // Geometría punto
+        QString fecha_ini_utc = (fechaUTCIndex != -1) ? first[fechaUTCIndex].trimmed() : QString();
+        QString t_ini = (tIniIndex != -1) ? first[tIniIndex].trimmed() : QString();
+        QString t_fin = (tFinIndex != -1) ? first[tFinIndex].trimmed() : QString();
+        QString zona_utm = (zonaUTMIndex != -1) ? first[zonaUTMIndex].trimmed() : QString();
+
+        bool ok;
+        double lat = (latIndex != -1) ? first[latIndex].toDouble(&ok) : 0.0;
+        double lon = (lonIndex != -1) ? first[lonIndex].toDouble(&ok) : 0.0;
+        double x = (xIndex != -1) ? first[xIndex].toDouble(&ok) : 0.0;
+        double y = (yIndex != -1) ? first[yIndex].toDouble(&ok) : 0.0;
+
+        // Geometría (Point)
         QJsonObject geometry;
         geometry["type"] = "Point";
         QJsonArray coordinates;
@@ -648,41 +698,48 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
         coordinates.append(lat);
         geometry["coordinates"] = coordinates;
 
-        // Propiedades constantes del perfil
+        // Propiedades de navegación del perfil (constantes)
         QJsonObject properties_nav;
-        QString nombre = QString("Punto_%1").arg(perfil);
-        properties_nav["name"] = nombre;
+        properties_nav["fecha_ini_utc"] = fecha_ini_utc;
+        properties_nav["name"] = QString("Punto_%1").arg(perfil);
         properties_nav["perfil"] = perfil;
+        properties_nav["t_fin"] = t_fin;
+        properties_nav["t_ini"] = t_ini;
         properties_nav["x"] = x;
         properties_nav["y"] = y;
-        // Si tienes zona_utm, agrégala aquí
-        // properties_nav["zona_utm"] = zona_utm;  // <-- si la calculas o la tienes
-        properties_nav["fecha_ini_utc"] = fecha_utc_ini;
-        properties_nav["t_ini"] = t_ini;
-        properties_nav["t_fin"] = t_fin;
-        properties_nav["zona_utm"] = zona_utm;
-        // Ahora propiedades con arrays para las variables
-        QJsonObject properties_sonda;
-        for (const QString &var : variables) {
-            QJsonArray valoresArray;
-            int varIndex = headers.indexOf(var);
-            if (varIndex == -1) continue;
+        double zval = zona_utm.toDouble(&ok);
+        if (ok) properties_nav["zona_utm"] = zval;
+        else properties_nav["zona_utm"] = zona_utm;
 
+        // Construir arrays para cada variable de sonda
+        QJsonObject properties_sonda;
+        for (const QString &varNorm : variablesNorm) {
+            int varIndex = getIndex(varNorm);
+            if (varIndex == -1) continue; // no existe esa columna
+            QString origName = getOrigName(varNorm); // nombre original para la clave JSON
+
+            QJsonArray valoresArray;
             for (const QStringList &fila : filas) {
-                bool ok;
-                double val = fila[varIndex].toDouble(&ok);
-                if (ok)
-                    valoresArray.append(val);
-                else
+                QString cell = fila[varIndex].trimmed();
+                // tratar 'nan' como NULL
+                if (cell.isEmpty() || cell.toLower() == "nan") {
                     valoresArray.append(QJsonValue::Null);
+                    continue;
+                }
+                bool ok2;
+                double v = cell.toDouble(&ok2);
+                if (ok2) valoresArray.append(v);
+                else valoresArray.append(QJsonValue(cell)); // si no es numérico, lo añadimos como string
             }
-            properties_sonda[var] = valoresArray;
+            properties_sonda[origName] = valoresArray;
         }
 
+        // Montar properties final
         QJsonObject properties;
         properties["navegacion"] = properties_nav;
         properties["sonda"] = properties_sonda;
 
+        // Feature completo
         QJsonObject feature;
         feature["type"] = "Feature";
         feature["geometry"] = geometry;
@@ -693,7 +750,7 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
 
     geoJsonRoot["features"] = featuresArray;
 
-    // Aquí los metadatos que quieras (los de tu UI)
+    // Metadatos (igual que antes)
     QJsonObject metadata;
     metadata["Referencia"] = ui->label_referencia->text();
     metadata["ID_sonda"] = ui->label_ID_sonda->text();
@@ -703,8 +760,8 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
     metadata["Valor clorofila"] = ui->label_valor_clorofila->text();
     metadata["std clorofila"] = ui->label_std_clorofila->text();
     metadata["Numero medidas clorofila"] = ui->label_N_clorofila->text();
-    metadata["Ruta archivo medidas"] = ui->label_archivo_medidas->text();
-    metadata["Periodo medidas"] = ui->label_periodo_medidas->text();
+    // metadata["Ruta archivo medidas"] = ui->label_archivo_medidas->text();
+    // metadata["Periodo medidas"] = ui->label_periodo_medidas->text();
     geoJsonRoot["metadata"] = metadata;
 
     // Guardar GeoJSON

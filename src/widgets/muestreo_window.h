@@ -23,7 +23,7 @@ private slots:
     void on_button_save_clicked();
     void on_button_explorer_referencia_clicked();
     void on_button_explorer_flight_plan_clicked();
-    void on_button_explorer_medidas_clicked();
+    // void on_button_explorer_medidas_clicked();
     void on_button_open_flight_plan_clicked();
     void on_button_ver_datos_mision_clicked();
     void on_button_update_csv_clicked();

@@ -305,35 +305,35 @@
     </item>
     <item>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="2" column="0">
+      <!-- <item row="2" column="0">
        <widget class="QLabel" name="label_16">
         <property name="text">
          <string>Periodo</string>
         </property>
        </widget>
-      </item>
-      <item row="2" column="1">
+      </item> -->
+      <!-- <item row="2" column="1">
        <widget class="QLineEdit" name="label_periodo_medidas">
         <property name="text">
          <string/>
         </property>
        </widget>
-      </item>
-      <item row="0" column="0">
+      </item> -->
+      <!-- <item row="0" column="0">
        <widget class="QLabel" name="label_13">
         <property name="text">
          <string>MEDIDAS:  </string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="0">
+      </item> -->
+      <!-- <item row="1" column="0">
        <widget class="QLabel" name="label_14">
         <property name="text">
          <string>Archivo     </string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="1">
+      </item> -->
+      <!-- <item row="1" column="1">
        <widget class="QLineEdit" name="label_archivo_medidas">
         <property name="text">
          <string/>
@@ -342,14 +342,14 @@
          <string>.csv</string>
         </property>
        </widget>
-      </item>
-      <item row="1" column="2">
+      </item> -->
+      <!-- <item row="1" column="2">
        <widget class="QPushButton" name="button_explorer_medidas">
         <property name="text">
          <string>Explorar</string>
         </property>
        </widget>
-      </item>
+      </item> -->
      </layout>
     </item>
     <item>
