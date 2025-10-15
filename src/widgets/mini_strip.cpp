@@ -572,12 +572,12 @@ void MiniStrip::updateData() {
 }
 
 void MiniStrip::updateProbe(QString /*sender*/, pprzlink::Message msg) {
-    uint8_t distance;
+    int16_t distance;
     uint8_t status;
-    msg.getField("RECV_LENGTH", distance);
+    msg.getField("RECV_DEPTH", distance);
     msg.getField("STATE", status);
 
-    float float_distance = static_cast<float>(distance)/100.0f;
+    float float_distance = static_cast<float>(distance)/1000.0f;
     // qDebug() << QString("Probe distance: %1 m").arg(float_distance, 0, 'f', 2);
     probe_label->setText(QString("%1 m").arg(float_distance, 0, 'f', 2));
     probe_icon->setToolTip(QString("Probe %1 m").arg(float_distance, 0, 'f', 2));
