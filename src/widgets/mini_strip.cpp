@@ -271,10 +271,12 @@ MiniStrip::MiniStrip(QString ac_id, QWidget *parent) : QWidget(parent),
     // For the sonar and probe
     PprzDispatcher::get()->bind("BR_SONAR", this,
         [=](QString sender, pprzlink::Message msg) {
+            if (sender != ac_id) return; 
             updateSonar(sender, msg);
         });
     PprzDispatcher::get()->bind("SERIAL_COM", this,
         [=](QString sender, pprzlink::Message msg) {
+            if (sender != ac_id) return;   
             updateProbe(sender, msg);
         });
 }
