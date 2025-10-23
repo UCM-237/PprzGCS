@@ -656,7 +656,7 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
     }
 
     // variables de sonda que queremos agrupar (normalizadas)
-    QStringList variablesNorm = {"blue","chl","do","do_sat","ph","profundidad","temperatura"};
+    QStringList variablesNorm = {"blue","chl","do","do_sat","ph","profundidad","temperatura", "c"};
 
     // Agrupar filas por perfil
     QMap<QString, QList<QStringList>> perfilesDatos;

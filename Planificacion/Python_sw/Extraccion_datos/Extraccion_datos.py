@@ -77,7 +77,8 @@ def extraccion_datos_sonda(ruta_csv_sonda: str):
         "DO_SAT",
         "DO",
         "Blue",
-        "Chl"
+        "Chl", 
+        "C"
     ]
 
     # Convertir tiempo a datetime por si se quiere usar después
@@ -156,7 +157,6 @@ if __name__ == "__main__":
     ########## EXTRACCIÓN DATOS CSV DE LA RASP ##########
     df = extraccion_datos_sonda(ruta_sonda)
 
-    # Falta el perfil, que lo voy a meter tambien en el csv de la sonda
     t_sonda = df["Tiempo"].tolist()
     profile_sonda = df["Perfil"].tolist()
     profundidad = df["Profundidad"].tolist()
@@ -166,6 +166,7 @@ if __name__ == "__main__":
     DO = df["DO"].tolist()  
     Blue = df["Blue"].tolist()
     Chl = df["Chl"].tolist()
+    C = df["C"].tolist()
 
     # Una vez extraidos los datos, hacemos dos csv,
     # Uno con los datos de navegación y 
@@ -205,7 +206,7 @@ if __name__ == "__main__":
 
     # CSV de datos de sonda + navegacion
     with open(salida_sonda, "w", encoding="utf-8") as f:  
-        f.write("fecha_utc,x,y,lat,lon,utm_zone,profile_id, t_ini, t_fin,Blue, Chl, DO, DO_SAT, pH, Profundidad, Temperatura\n")
+        f.write("fecha_utc,x,y,lat,lon,utm_zone,profile_id, t_ini, t_fin,Blue, Chl, DO, DO_SAT, pH, C, Profundidad, Temperatura\n")
         
         perfiles_unicos = sorted(df["Perfil"].unique())
         print("Perfiles detectados:", perfiles_unicos)
@@ -258,6 +259,7 @@ if __name__ == "__main__":
                     fila_sonda["DO"],
                     fila_sonda["DO_SAT"],
                     fila_sonda["pH"],
+                    fila_sonda["C"],
                     fila_sonda["Profundidad"],
                     fila_sonda["Temperatura"],
                 ]
