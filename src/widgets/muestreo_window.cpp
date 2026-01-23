@@ -607,7 +607,8 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
         return;
     }
 
-    QStringList headers = headerLine.split(',', Qt::KeepEmptyParts);
+    //QStringList headers = headerLine.split(',', Qt::KeepEmptyParts);
+    QStringList headers = headerLine.split(',', QString::KeepEmptyParts);
 
     // --- Normalización de cabeceras y helpers ---
     auto normalizeKey = [](QString s) {
@@ -663,7 +664,8 @@ void muestreo_window::guardarVentanaYCsvEnJson_sonda(const QString &geoJsonFileP
     while (!in.atEnd()) {
         QString line = in.readLine();
         if (line.trimmed().isEmpty()) continue;
-        QStringList values = line.split(',', Qt::KeepEmptyParts);
+        //QStringList values = line.split(',', Qt::KeepEmptyParts);
+        QStringList values = headerLine.split(',', QString::KeepEmptyParts);
         while (values.size() < headers.size()) values.append(QString());
         QString perfil = values[perfilIndex].trimmed();
         perfilesDatos[perfil].append(values);
